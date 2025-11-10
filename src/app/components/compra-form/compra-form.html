@@ -1,0 +1,107 @@
+<div class="modal-overlay" (click)="fechar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ compra?.id ? 'Editar' : 'Nova' }} Compra</h2>
+      <button class="btn-fechar" (click)="fechar()">×</button>
+    </div>
+    
+    <div class="form-container">
+      <form class="compra-form" (ngSubmit)="salvarCompra()">
+        <!-- PRODUTO (SEMPRE OBRIGATÓRIO) -->
+        <div class="form-group">
+          <label for="produto">Produto *</label>
+          <select id="produto" name="produto" 
+                  [(ngModel)]="compraEdit.produtoId" 
+                  (change)="onProdutoSelecionado($event)" required>
+            <option value="">Selecione um produto</option>
+            <option *ngFor="let produto of produtos" [value]="produto.id">
+              {{ produto.nome }} ({{ produto.sku }})
+            </option>
+            <option value="novo">+ Cadastrar Novo Produto</option>
+          </select>
+          
+          <!-- ✅ REMOVIDO: Mensagem do produto selecionado abaixo do campo -->
+        </div>
+
+        <!-- ID DO PEDIDO DE COMPRA (OBRIGATÓRIO) -->
+        <div class="form-group">
+          <label for="idPedidoCompra">ID do Pedido de Compra *</label>
+          <input type="text" id="idPedidoCompra" name="idPedidoCompra" 
+                 [(ngModel)]="compraEdit.idPedidoCompra" 
+                 placeholder="Número único do pedido no fornecedor"
+                 required>
+        </div>
+
+        <!-- FORNECEDOR (OPCIONAL) -->
+        <div class="form-group">
+          <label for="fornecedor">Fornecedor</label>
+          <input type="text" id="fornecedor" name="fornecedor" 
+                 [(ngModel)]="compraEdit.fornecedor" 
+                 placeholder="Nome do fornecedor (opcional)">
+        </div>
+
+        <div class="form-row">
+          <!-- QUANTIDADE -->
+          <div class="form-group">
+            <label for="quantidade">Quantidade *</label>
+            <input type="number" id="quantidade" name="quantidade" 
+                   [(ngModel)]="compraEdit.quantidade" 
+                   min="1" required
+                   (input)="calcularCustoTotal()">
+          </div>
+
+          <!-- DATA -->
+          <div class="form-group">
+            <label for="data">Data da Compra *</label>
+            <input type="date" id="data" name="data" 
+                   [(ngModel)]="compraEdit.dataEntrada" 
+                   required>
+          </div>
+        </div>
+
+        <!-- CUSTO UNITÁRIO E CUSTO TOTAL COM MÁSCARA BRASILEIRA -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="custoUnitario">Custo Unitário (R$)</label>
+            <input type="text" id="custoUnitario" name="custoUnitario" 
+                   [(ngModel)]="compraEdit.custoUnitario" 
+                   appBrazilianCurrency
+                   (input)="calcularCustoTotal()"
+                   placeholder="R$ 0,00">
+          </div>
+
+          <div class="form-group">
+            <label for="custoTotal">Custo Total (R$) *</label>
+            <input type="text" id="custoTotal" name="custoTotal" 
+                   [(ngModel)]="compraEdit.custoTotal" 
+                   appBrazilianCurrency
+                   (input)="calcularCustoUnitario()"
+                   placeholder="R$ 0,00" required>
+          </div>
+        </div>
+
+        <!-- OBSERVAÇÕES -->
+        <div class="form-group">
+          <label for="observacoes">Observações</label>
+          <textarea id="observacoes" name="observacoes" rows="3" 
+                    [(ngModel)]="compraEdit.observacoes"
+                    placeholder="Observações adicionais (opcional)"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancelar" (click)="fechar()">Cancelar</button>
+          <button type="submit" class="btn-salvar">
+            {{ compraEdit.id ? 'Atualizar' : 'Salvar' }} Compra
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE PRODUTO -->
+<app-produto-form 
+  *ngIf="mostrarModalProduto"
+  (fecharModal)="fecharModalProduto()"
+  (produtoSalvo)="onProdutoSalvo()">
+</app-produto-form>

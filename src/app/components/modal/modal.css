@@ -1,0 +1,338 @@
+/* MODAL.CSS UNIFICADO - MESMO PADRÃO DOS FORMULÁRIOS */
+
+/* ESTILOS BÁSICOS DO MODAL - UNIFICADO */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #01182d;
+  border-radius: 12px;
+  border: 3px solid #1a3a5f;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* HEADER FIXO + CONTEÚDO SCROLLÁVEL */
+}
+
+/* HEADER FIXO - NÃO ROLA COM O CONTEÚDO */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #1a3a5f;
+  background: #01182d;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modal-header h2 {
+  color: white;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+}
+
+.btn-fechar {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-fechar:hover {
+  color: #E53935;
+}
+
+/* CONTEÚDO SCROLLÁVEL */
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1; /* OCUPA O ESPAÇO RESTANTE */
+}
+
+/* BOTÕES UNIFICADOS */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  border-top: 1px solid #1a3a5f;
+  background: #01182d;
+  flex-shrink: 0;
+}
+
+.btn-primario {
+  background-color: #7df525;
+  color: #01182d;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primario:hover {
+  background-color: #6cd420;
+  transform: translateY(-2px);
+}
+
+.btn-secundario {
+  background-color: transparent;
+  color: white;
+  border: 2px solid #1a3a5f;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-secundario:hover {
+  background-color: #1a3a5f;
+}
+
+.btn-perigo {
+  background-color: #E53935;
+  color: white;
+}
+
+.btn-perigo:hover {
+  background-color: #c62828;
+}
+
+.btn-erro {
+  background-color: #E53935;
+  color: white;
+}
+
+.btn-erro:hover {
+  background-color: #c62828;
+}
+
+/* ESTILOS DAS MENSAGENS */
+.mensagem {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+  white-space: pre-line;
+  width: 100%;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* ÍCONES */
+.icone-modal {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 auto 20px auto;
+}
+
+.icone-sucesso {
+  background: rgba(125, 245, 37, 0.1);
+  color: #7df525;
+  border: 2px solid #7df525;
+}
+
+.icone-erro {
+  background: rgba(229, 57, 53, 0.1);
+  color: #E53935;
+  border: 2px solid #E53935;
+}
+
+.icone-confirmacao {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+  border: 2px solid #FF9800;
+}
+
+.icone-info {
+  background: rgba(6, 168, 244, 0.1);
+  color: #06A8F4;
+  border: 2px solid #06A8F4;
+}
+
+/* TÍTULOS POR TIPO */
+.titulo-sucesso {
+  color: #7df525 !important;
+}
+
+.titulo-erro {
+  color: #E53935 !important;
+}
+
+.titulo-confirmacao {
+  color: #FF9800 !important;
+}
+
+.titulo-info {
+  color: #06A8F4 !important;
+}
+
+/* ESTILO ESPECÍFICO PARA DETALHES DE VENDA */
+.detalhes-venda {
+  width: 100%;
+  font-family: 'Roboto', sans-serif;
+}
+
+.detalhes-venda .categoria {
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  margin: 20px 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 0px solid #1a3a5f;
+}
+
+.detalhes-venda .categoria:first-child {
+  margin-top: 0;
+}
+
+.detalhes-venda .item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.detalhes-venda .item .label {
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+  flex: 1;
+}
+
+.detalhes-venda .item .value {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  font-size: 14px;
+  text-align: right;
+  flex: 1;
+  margin-left: 10px;
+}
+
+.detalhes-venda .item .value.destaque {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.detalhes-venda .item .value.positivo {
+  color: #7df525;
+  font-weight: 600;
+}
+
+.detalhes-venda .item .value.negativo {
+  color: #E53935;
+  font-weight: 600;
+}
+
+.detalhes-venda .divisor {
+  height: 1px;
+  background: #1a3a5f;
+  margin: 16px 0;
+  width: 100%;
+}
+
+/* ✅ ESTILOS ESPECÍFICOS PARA MODAL PEPS - CORRIGIDOS */
+.alerta-peps {
+  color: white;
+  line-height: 1.4;
+  font-family: 'Roboto', sans-serif;
+}
+
+.alerta-peps .texto-principal {
+  margin-bottom: 30px;
+  margin-top: 15px;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.alerta-peps .secao {
+  margin-bottom: 16px;  
+}
+
+.alerta-peps .titulo-secao {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.alerta-peps .texto-detalhes {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  margin-bottom: 2px;
+  line-height: 1.3;
+  font-weight: 400;
+  font-family: 'Roboto', sans-serif;
+}
+
+.alerta-peps .texto-detalhes:last-child {
+  margin-bottom: 0;
+}
+
+/* ✅ REMOVER MARGENS/PADDING EXTRA DO MODAL BODY */
+.modal-body .mensagem-peps:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: #01182d;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #1a3a5f;
+  border-radius: 4px;
+  border: 1px solid #06A8F4;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #06A8F4;
+}
+
+.modal-body::-webkit-scrollbar-thumb:active {
+  background: #7df525;
+}
+
+/* Para Firefox - scrollbar no conteúdo */
+.modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: #1a3a5f #01182d;
+}

@@ -1,0 +1,48 @@
+<div class="modal-overlay" (click)="fechar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ produtoEdit.id ? 'Editar' : 'Cadastrar' }} Produto</h2>
+      <button class="btn-fechar" (click)="fechar()">×</button>
+    </div>
+    
+    <div class="form-container">
+      <form class="produto-form" (ngSubmit)="salvarProduto()">
+        <div class="form-group">
+          <label for="nome">Nome do Produto</label>
+          <input type="text" id="nome" name="nome" [(ngModel)]="produtoEdit.nome" required>
+        </div>
+
+        <div class="form-group">
+          <label for="sku">SKU</label>
+          <input type="text" id="sku" name="sku" [(ngModel)]="produtoEdit.sku" required>
+        </div>
+
+        <div class="form-group">
+          <label for="asin">ASIN</label>
+          <input type="text" id="asin" name="asin" [(ngModel)]="produtoEdit.asin" required>
+        </div>
+
+        <div class="form-group">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" name="descricao" rows="3" [(ngModel)]="produtoEdit.descricao"></textarea>
+        </div>
+
+        <div class="form-row">
+          <!-- REMOVIDO: Campo quantidadeEstoque -->
+          <div class="form-group">
+            <label for="estoqueMinimo">Estoque Mínimo (Alerta)</label>
+            <input type="number" id="estoqueMinimo" name="estoqueMinimo" 
+                   [(ngModel)]="produtoEdit.estoqueMinimo" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancelar" (click)="fechar()">Cancelar</button>
+          <button type="submit" class="btn-salvar">
+            {{ produtoEdit.id ? 'Atualizar' : 'Salvar' }} Produto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

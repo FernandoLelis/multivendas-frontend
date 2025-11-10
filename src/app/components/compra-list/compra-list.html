@@ -1,0 +1,75 @@
+<div class="compra-list">
+  <div class="header-actions">
+    <h2>Compras</h2>
+    <button class="btn-nova-compra" (click)="novaCompra()">Nova Compra</button>
+  </div>
+
+  <div class="compras-grid">
+    <!-- CARDS DINÂMICOS -->
+    <div class="compra-card" *ngFor="let compra of compras">
+      <div class="compra-header">
+        <!-- ✅ CORREÇÃO: Usar produtoNome em vez de produto.nome -->
+        <h3>{{ compra.produtoNome || 'Item de Compra' }}</h3>
+        <span class="categoria-tag">{{ compra.categoria }}</span>
+      </div>
+      
+      <div class="compra-content">
+        <div class="compra-info">
+          <!-- QUANTIDADE -->
+          <div class="info-row">
+            <span class="label">Quantidade:</span>
+            <span class="value">{{ compra.quantidade }} unidades</span>
+          </div>
+          
+          <!-- CUSTO TOTAL -->
+          <div class="info-row">
+            <span class="label">Custo Total:</span>
+            <span class="value">{{ compra.custoTotal | brlCurrency }}</span>
+          </div>
+          
+          <!-- FORNECEDOR -->
+          <div class="info-row">
+            <span class="label">Fornecedor:</span>
+            <span class="value">{{ compra.fornecedor || 'Não informado' }}</span>
+          </div>
+          
+          <!-- ID DO PEDIDO DE COMPRA -->
+          <div class="info-row">
+            <span class="label">ID do Pedido:</span>
+            <span class="value">{{ compra.idPedidoCompra }}</span>
+          </div>
+          
+          <!-- DATA -->
+          <div class="info-row">
+            <span class="label">Data:</span>
+            <span class="value">{{ getDataCompra(compra) }}</span>
+          </div>
+          
+          <!-- OBSERVAÇÕES -->
+          <div class="info-row" *ngIf="compra.observacoes">
+            <span class="label">Observações:</span>
+            <span class="value">{{ compra.observacoes }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="compra-actions">
+        <button class="btn-editar" (click)="editarCompra(compra)">Editar</button>
+        <button class="btn-excluir" (click)="excluirCompra(compra)">Excluir</button>
+      </div>
+    </div>
+
+    <!-- MENSAGEM QUANDO NÃO HÁ COMPRAS -->
+    <div class="sem-compras" *ngIf="compras.length === 0">
+      Nenhuma compra cadastrada
+    </div>
+  </div>
+
+  <!-- MODAL DE COMPRA -->
+  <app-compra-form 
+    *ngIf="mostrarModal"
+    [compra]="compraEditando"
+    (fecharModal)="fecharModal()"
+    (compraSalva)="onCompraSalva()">
+  </app-compra-form>
+</div>

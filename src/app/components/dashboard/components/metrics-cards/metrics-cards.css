@@ -1,0 +1,258 @@
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.metric-card {
+  background: #01182d;
+  border-radius: 8px;
+  padding: 24px 18px;
+  border: 3px solid #1a3a5f;
+  min-height: 140px;
+  display: flex;
+  align-items: stretch;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  gap: 20px;
+}
+
+/* Colunas do card */
+.metric-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ÍCONE PRINCIPAL - CENTRALIZADO VERTICALMENTE */
+.icon-column {
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+/* INFORMAÇÕES - ALINHADO EM BAIXO */
+.info-column {
+  flex: 1;
+  justify-content: flex-end;
+  padding-bottom: 4px;
+}
+
+/* CRESCIMENTO - COMPLETAMENTE EM BAIXO SEM ESPAÇAMENTO */
+.growth-column {
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding-bottom: 0;
+}
+
+/* Container para seta + indicador */
+.growth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Setas */
+.growth-arrow {
+  width: 28px;
+  height: 28px;
+}
+
+.growth-arrow.positive {
+  color: #7df525;
+}
+
+.growth-arrow.negative {
+  color: #E53935;
+}
+
+/* Ícone SVG */
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metric-icon svg {
+  width: 52px;
+  height: 52px;
+}
+
+/* Informações - TÍTULOS MENORES */
+.info-column h3 {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.metric-main-value {
+  color: #06A8F4;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 2px 0;
+  line-height: 1.2;
+}
+
+/* COR ESPECIAL PARA DESPESAS */
+.metric-card:nth-child(4) .metric-main-value {
+  color: #06A8F4;
+}
+
+.metric-total {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ========== COLUNA DE CRESCIMENTO ========== */
+.metric-growth {
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  min-width: auto;
+}
+
+.metric-growth.positive {
+  color: #7df525;
+}
+
+.metric-growth.negative {
+  color: #E53935;
+}
+
+/* Estados de loading e erro */
+.loading-state {
+  color: white;
+  text-align: center;
+  padding: 40px;
+  grid-column: 1 / -1;
+}
+
+.error-state {
+  color: #E53935;
+  text-align: center;
+  padding: 40px;
+  grid-column: 1 / -1;
+}
+
+.error-state button {
+  background: #E53935;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* ========== TABLET (768px - 1024px) ========== */
+@media (max-width: 1024px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .metric-card {
+    padding: 20px 16px;
+    min-height: 130px;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .metric-main-value {
+    font-size: 20px;
+  }
+  
+  .info-column h3 {
+    font-size: 14px;
+    margin: 0 0 3px 0;
+  }
+  
+  .metric-total {
+    font-size: 13px;
+  }
+  
+  .metric-icon svg {
+    width: 46px;
+    height: 46px;
+  }
+  
+  .growth-column {
+    padding-bottom: 0;
+  }
+  
+  .metric-growth {
+    font-size: 14px;
+  }
+  
+  .growth-arrow {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* ========== MOBILE (até 768px) ========== */
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .metric-card {
+    padding: 18px 14px;
+    min-height: 110px;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .metric-main-value {
+    font-size: 18px;
+  }
+  
+  .info-column h3 {
+    font-size: 13px;
+    margin: 0 0 2px 0;
+  }
+  
+  .metric-total {
+    font-size: 12px;
+  }
+  
+  .metric-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .icon-column {
+    padding: 0 6px;
+  }
+  
+  .growth-column {
+    padding-bottom: 0;
+  }
+  
+  .metric-growth {
+    font-size: 12px;
+  }
+  
+  .growth-arrow {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .growth-container {
+    gap: 2px;
+  }
+}

@@ -1,0 +1,379 @@
+/* IMPORT DA FONTE ROBOTO - PADRÃO DA PLATAFORMA */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+.venda-list {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.venda-list h2 {
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  margin: 0;
+  font-size: 28px;
+}
+
+.btn-nova-venda {
+  background-color: #7df525;
+  color: #01182d;
+  border: 2px solid #7df525;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-nova-venda:hover {
+  background-color: #6cd420;
+  border-color: #6cd420;
+  transform: translateY(-2px);
+}
+
+/* GRID DE VENDAS */
+.vendas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ESTILO IDÊNTICO AO METRIC-CARD */
+.venda-card {
+  background: #01182d;
+  border-radius: 8px;
+  padding: 0;
+  border: 3px solid #1a3a5f;
+  color: white;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+/* HEADER DO CARD COM PLATAFORMA À DIREITA - SEM BORDA */
+.venda-header {
+  background: #01182d;
+  padding: 20px 20px 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.venda-header h3 {
+  color: white;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* PLATAFORMA ALINHADA À DIREITA NO HEADER */
+.plataforma-tag {
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.plataforma-tag.amazon {
+  background: #ff9900;
+}
+
+.plataforma-tag.mercado-livre {
+  background: #ffe600;
+  color: #2d2d2d;
+}
+
+.plataforma-tag.shopee {
+  background: #ee4d2d;
+}
+
+.plataforma-tag.outro {
+  background: #06A8F4;
+}
+
+/* CONTEÚDO PRINCIPAL DO CARD */
+.venda-content {
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* INFORMAÇÕES ALINHADAS À ESQUERDA - MESMO ESTILO DO PRODUTO-LIST */
+.venda-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.label {
+  color: white;
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-align: left;
+  min-width: 120px;
+}
+
+.value {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  font-size: 0.9rem;
+  text-align: left;
+  flex: 1;
+}
+
+/* VALOR TOTAL EM DESTAQUE */
+.value.highlight {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+/* BOX DE CÁLCULOS COM FUNDO #1A3A5F - SEM BORDA E COM SOMBRA EXTERNA */
+.calculos-section {
+  background: #1A3A5F;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 100%;
+}
+
+.calculos-section .info-row {
+  margin-bottom: 8px;
+}
+
+.calculos-section .label {
+  color: white;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.calculos-section .value {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* CORES DINÂMICAS PARA LUCRO LÍQUIDO E ROI - CORRIGIDO */
+.lucro-liquido.positive,
+.roi.positive {
+  color: #7df525 !important;
+}
+
+.lucro-liquido.negative,
+.roi.negative {
+  color: #E53935 !important;
+}
+
+/* GARANTIR QUE AS CORES SOBREESCREVAM OUTROS ESTILOS */
+.calculos-section .lucro-liquido.positive,
+.calculos-section .roi.positive {
+  color: #7df525 !important;
+}
+
+.calculos-section .lucro-liquido.negative,
+.calculos-section .roi.negative {
+  color: #E53935 !important;
+}
+
+/* BOTÕES ALINHADOS À ESQUERDA SEM BORDA */
+.venda-actions {
+  background: #01182d;
+  padding: 15px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+/* BOTÃO DETALHES COM FUNDO TRANSPARENTE E BORDA AZUL DE 2PX */
+.btn-detalhes {
+  background-color: transparent;
+  color: #06A8F4;
+  border: 2px solid #06A8F4;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* BOTÃO EDITAR COM FUNDO AZUL E BORDA DE 2PX */
+.btn-editar {
+  background-color: #06A8F4;
+  color: white;
+  border: 2px solid #06A8F4;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* BOTÃO EXCLUIR COM FUNDO VERMELHO E BORDA DE 2PX */
+.btn-excluir {
+  background-color: #E53935;
+  color: white;
+  border: 2px solid #E53935;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* HOVER DOS BOTÕES */
+.btn-detalhes:hover {
+  background-color: rgba(6, 168, 244, 0.1);
+  transform: translateY(-2px);
+}
+
+.btn-editar:hover {
+  background-color: #0590d6;
+  border-color: #0590d6;
+  transform: translateY(-2px);
+}
+
+.btn-excluir:hover {
+  background-color: #c62828;
+  border-color: #c62828;
+  transform: translateY(-2px);
+}
+
+/* MENSAGEM SEM VENDAS */
+.sem-vendas {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  padding: 40px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* RESPONSIVIDADE - MESMO PADRÃO DO PRODUTO-LIST */
+@media (max-width: 768px) {
+  .venda-list {
+    padding: 15px;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .venda-list h2 {
+    font-size: 24px;
+  }
+  
+  .venda-content {
+    padding: 0 15px 15px 15px;
+  }
+  
+  .venda-actions {
+    flex-direction: column;
+    padding: 15px;
+  }
+  
+  .btn-detalhes, .btn-editar, .btn-excluir {
+    width: 100%;
+  }
+  
+  .btn-nova-venda {
+    width: 100%;
+  }
+  
+  /* CORREÇÃO PRINCIPAL: MANTÉM INFO-ROW EM LINHA */
+  .info-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .label {
+    min-width: 100px;
+    font-size: 0.9rem;
+  }
+  
+  .value {
+    font-size: 0.85rem;
+    text-align: left;
+  }
+  
+  .venda-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .plataforma-tag {
+    margin-left: 0;
+    align-self: flex-start;
+  }
+  
+  /* AJUSTES PARA CÁLCULOS SECTION EM MOBILE */
+  .calculos-section {
+    padding: 12px;
+  }
+  
+  .calculos-section .label {
+    min-width: 100px;
+    font-size: 0.85rem;
+  }
+  
+  .calculos-section .value {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* AJUSTES PARA TELAS MUITO PEQUENAS */
+  .info-row {
+    gap: 6px;
+  }
+  
+  .label {
+    min-width: 90px;
+    font-size: 0.8rem;
+  }
+  
+  .value {
+    font-size: 0.8rem;
+  }
+  
+  .calculos-section .label {
+    min-width: 90px;
+    font-size: 0.8rem;
+  }
+  
+  .calculos-section .value {
+    font-size: 0.8rem;
+  }
+}

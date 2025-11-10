@@ -1,0 +1,241 @@
+/* IMPORT DA FONTE ROBOTO - PADRÃO DA PLATAFORMA */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+.produto-list {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.produto-list h2 {
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  margin: 0;
+  font-size: 28px;
+}
+
+.btn-novo-produto {
+  background-color: #7df525;
+  color: #01182d;
+  border: 2px solid #7df525;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-novo-produto:hover {
+  background-color: #6cd420;
+  border-color: #6cd420;
+  transform: translateY(-2px);
+}
+
+/* GRID DE PRODUTOS */
+.produtos-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ESTILO IDÊNTICO AOS CARDS DE VENDA E COMPRA */
+.produto-card {
+  background: #01182d;
+  border-radius: 8px;
+  padding: 0;
+  border: 3px solid #1a3a5f;
+  color: white;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+/* HEADER DO CARD APENAS COM NOME - SEM BORDA */
+.produto-header {
+  background: #01182d;
+  padding: 20px 20px 15px 20px;
+}
+
+.produto-header h3 {
+  color: white;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* CONTEÚDO PRINCIPAL DO CARD */
+.produto-content {
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* INFORMAÇÕES ALINHADAS À ESQUERDA - MESMO ESTILO DOS OUTROS COMPONENTES */
+.produto-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.label {
+  color: white;
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-align: left;
+  min-width: 120px;
+}
+
+.value {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  font-size: 0.9rem;
+  text-align: left;
+  flex: 1;
+}
+
+/* REMOVIDO: .value.highlight - Estoque agora tem mesma cor das outras informações */
+
+/* BOTÕES ALINHADOS À ESQUERDA SEM BORDA */
+.produto-actions {
+  background: #01182d;
+  padding: 15px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+/* BOTÃO EDITAR COM FUNDO AZUL E BORDA DE 2PX */
+.btn-editar {
+  background-color: #06A8F4;
+  color: white;
+  border: 2px solid #06A8F4;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* BOTÃO EXCLUIR COM FUNDO VERMELHO E BORDA DE 2PX */
+.btn-excluir {
+  background-color: #E53935;
+  color: white;
+  border: 2px solid #E53935;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* HOVER DOS BOTÕES */
+.btn-editar:hover {
+  background-color: #0590d6;
+  border-color: #0590d6;
+  transform: translateY(-2px);
+}
+
+.btn-excluir:hover {
+  background-color: #c62828;
+  border-color: #c62828;
+  transform: translateY(-2px);
+}
+
+/* MENSAGEM SEM PRODUTOS */
+.sem-produtos {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  padding: 40px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* RESPONSIVIDADE - MESMO PADRÃO DOS OUTROS COMPONENTES */
+@media (max-width: 768px) {
+  .produto-list {
+    padding: 15px;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .produto-list h2 {
+    font-size: 24px;
+  }
+  
+  .produto-content {
+    padding: 0 15px 15px 15px;
+  }
+  
+  .produto-actions {
+    flex-direction: column;
+    padding: 15px;
+  }
+  
+  .btn-editar, .btn-excluir {
+    width: 100%;
+  }
+  
+  .btn-novo-produto {
+    width: 100%;
+  }
+  
+  /* CORREÇÃO PRINCIPAL: MANTÉM INFO-ROW EM LINHA */
+  .info-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .label {
+    min-width: 100px;
+    font-size: 0.9rem;
+  }
+  
+  .value {
+    font-size: 0.85rem;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  /* AJUSTES PARA TELAS MUITO PEQUENAS */
+  .info-row {
+    gap: 6px;
+  }
+  
+  .label {
+    min-width: 90px;
+    font-size: 0.8rem;
+  }
+  
+  .value {
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,27 @@
+/* ========== DASHBOARD CONTAINER - MESMA ESTRUTURA DAS OUTRAS PÁGINAS ========== */
+.dashboard-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  min-height: calc(100vh - 80px); /* Ajuste conforme a altura do header */
+}
+
+.dashboard {
+  width: 100%;
+}
+
+/* ========== RESPONSIVIDADE - MESMO PADRÃO DAS OUTRAS PÁGINAS ========== */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 10px;
+  }
+}

@@ -1,0 +1,60 @@
+<header class="header">
+  <div class="logo">
+    <!-- <span class="home-icon">🏠</span> -->
+    <h1>MultiVendas</h1>
+  </div>
+
+  <!-- Navegação Principal -->
+  <nav class="nav" [class.nav-open]="isMenuOpen">
+    <a routerLink="/" 
+       routerLinkActive="active" 
+       [routerLinkActiveOptions]="{ exact: true }" 
+       class="nav-item"
+       (click)="closeMenu()">Dashboard</a>
+    <a routerLink="/produtos" 
+       routerLinkActive="active" 
+       class="nav-item"
+       (click)="closeMenu()">Produtos</a>
+    <a routerLink="/vendas" 
+       routerLinkActive="active" 
+       class="nav-item"
+       (click)="closeMenu()">Vendas</a>
+    <a routerLink="/compras" 
+       routerLinkActive="active" 
+       class="nav-item"
+       (click)="closeMenu()">Compras</a>
+    <a routerLink="/despesas" 
+       routerLinkActive="active" 
+       class="nav-item"
+       (click)="closeMenu()">Despesas</a>
+  </nav>
+
+  <div class="header-actions">
+    <button class="icon-button">
+      <span class="material-icons">search</span>
+    </button>
+    <button class="icon-button">
+      <span class="material-icons">notifications</span>
+    </button>
+    
+    <!-- 🆕 BOTÃO PERSON COM LOGOUT -->
+    <button class="icon-button" 
+            (click)="logout()" 
+            title="Sair do sistema">
+      <span class="material-icons">person</span>
+    </button>
+    
+    <!-- Menu Hamburger POSICIONADO DEPOIS DOS ÍCONES -->
+    <button class="hamburger-btn" 
+            [class.menu-open]="isMenuOpen"
+            (click)="toggleMenu()" 
+            aria-label="Abrir menu">
+      <span class="hamburger-icon">☰</span>
+    </button>
+  </div>
+
+  <!-- Overlay para fechar menu ao clicar fora -->
+  <div class="menu-overlay" 
+       [class.overlay-visible]="isMenuOpen" 
+       (click)="closeMenu()"></div>
+</header>

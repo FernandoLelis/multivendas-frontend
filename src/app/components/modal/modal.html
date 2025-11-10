@@ -1,0 +1,195 @@
+@if (config) {
+<div class="modal-overlay" (click)="fechar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 [class]="getClasseTitulo()">{{ config.titulo }}</h2>
+      <button class="btn-fechar" (click)="fechar()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      @if (getClasseIcone() && config.template !== 'detalhes-venda' && config.template !== 'alerta-peps' && config.template !== 'alerta-peps-exclusao' && config.template !== 'alerta-produto-exclusao' && config.template !== 'erro-id-duplicado') {
+        <div [class]="getClasseIcone()">
+          {{ getIcone() }}
+        </div>
+      }
+      
+      <!-- TEMPLATE PARA DETALHES DE VENDA -->
+      @if (config.template === 'detalhes-venda') {
+        <div class="detalhes-venda">
+          <div class="categoria">📋 INFORMAÇÕES BÁSICAS</div>
+          <div class="item">
+            <span class="label">Pedido:</span>
+            <span class="value destaque">{{ config.dadosEspecificos?.informacoesBasicas?.pedido }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Plataforma:</span>
+            <span class="value">{{ config.dadosEspecificos?.informacoesBasicas?.plataforma }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Data:</span>
+            <span class="value">{{ config.dadosEspecificos?.informacoesBasicas?.data }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Produto:</span>
+            <span class="value destaque">{{ config.dadosEspecificos?.informacoesBasicas?.produto }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Quantidade:</span>
+            <span class="value">{{ config.dadosEspecificos?.informacoesBasicas?.quantidade }}</span>
+          </div>
+
+          <div class="divisor"></div>
+
+          <div class="categoria">💰 VALORES FINANCEIROS</div>
+          <div class="item">
+            <span class="label">Preço de Venda:</span>
+            <span class="value">{{ config.dadosEspecificos?.valoresFinanceiros?.precoVenda | brlCurrency }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Frete Pago:</span>
+            <span class="value">{{ config.dadosEspecificos?.valoresFinanceiros?.fretePago | brlCurrency }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Custo do Envio:</span>
+            <span class="value">{{ config.dadosEspecificos?.valoresFinanceiros?.custoEnvio | brlCurrency }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Tarifa da Plataforma:</span>
+            <span class="value">{{ config.dadosEspecificos?.valoresFinanceiros?.tarifa | brlCurrency }}</span>
+          </div>
+
+          <div class="divisor"></div>
+
+          <div class="categoria">📊 CÁLCULOS AUTOMÁTICOS</div>
+          <div class="item">
+            <span class="label">Custo do Produto:</span>
+            <span class="value">{{ config.dadosEspecificos?.calculos?.custoProduto | brlCurrency }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Custo Efetivo Total:</span>
+            <span class="value">{{ config.dadosEspecificos?.calculos?.custoEfetivoTotal | brlCurrency }}</span>
+          </div>
+          <div class="item">
+            <span class="label">Lucro Líquido:</span>
+            <span class="value" [class.positivo]="config.dadosEspecificos?.calculos?.lucroPositivo" 
+                   [class.negativo]="!config.dadosEspecificos?.calculos?.lucroPositivo">
+              {{ config.dadosEspecificos?.calculos?.lucroLiquido | brlCurrency }}
+            </span>
+          </div>
+          <div class="item">
+            <span class="label">ROI:</span>
+            <span class="value" [class.positivo]="config.dadosEspecificos?.calculos?.roiPositivo" 
+                   [class.negativo]="!config.dadosEspecificos?.calculos?.roiPositivo">
+              {{ formatarROI(config.dadosEspecificos?.calculos?.roi) }}
+            </span>
+          </div>
+        </div>
+      }
+
+      <!-- TEMPLATE PARA ALERTA PEPS EDIÇÃO -->
+      @if (config.template === 'alerta-peps') {
+        <div class="alerta-peps">
+          <div class="texto-principal">Esta compra não pode ser alterada porque parte do lote já foi vendido</div>
+          
+          <div class="secao">
+            <div class="titulo-secao">Detalhes do Lote:</div>
+            <div class="texto-detalhes">Saldo atual: {{ config.dadosEspecificos?.saldoAtual }} unidades</div>
+            <div class="texto-detalhes">Quantidade original: {{ config.dadosEspecificos?.quantidadeAntiga }} unidades</div>
+          </div>
+
+          <div class="secao">
+            <div class="titulo-secao">Como funciona o sistema?</div>
+            <div class="texto-detalhes">Para manter o rastreamento preciso de custos, lotes já utilizados em vendas não podem ser alterados.</div>
+          </div>
+
+          <div class="secao">
+            <div class="titulo-secao">Solução sugerida:</div>
+            <div class="texto-detalhes">Exclua as VENDAS que utilizaram este lote para liberar a edição.</div>
+          </div>
+        </div>
+      }
+
+      <!-- TEMPLATE PARA ALERTA PEPS EXCLUSÃO -->
+      @if (config.template === 'alerta-peps-exclusao') {
+        <div class="alerta-peps">
+          <div class="texto-principal">Esta compra não pode ser excluída porque parte do lote já foi vendido</div>
+          
+          <div class="secao">
+            <div class="titulo-secao">Detalhes do Lote:</div>
+            <div class="texto-detalhes">Saldo atual: {{ config.dadosEspecificos?.saldoAtual }} unidades</div>
+            <div class="texto-detalhes">Quantidade original: {{ config.dadosEspecificos?.quantidadeAntiga }} unidades</div>
+          </div>
+
+          <div class="secao">
+            <div class="titulo-secao">Como funciona o sistema?</div>
+            <div class="texto-detalhes">Para manter o rastreamento preciso de custos, lotes já utilizados em vendas não podem ser excluídos.</div>
+          </div>
+
+          <div class="secao">
+            <div class="titulo-secao">Solução sugerida:</div>
+            <div class="texto-detalhes">Exclua as VENDAS que utilizaram este lote primeiro para liberar a exclusão.</div>
+          </div>
+        </div>
+      }
+
+      <!-- ✅ NOVO TEMPLATE PARA ALERTA EXCLUSÃO PRODUTO -->
+      @if (config.template === 'alerta-produto-exclusao') {
+        <div class="alerta-peps">
+          <div class="texto-principal">Este produto não pode ser excluído porque possui vendas associadas</div>
+          
+          <div class="secao">
+            <div class="titulo-secao">Como funciona o sistema?</div>
+            <div class="texto-detalhes">Para manter o rastreamento preciso de custos e histórico financeiro, produtos com vendas registradas não podem ser excluídos.</div>
+          </div>
+
+          <div class="secao">
+            <div class="titulo-secao">Solução sugerida:</div>
+            <div class="texto-detalhes">Exclua as VENDAS associadas a este produto primeiro para liberar a exclusão.</div>
+          </div>
+        </div>
+      }
+
+      <!-- ✅ NOVO TEMPLATE PARA ERRO ID DUPLICADO -->
+      @if (config.template === 'erro-id-duplicado') {
+        <div class="alerta-peps">
+          <div class="texto-principal">
+            O ID do pedido <strong>"{{ config.dadosEspecificos?.idPedido }}"</strong> já está em uso no seu sistema.
+          </div>
+          
+          <div class="secao">
+            <div class="titulo-secao">💡 Por que isso acontece?</div>
+            <div class="texto-detalhes">Cada ID de pedido deve ser único para manter o rastreamento correto das suas compras.</div>
+          </div>
+
+          <div class="secao">
+            <div class="titulo-secao">🔄 Sugestões para resolver:</div>
+            <div class="texto-detalhes">• Use um ID diferente para esta compra</div>
+            <div class="texto-detalhes">• Verifique suas compras anteriores</div>
+            <div class="texto-detalhes">• Adicione um sufixo como "-1", "-2", etc.</div>
+            <div class="texto-detalhes">• Exemplo: <strong>{{ config.dadosEspecificos?.idPedido }}-1</strong></div>
+          </div>
+        </div>
+      }
+
+      <!-- MENSAGEM PADRÃO (para modais simples) -->
+      @if (!config.template) {
+        <div class="mensagem">{{ config.mensagem }}</div>
+      }
+    </div>
+
+    <div class="modal-actions">
+      @if (config.textoBotaoSecundario) {
+        <button class="btn-secundario"
+                (click)="cancelar()">
+          {{ config.textoBotaoSecundario }}
+        </button>
+      }
+      <button class="btn-primario" 
+              [class]="getClasseBotaoPrimario()"
+              (click)="confirmar()">
+        {{ config.textoBotaoPrimario || 'OK' }}
+      </button>
+    </div>
+  </div>
+</div>
+}

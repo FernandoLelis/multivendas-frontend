@@ -1,0 +1,351 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap');
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 72px;
+  background-color: #01182d;
+  padding: 10px 20px;
+  border: 3px solid #1a3a5f;
+  border-radius: 8px;
+  margin: 10px 20px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto', sans-serif;
+  position: relative; /* Para posicionar o menu mobile */
+}
+
+/* .home-icon {
+  font-size: 20px;
+} */
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1001; /* Acima do menu */
+}
+
+.logo h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: white;
+  margin: 0;
+  font-style: italic !important;
+  letter-spacing: -0.5px;
+}
+
+/* ========== NAVEGAÇÃO PRINCIPAL ========== */
+.nav {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-item {
+  color: white;
+  text-decoration: none;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+/* TRAÇO NO HOVER - COR #0590d6 */
+.nav-item:hover::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #0590d6;
+}
+
+/* TRAÇO PERMANENTE NO ACTIVE - COR #7df525 */
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #7df525;
+}
+
+/* COR DO TEXTO QUANDO ACTIVE - VERDE DO DESIGN SYSTEM */
+.nav-item.active {
+  color: #7df525 !important;
+}
+
+/* ========== AÇÕES DO HEADER ========== */
+.header-actions {
+  display: flex;
+  gap: 8px; /* Reduzido para melhor alinhamento */
+  align-items: center;
+  z-index: 1001; /* Acima do menu */
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+}
+
+.icon-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ========== MENU HAMBURGER ATUALIZADO ========== */
+.hamburger-btn {
+  display: none; /* ❌ INICIALMENTE ESCONDIDO */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1001;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hamburger-icon {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estado aberto do hamburger - muda para "X" */
+.hamburger-btn.menu-open .hamburger-icon {
+  transform: rotate(90deg);
+  color: #7df525; /* Verde do design system quando aberto */
+}
+
+/* ========== OVERLAY DO MENU ========== */
+.menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.menu-overlay.overlay-visible {
+  display: block;
+  opacity: 1;
+}
+
+/* ========== RESPONSIVIDADE ========== */
+
+/* DESKTOP (>1024px) - HAMBURGER ESCONDIDO */
+@media (min-width: 1025px) {
+  .hamburger-btn {
+    display: none !important; /* ✅ GARANTE QUE FIQUE ESCONDIDO NO DESKTOP */
+  }
+  
+  .header-actions {
+    gap: 8px;
+  }
+  
+  .icon-button, .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* TABLET (768px - 1024px) */
+@media (max-width: 1024px) {
+  .hamburger-btn {
+    display: flex; /* ✅ APARECE APENAS EM TABLET E MOBILE */
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100vh;
+    background: #01182d;
+    flex-direction: column;
+    gap: 0;
+    padding: 80px 20px 20px;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    border-left: 3px solid #1a3a5f;
+    box-shadow: -6px 0 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .nav.nav-open {
+    right: 0;
+  }
+
+  .nav-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #1a3a5f;
+    font-size: 16px;
+    text-align: left;
+  }
+
+  .nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .nav-item::after {
+    display: none; /* Remove o traço inferior no mobile */
+  }
+
+  .nav-item.active {
+    background: rgba(125, 245, 37, 0.1);
+    border-radius: 6px;
+  }
+
+  .header-actions {
+    gap: 6px; /* Reduzido ainda mais para tablet */
+  }
+}
+
+/* MOBILE (até 768px) */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: row;
+    height: 60px;
+    padding: 8px 15px;
+    margin: 8px 15px;
+  }
+
+  .logo h1 {
+    font-size: 20px;
+  }
+
+  .nav {
+    width: 280px;
+    right: -280px;
+  }
+
+  .header-actions {
+    gap: 4px; /* Mínimo gap para mobile */
+  }
+
+  .icon-button {
+    padding: 6px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .hamburger-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .hamburger-icon {
+    font-size: 18px;
+  }
+}
+
+/* MOBILE PEQUENO (até 480px) */
+@media (max-width: 480px) {
+  .header {
+    padding: 6px 12px;
+    margin: 6px 12px;
+  }
+
+  .logo h1 {
+    font-size: 18px;
+  }
+
+  .logo {
+    gap: 8px;
+  }
+
+  .home-icon {
+    font-size: 18px;
+  }
+
+  .nav {
+    width: 100%;
+    right: -100%;
+  }
+
+  .header-actions .icon-button span {
+    font-size: 18px;
+  }
+
+  .icon-button {
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+  }
+
+  .hamburger-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hamburger-icon {
+    font-size: 16px;
+  }
+}
+
+/* MOBILE MUITO PEQUENO (até 360px) */
+@media (max-width: 360px) {
+  .header {
+    padding: 4px 8px;
+    margin: 4px 8px;
+  }
+
+  .logo h1 {
+    font-size: 16px;
+  }
+
+  .home-icon {
+    font-size: 16px;
+  }
+
+  .header-actions {
+    gap: 2px; /* Gap mínimo para telas muito pequenas */
+  }
+
+  .icon-button {
+    width: 30px;
+    height: 30px;
+    padding: 3px;
+  }
+
+  .icon-button span {
+    font-size: 16px;
+  }
+
+  .hamburger-btn {
+    width: 30px;
+    height: 30px;
+  }
+}

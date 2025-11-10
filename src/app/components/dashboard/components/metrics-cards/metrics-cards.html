@@ -1,0 +1,215 @@
+<div class="metrics-grid">
+  
+  <!-- Estado de Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    Carregando dados...
+  </div>
+
+  <!-- Estado de Erro -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    {{ error }}
+    <button (click)="refreshData()">Tentar novamente</button>
+  </div>
+
+  <!-- Card 1 - FATURAMENTO -->
+  <div class="metric-card" *ngIf="metricsData && !isLoading">
+    <div class="metric-column icon-column">
+      <div class="metric-icon">
+        <i class="fas fa-sack-dollar" style="font-size: 52px; color: #06A8F4;"></i>
+      </div>
+    </div>
+    
+    <div class="metric-column info-column">
+      <h3>FATURAMENTO</h3>
+      <div class="metric-main-value">
+        {{ formatFaturamento(metricsData.faturamento.atual, metricsData.faturamento.total).atual }}
+      </div>
+      <div class="metric-total">
+        Total: {{ formatFaturamento(metricsData.faturamento.atual, metricsData.faturamento.total).total }}
+      </div>
+    </div>
+    
+    <div class="metric-column growth-column">
+      <div class="growth-container">
+        <svg [class.positive]="formatGrowth(metricsData.faturamento.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.faturamento.growth).isPositive"
+             class="growth-arrow" viewBox="0 0 24 24" fill="currentColor">
+          <path *ngIf="formatGrowth(metricsData.faturamento.growth).isPositive" 
+                d="M12 3l9 7.5-3.5 1.5V21H6.5V12L3 10.5 12 3z"/>
+          <path *ngIf="!formatGrowth(metricsData.faturamento.growth).isPositive" 
+                d="M12 21l-9-7.5 3.5-1.5V3h11v8.5l3.5 1.5L12 21z"/>
+        </svg>
+        <div [class.positive]="formatGrowth(metricsData.faturamento.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.faturamento.growth).isPositive"
+             class="metric-growth">
+          {{ formatGrowth(metricsData.faturamento.growth).value }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2 - CUSTO EFETIVO -->
+  <div class="metric-card" *ngIf="metricsData && !isLoading">
+    <div class="metric-column icon-column">
+      <div class="metric-icon">
+        <i class="fas fa-calculator" style="font-size: 52px; color: #06A8F4;"></i>
+      </div>
+    </div>
+    
+    <div class="metric-column info-column">
+      <h3>CUSTO EFETIVO</h3>
+      <div class="metric-main-value">{{ formatCurrency(metricsData.custoEfetivo.atual) }}</div>
+      <div class="metric-total">Total: {{ formatCurrency(metricsData.custoEfetivo.total) }}</div>
+    </div>
+    
+    <div class="metric-column growth-column">
+      <div class="growth-container">
+        <svg [class.positive]="formatGrowth(metricsData.custoEfetivo.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.custoEfetivo.growth).isPositive"
+             class="growth-arrow" viewBox="0 0 24 24" fill="currentColor">
+          <path *ngIf="formatGrowth(metricsData.custoEfetivo.growth).isPositive" 
+                d="M12 3l9 7.5-3.5 1.5V21H6.5V12L3 10.5 12 3z"/>
+          <path *ngIf="!formatGrowth(metricsData.custoEfetivo.growth).isPositive" 
+                d="M12 21l-9-7.5 3.5-1.5V3h11v8.5l3.5 1.5L12 21z"/>
+        </svg>
+        <div [class.positive]="formatGrowth(metricsData.custoEfetivo.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.custoEfetivo.growth).isPositive"
+             class="metric-growth">
+          {{ formatGrowth(metricsData.custoEfetivo.growth).value }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3 - LUCRO BRUTO -->
+  <div class="metric-card" *ngIf="metricsData && !isLoading">
+    <div class="metric-column icon-column">
+      <div class="metric-icon">
+        <i class="fas fa-chart-bar" style="font-size: 52px; color: #06A8F4;"></i>
+      </div>
+    </div>
+    
+    <div class="metric-column info-column">
+      <h3>LUCRO BRUTO</h3>
+      <div class="metric-main-value">{{ formatCurrency(metricsData.lucroBruto.atual) }}</div>
+      <div class="metric-total">Total: {{ formatCurrency(metricsData.lucroBruto.total) }}</div>
+    </div>
+    
+    <div class="metric-column growth-column">
+      <div class="growth-container">
+        <svg [class.positive]="formatGrowth(metricsData.lucroBruto.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.lucroBruto.growth).isPositive"
+             class="growth-arrow" viewBox="0 0 24 24" fill="currentColor">
+          <path *ngIf="formatGrowth(metricsData.lucroBruto.growth).isPositive" 
+                d="M12 3l9 7.5-3.5 1.5V21H6.5V12L3 10.5 12 3z"/>
+          <path *ngIf="!formatGrowth(metricsData.lucroBruto.growth).isPositive" 
+                d="M12 21l-9-7.5 3.5-1.5V3h11v8.5l3.5 1.5L12 21z"/>
+        </svg>
+        <div [class.positive]="formatGrowth(metricsData.lucroBruto.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.lucroBruto.growth).isPositive"
+             class="metric-growth">
+          {{ formatGrowth(metricsData.lucroBruto.growth).value }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4 - DESPESAS OPERACIONAIS -->
+  <div class="metric-card" *ngIf="metricsData && !isLoading">
+    <div class="metric-column icon-column">
+      <div class="metric-icon">
+        <i class="fas fa-receipt" style="font-size: 52px; color: #06A8F4;"></i>
+      </div>
+    </div>
+    
+    <div class="metric-column info-column">
+      <h3>DESPESAS</h3>
+      <div class="metric-main-value">{{ formatCurrency(metricsData.despesasOperacionais.atual) }}</div>
+      <div class="metric-total">Total: {{ formatCurrency(metricsData.despesasOperacionais.total) }}</div>
+    </div>
+    
+    <div class="metric-column growth-column">
+      <div class="growth-container">
+        <svg [class.positive]="formatGrowth(metricsData.despesasOperacionais.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.despesasOperacionais.growth).isPositive"
+             class="growth-arrow" viewBox="0 0 24 24" fill="currentColor">
+          <path *ngIf="formatGrowth(metricsData.despesasOperacionais.growth).isPositive" 
+                d="M12 3l9 7.5-3.5 1.5V21H6.5V12L3 10.5 12 3z"/>
+          <path *ngIf="!formatGrowth(metricsData.despesasOperacionais.growth).isPositive" 
+                d="M12 21l-9-7.5 3.5-1.5V3h11v8.5l3.5 1.5L12 21z"/>
+        </svg>
+        <div [class.positive]="formatGrowth(metricsData.despesasOperacionais.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.despesasOperacionais.growth).isPositive"
+             class="metric-growth">
+          {{ formatGrowth(metricsData.despesasOperacionais.growth).value }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5 - LUCRO LÍQUIDO -->
+  <div class="metric-card" *ngIf="metricsData && !isLoading">
+    <div class="metric-column icon-column">
+      <div class="metric-icon">
+        <i class="fas fa-hand-holding-usd" style="font-size: 52px; color: #06A8F4;"></i>
+      </div>
+    </div>
+    
+    <div class="metric-column info-column">
+      <h3>LUCRO LÍQUIDO</h3>
+      <div class="metric-main-value">{{ formatCurrency(metricsData.lucroLiquido.atual) }}</div>
+      <div class="metric-total">Total: {{ formatCurrency(metricsData.lucroLiquido.total) }}</div>
+    </div>
+    
+    <div class="metric-column growth-column">
+      <div class="growth-container">
+        <svg [class.positive]="formatGrowth(metricsData.lucroLiquido.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.lucroLiquido.growth).isPositive"
+             class="growth-arrow" viewBox="0 0 24 24" fill="currentColor">
+          <path *ngIf="formatGrowth(metricsData.lucroLiquido.growth).isPositive" 
+                d="M12 3l9 7.5-3.5 1.5V21H6.5V12L3 10.5 12 3z"/>
+          <path *ngIf="!formatGrowth(metricsData.lucroLiquido.growth).isPositive" 
+                d="M12 21l-9-7.5 3.5-1.5V3h11v8.5l3.5 1.5L12 21z"/>
+        </svg>
+        <div [class.positive]="formatGrowth(metricsData.lucroLiquido.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.lucroLiquido.growth).isPositive"
+             class="metric-growth">
+          {{ formatGrowth(metricsData.lucroLiquido.growth).value }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 6 - ROI -->
+  <div class="metric-card" *ngIf="metricsData && !isLoading">
+    <div class="metric-column icon-column">
+      <div class="metric-icon">
+        <i class="fas fa-chart-line" style="font-size: 52px; color: #06A8F4;"></i>
+      </div>
+    </div>
+    
+    <div class="metric-column info-column">
+      <h3>ROI</h3>
+      <div class="metric-main-value">{{ formatPercentage(metricsData.roi.atual) }}</div>
+      <div class="metric-total">Total: {{ formatPercentage(metricsData.roi.total) }}</div>
+    </div>
+    
+    <div class="metric-column growth-column">
+      <div class="growth-container">
+        <svg [class.positive]="formatGrowth(metricsData.roi.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.roi.growth).isPositive"
+             class="growth-arrow" viewBox="0 0 24 24" fill="currentColor">
+          <path *ngIf="formatGrowth(metricsData.roi.growth).isPositive" 
+                d="M12 3l9 7.5-3.5 1.5V21H6.5V12L3 10.5 12 3z"/>
+          <path *ngIf="!formatGrowth(metricsData.roi.growth).isPositive" 
+                d="M12 21l-9-7.5 3.5-1.5V3h11v8.5l3.5 1.5L12 21z"/>
+        </svg>
+        <div [class.positive]="formatGrowth(metricsData.roi.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.roi.growth).isPositive"
+             class="metric-growth">
+          {{ formatGrowth(metricsData.roi.growth).value }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

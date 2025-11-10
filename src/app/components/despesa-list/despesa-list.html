@@ -1,0 +1,57 @@
+<div class="despesa-list">
+  <!-- Cabeçalho com ações -->
+  <div class="header-actions">
+    <h2>Despesas</h2>
+    <button class="btn-nova-despesa" (click)="novaDespesa()">Nova Despesa</button>
+  </div>
+
+  <!-- Lista de Despesas -->
+  <div class="despesas-grid">
+    <div *ngFor="let despesa of despesas" class="despesa-card">
+      <!-- Header -->
+      <div class="despesa-header">
+        <h3>{{ despesa.descricao }}</h3>
+        <span class="categoria-tag {{ getClasseCategoria(despesa.categoria) }}">
+          {{ despesa.categoria }}
+        </span>
+      </div>
+      
+      <!-- Conteúdo -->
+      <div class="despesa-content">
+        <div class="despesa-info">
+          <div class="info-row">
+            <span class="label">Data:</span>
+            <span class="value">{{ despesa.data | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Valor:</span>
+            <span class="value destaque">{{ despesa.valor | currency:'BRL' }}</span>
+          </div>
+          <div class="info-row" *ngIf="despesa.observacoes">
+            <span class="label">Observações:</span>
+            <span class="value">{{ despesa.observacoes }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="despesa-actions">
+        <button class="btn-editar" (click)="editarDespesa(despesa)">Editar</button>
+        <button class="btn-excluir" (click)="excluirDespesa(despesa)">Excluir</button>
+      </div>
+    </div>
+
+    <!-- Mensagem quando não há despesas -->
+    <div class="sem-despesas" *ngIf="despesas.length === 0">
+      Nenhuma despesa cadastrada.
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Formulário de Despesa -->
+<app-despesa-form 
+  *ngIf="mostrarFormDespesa"
+  [despesa]="despesaSelecionada"
+  (fecharModal)="fecharFormDespesa()"
+  (despesaSalva)="onDespesaSalva()">
+</app-despesa-form>

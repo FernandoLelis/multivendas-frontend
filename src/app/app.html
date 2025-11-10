@@ -1,0 +1,16 @@
+@if (isPublicPage()) {
+  <!-- ✅ LAYOUT FULL WIDTH PARA LOGIN E REGISTER -->
+  <router-outlet></router-outlet>
+} @else {
+  <!-- ✅ LAYOUT NORMAL COM CONTAINER PARA DEMAIS PÁGINAS -->
+  <div class="app-container">
+    <app-header></app-header>
+    
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+}
+
+<!-- Modal Global -->
+<app-modal></app-modal>

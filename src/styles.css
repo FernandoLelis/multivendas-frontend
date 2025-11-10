@@ -1,0 +1,41 @@
+/* Fundo completo para toda a tela */
+body, html {
+  margin: 0;
+  padding: 0;
+  background: #01182d;
+  min-height: 100vh;
+}
+
+/* Container principal com 70% */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Responsividade do layout principal */
+@media (max-width: 1024px) {
+  .app-container {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 576px) {
+  .app-container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}

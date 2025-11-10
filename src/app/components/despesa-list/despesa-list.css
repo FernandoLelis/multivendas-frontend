@@ -1,0 +1,269 @@
+/* IMPORT DA FONTE ROBOTO - PADRÃO DA PLATAFORMA */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+.despesa-list {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.despesa-list h2 {
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  margin: 0;
+  font-size: 28px;
+}
+
+.btn-nova-despesa {
+  background-color: #7df525;
+  color: #01182d;
+  border: 2px solid #7df525;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-nova-despesa:hover {
+  background-color: #6cd420;
+  border-color: #6cd420;
+  transform: translateY(-2px);
+}
+
+/* GRID DE DESPESAS */
+.despesas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ESTILO IDÊNTICO AOS CARDS DE PRODUTO, VENDA E COMPRA */
+.despesa-card {
+  background: #01182d;
+  border-radius: 8px;
+  padding: 0;
+  border: 3px solid #1a3a5f;
+  color: white;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+/* HEADER DO CARD APENAS COM DESCRIÇÃO - SEM BORDA */
+.despesa-header {
+  background: #01182d;
+  padding: 20px 20px 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.despesa-header h3 {
+  color: white;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* TAGS DE CATEGORIA - MESMO ESTILO DAS PLATAFORMAS */
+.categoria-tag {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12.8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.categoria-material { background: transparent; border: 2px solid #7df525; color: #7df525; }
+.categoria-embalagem { background: transparent; border: 2px solid #06A8F4; color: #06A8F4; }
+.categoria-manutencao { background: transparent; border: 2px solid #FF9800; color: #FF9800; }
+.categoria-marketing { background: transparent; border: 2px solid #9C27B0; color: #9C27B0; }
+.categoria-transporte { background: transparent; border:2px solid #E53935; color: #E53935; }
+.categoria-outros { background: transparent; border:2px solid #757575; color: #757575; }
+.categoria-default { background: transparent; border: 2px solid #06A8F4; color: #06A8F4; }
+
+/* CONTEÚDO PRINCIPAL DO CARD */
+.despesa-content {
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* INFORMAÇÕES ALINHADAS À ESQUERDA - MESMO ESTILO DOS OUTROS COMPONENTES */
+.despesa-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.label {
+  color: white;
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-align: left;
+  min-width: 120px;
+}
+
+.value {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  font-size: 0.9rem;
+  text-align: left;
+  flex: 1;
+}
+
+/* BOTÕES ALINHADOS À ESQUERDA SEM BORDA */
+.despesa-actions {
+  background: #01182d;
+  padding: 15px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+/* BOTÃO EDITAR COM FUNDO AZUL E BORDA DE 2PX */
+.btn-editar {
+  background-color: #06A8F4;
+  color: white;
+  border: 2px solid #06A8F4;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* BOTÃO EXCLUIR COM FUNDO VERMELHO E BORDA DE 2PX */
+.btn-excluir {
+  background-color: #E53935;
+  color: white;
+  border: 2px solid #E53935;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* HOVER DOS BOTÕES */
+.btn-editar:hover {
+  background-color: #0590d6;
+  border-color: #0590d6;
+  transform: translateY(-2px);
+}
+
+.btn-excluir:hover {
+  background-color: #c62828;
+  border-color: #c62828;
+  transform: translateY(-2px);
+}
+
+/* MENSAGEM SEM DESPESAS */
+.sem-despesas {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  padding: 40px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* RESPONSIVIDADE - MESMO PADRÃO DOS OUTROS COMPONENTES */
+@media (max-width: 768px) {
+  .despesa-list {
+    padding: 15px;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .despesa-list h2 {
+    font-size: 24px;
+  }
+  
+  .despesa-content {
+    padding: 0 15px 15px 15px;
+  }
+  
+  .despesa-actions {
+    flex-direction: column;
+    padding: 15px;
+  }
+  
+  .btn-editar, .btn-excluir {
+    width: 100%;
+  }
+  
+  .btn-nova-despesa {
+    width: 100%;
+  }
+  
+  /* CORREÇÃO PRINCIPAL: MANTÉM INFO-ROW EM LINHA */
+  .info-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .label {
+    min-width: 100px;
+    font-size: 0.9rem;
+  }
+  
+  .value {
+    font-size: 0.85rem;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  /* AJUSTES PARA TELAS MUITO PEQUENAS */
+  .info-row {
+    gap: 6px;
+  }
+  
+  .label {
+    min-width: 90px;
+    font-size: 0.8rem;
+  }
+  
+  .value {
+    font-size: 0.8rem;
+  }
+  
+  .despesa-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .categoria-tag {
+    align-self: flex-start;
+  }
+}

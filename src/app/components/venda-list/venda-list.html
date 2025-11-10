@@ -1,0 +1,95 @@
+<div class="venda-list">
+  <div class="header-actions">
+    <h2>Vendas</h2>
+    <button class="btn-nova-venda" (click)="novaVenda()">Nova Venda</button>
+  </div>
+
+  <div class="vendas-grid">
+    <div *ngFor="let venda of vendas" class="venda-card">
+      <!-- HEADER COM NOME DO PRODUTO E PLATAFORMA À DIREITA - SEM BORDA -->
+      <div class="venda-header">
+        <!-- ✅ CORREÇÃO: Usar produtoNome em vez de produto.nome -->
+        <h3>{{ venda.produtoNome || 'Produto' }}</h3>
+        <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
+          {{ venda.plataforma }}
+        </span>
+      </div>
+      
+      <!-- CONTEÚDO PRINCIPAL -->
+      <div class="venda-content">
+        <!-- INFORMAÇÕES ALINHADAS À ESQUERDA -->
+        <div class="venda-info">
+          <div class="info-row">
+            <span class="label">ID do Pedido:</span>
+            <span class="value">{{ venda.idPedido }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Data:</span>
+            <span class="value">{{ venda.data | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Quantidade:</span>
+            <span class="value">{{ venda.quantidade }} unidades</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Valor Total:</span>
+            <span class="value highlight">{{ venda.precoVenda | brlCurrency }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Custo Produto:</span>
+            <span class="value">{{ venda.custoProdutoVendido | brlCurrency }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Custo Efetivo:</span>
+            <span class="value">{{ venda.custoEfetivoTotal | brlCurrency }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Lucro Líquido:</span>
+            <span class="value lucro-liquido" 
+                   [class.positive]="venda.lucroLiquido > 0"
+                   [class.negative]="venda.lucroLiquido < 0">
+              {{ venda.lucroLiquido | brlCurrency }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="label">ROI:</span>
+            <span class="value roi" 
+                   [class.positive]="venda.roi > 0"
+                   [class.negative]="venda.roi < 0">
+              {{ formatarROI(venda.roi) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÕES ALINHADOS À ESQUERDA -->
+      <div class="venda-actions">
+        <button class="btn-detalhes" (click)="detalhesVenda(venda)">Detalhes</button>
+        <button class="btn-editar" (click)="editarVenda(venda)">Editar</button>
+        <button class="btn-excluir" (click)="excluirVenda(venda)">Excluir</button>
+      </div>
+    </div>
+
+    <!-- MENSAGEM QUANDO NÃO HÁ VENDAS -->
+    <div class="sem-vendas" *ngIf="vendas.length === 0">
+      Nenhuma venda cadastrada.
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE VENDA -->
+<app-venda-form 
+  *ngIf="mostrarFormVenda"
+  [venda]="vendaSelecionada"
+  (fecharModal)="fecharFormVenda()"
+  (vendaSalva)="carregarVendas()"
+  (abrirCompraParaProduto)="abrirCompraParaProduto($event)">
+</app-venda-form>
+
+<!-- MODAL DE COMPRA -->
+<app-compra-form 
+  *ngIf="mostrarFormCompra"
+  [compra]="null"
+  (fecharModal)="fecharFormCompra()"
+  (compraSalva)="onCompraSalva()">
+</app-compra-form>

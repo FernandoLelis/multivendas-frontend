@@ -1,0 +1,96 @@
+<div class="modal-overlay" (click)="fechar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ tituloModal }}</h2>
+      <button class="btn-fechar" (click)="fechar()">×</button>
+    </div>
+    
+    <div class="form-container">
+      <form class="despesa-form" (ngSubmit)="salvarDespesa()">
+        
+        <!-- CATEGORIA COM OPÇÃO DE CRIAR NOVA -->
+        <div class="form-section">
+          <div class="form-group full-width">
+            <label for="categoria">Categoria *</label>
+            <select id="categoria" name="categoria" 
+                    [(ngModel)]="despesaEdit.categoria" 
+                    (change)="onCategoriaChange()"
+                    required>
+              <option value="">Selecione uma categoria</option>
+              <option *ngFor="let categoria of categorias" [value]="categoria">
+                {{ categoria }}
+              </option>
+              <option value="nova">+ Criar Nova Categoria</option>
+            </select>
+            
+            <!-- CAMPO PARA NOVA CATEGORIA -->
+            <div *ngIf="mostrarCampoNovaCategoria" class="form-group">
+              <label for="novaCategoria">Nova Categoria *</label>
+              <div class="input-with-button">
+                <input type="text" id="novaCategoria" name="novaCategoria" 
+                       [(ngModel)]="novaCategoria" 
+                       placeholder="Digite o nome da nova categoria"
+                       (keyup.enter)="adicionarCategoria()">
+                <button type="button" class="btn-adicionar" 
+                        (click)="adicionarCategoria()"
+                        [disabled]="!novaCategoria || !novaCategoria.trim()">
+                  Adicionar
+                </button>
+              </div>
+              <small class="helper-text">Pressione Enter ou clique em Adicionar</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descrição - 100% -->
+        <div class="form-section">
+          <div class="form-group full-width">
+            <label for="descricao">Descrição *</label>
+            <input type="text" id="descricao" name="descricao" 
+                   [(ngModel)]="despesaEdit.descricao" 
+                   placeholder="Ex: Compra de material de escritório"
+                   required>
+          </div>
+        </div>
+
+        <!-- Valor e Data - 50%/50% -->
+        <div class="form-section">
+          <div class="form-row">
+            <div class="form-group half-width">
+              <label for="valor">Valor (R$) *</label>
+              <input type="number" id="valor" name="valor" 
+                     [(ngModel)]="despesaEdit.valor" 
+                     step="0.01" min="0.01"
+                     placeholder="0.00" required>
+            </div>
+
+            <div class="form-group half-width">
+              <label for="data">Data *</label>
+              <input type="date" id="data" name="data" 
+                     [(ngModel)]="despesaEdit.data" required>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Observações - 100% -->
+        <div class="form-section">
+          <div class="form-group full-width">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" name="observacoes" 
+                      [(ngModel)]="despesaEdit.observacoes"
+                      placeholder="Observações adicionais (opcional)"
+                      rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="form-actions">
+          <button type="button" class="btn-cancelar" (click)="fechar()">Cancelar</button>
+          <button type="submit" class="btn-salvar">
+            {{ modoEdicao ? 'Atualizar' : 'Salvar' }} Despesa
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

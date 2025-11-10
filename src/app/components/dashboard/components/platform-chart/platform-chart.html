@@ -1,0 +1,23 @@
+<div class="chart-container platform-chart">
+  <div class="chart-header">
+    <h3>LUCRO POR PLATAFORMA</h3>
+  </div>
+  
+  <div class="platform-content">
+    <!-- Gráfico MAIOR -->
+    <div class="pie-chart" *ngIf="!loading && platformData.length > 0">
+      <div class="pie">68%</div>
+    </div>
+
+    <!-- Plataformas com VALOR NA MESMA LINHA -->
+    <div class="platforms-row">
+      <div class="platform-complete" *ngFor="let platform of platformData">
+        <div class="platform-line">
+          <div class="platform-color" [style.background-color]="platform.color"></div>
+          <span class="platform-name">{{ platform.name }}</span>
+          <span class="platform-value">R$ {{ platform.value | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

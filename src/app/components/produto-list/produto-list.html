@@ -1,0 +1,78 @@
+<div class="produto-list">
+  <div class="header-actions">
+    <h2>Produtos</h2>
+    <button class="btn-novo-produto" (click)="abrirModal()">
+      Novo Produto
+    </button>
+  </div>
+
+  <div class="produtos-grid">
+    <!-- CARDS DINÂMICOS -->
+    <div class="produto-card" *ngFor="let produto of produtos">
+      <!-- HEADER APENAS COM NOME -->
+      <div class="produto-header">
+        <h3>{{ produto.nome }}</h3>
+      </div>
+      
+      <!-- CONTEÚDO PRINCIPAL -->
+      <div class="produto-content">
+        <div class="produto-info">
+          <!-- SKU -->
+          <div class="info-row">
+            <span class="label">SKU:</span>
+            <span class="value">{{ produto.sku }}</span>
+          </div>
+          
+          <!-- ASIN -->
+          <div class="info-row" *ngIf="produto.asin">
+            <span class="label">ASIN:</span>
+            <span class="value">{{ produto.asin }}</span>
+          </div>
+          
+          <!-- DATA DE CRIAÇÃO -->
+          <div class="info-row">
+            <span class="label">Data de Criação:</span>
+            <span class="value">{{ formatarData(produto.dataCriacao) }}</span>
+          </div>
+          
+          <!-- ESTOQUE ATUAL -->
+          <div class="info-row">
+            <span class="label">Estoque:</span>
+            <span class="value">{{ produto.quantidadeEstoqueTotal }} unidades</span>
+          </div>
+          
+          <!-- ESTOQUE MÍNIMO -->
+          <div class="info-row">
+            <span class="label">Estoque Mínimo:</span>
+            <span class="value">{{ produto.estoqueMinimo }} unidades</span>
+          </div>
+          
+          <!-- DESCRIÇÃO (ÚLTIMA) -->
+          <div class="info-row" *ngIf="produto.descricao">
+            <span class="label">Descrição:</span>
+            <span class="value">{{ produto.descricao }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÕES ALINHADOS À ESQUERDA -->
+      <div class="produto-actions">
+        <button class="btn-editar" (click)="editarProduto(produto)">Editar</button>
+        <button class="btn-excluir" (click)="excluirProduto(produto)">Excluir</button>
+      </div>
+    </div>
+
+    <!-- MENSAGEM QUANDO NÃO HÁ PRODUTOS -->
+    <div class="sem-produtos" *ngIf="produtos.length === 0">
+      Nenhum produto cadastrado.
+    </div>
+  </div>
+
+  <!-- MODAL DE PRODUTO -->
+  <app-produto-form   
+    *ngIf="mostrarModal"
+    [produto]="produtoParaEditar"
+    (fecharModal)="fecharModal()"
+    (produtoSalvo)="onProdutoSalvo()">
+  </app-produto-form>
+</div>
