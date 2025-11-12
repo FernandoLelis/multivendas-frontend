@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Produto } from '../models/produto';
+import { environment } from '../../environments/environment'; // ✅ environment (não .prod)
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProdutoService {
 
-  private apiUrl = 'http://localhost:8080/api/produtos';
+  private apiUrl = `${environment.apiUrl}/api/produtos`; // ✅ CORRETO - apenas um ;
 
   constructor(private http: HttpClient) { }
 
@@ -26,10 +27,10 @@ export class ProdutoService {
   }
 
   atualizarProduto(id: number, produto: Produto): Observable<Produto> {
-  return this.http.put<Produto>(`${this.apiUrl}/${id}`, produto);
-}
+    return this.http.put<Produto>(`${this.apiUrl}/${id}`, produto);
+  }
 
-excluirProduto(id: number): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/${id}`);
-}
+  excluirProduto(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
