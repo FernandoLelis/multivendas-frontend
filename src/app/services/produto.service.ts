@@ -34,3 +34,5 @@ export class ProdutoService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
+
+// 🚀 FORCE DEPLOY: 2025-11-12T15:20:00Z
