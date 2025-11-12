@@ -1,3 +1,4 @@
+// 🚀 FORCE DEPLOY: 2025-11-12T15:20:00Z
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -35,4 +36,3 @@ export class ProdutoService {
   }
 }
 
-// 🚀 FORCE DEPLOY: 2025-11-12T15:20:00Z
