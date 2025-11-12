@@ -3,12 +3,13 @@ import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http'
 import { Observable, catchError, throwError } from 'rxjs';
 import { Compra } from '../models/compra';
 import { ModalService } from './modal.service';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ComprasService {
-  private apiUrl = 'http://localhost:8080/api/estoque';
+  private apiUrl = `${environment.apiUrl}/api/estoque`;
 
   constructor(
     private http: HttpClient,
@@ -104,7 +105,7 @@ export class ComprasService {
 
   getProdutos(): Observable<any[]> {
     console.log('🔍 DEBUG SERVICE - Buscando produtos');
-    return this.http.get<any[]>(`http://localhost:8080/api/produtos`).pipe(
+    return this.http.get<any[]>(`${environment.apiUrl}/api/produtos`).pipe(
       catchError(error => this.handleError(error, 'Erro ao carregar produtos'))
     );
   }
