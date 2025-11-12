@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { Venda } from '../models/venda'; // ✅ IMPORTAR A INTERFACE ATUALIZADA
+import { Venda } from '../models/venda';
+import { environment } from '../../environments/environment'; // ✅ IMPORTAR ENVIRONMENT
 
 @Injectable({
   providedIn: 'root'
 })
 export class VendaService {
-  private apiUrl = 'http://localhost:8080/api/vendas';
+  private apiUrl = `${environment.apiUrl}/api/vendas`; // ✅ CORRETO
 
   constructor(private http: HttpClient) { }
 
@@ -28,10 +29,9 @@ export class VendaService {
     console.log('📤 ENVIANDO PARA BACKEND - Objeto completo:', venda);
     console.log('📤 ENVIANDO PARA BACKEND - JSON stringify:', JSON.stringify(venda, null, 2));
     
-    // ✅ CORREÇÃO: Preparar objeto para backend (que espera objeto produto)
     const vendaParaBackend = {
       ...venda,
-      produto: { id: venda.produtoId } // ✅ Backend espera objeto produto com id
+      produto: { id: venda.produtoId }
     };
     
     console.log('📤 ENVIANDO PARA BACKEND - Objeto preparado:', vendaParaBackend);
@@ -49,10 +49,9 @@ export class VendaService {
   }
 
   atualizarVenda(id: number, venda: Venda): Observable<Venda> {
-    // ✅ CORREÇÃO: Preparar objeto para backend (que espera objeto produto)
     const vendaParaBackend = {
       ...venda,
-      produto: { id: venda.produtoId } // ✅ Backend espera objeto produto com id
+      produto: { id: venda.produtoId }
     };
     
     return this.http.put<Venda>(`${this.apiUrl}/${id}`, vendaParaBackend);
