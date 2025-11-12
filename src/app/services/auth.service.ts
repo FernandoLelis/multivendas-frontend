@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
@@ -33,20 +33,37 @@ export interface ErrorResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl: string;
   private tokenKey = 'multivendas_token';
   private userKey = 'multivendas_user';
 
-  // BehaviorSubject para estado de autenticação
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+  // ✅ CORREÇÃO: Inicializar sem chamar métodos no declaration
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getStoredUser());
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    @Inject('API_URL') private apiBaseUrl: string
+  ) {
+    this.apiUrl = `${this.apiBaseUrl}/api/auth`;
+    
+    // ✅ CORREÇÃO: Inicializar DEPOIS do constructor
+    this.initializeAuthState();
+    
     console.log('🔄 AuthService constructor chamado');
     this.debugAuthState();
+  }
+
+  // ✅ NOVO: Método para inicializar estado após constructor
+  private initializeAuthState(): void {
+    const hasToken = this.hasToken();
+    const storedUser = this.getStoredUser();
+    
+    this.isAuthenticatedSubject.next(hasToken);
+    this.currentUserSubject.next(storedUser);
   }
 
   // 🔐 LOGIN

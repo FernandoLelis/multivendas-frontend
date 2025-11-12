@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
+import { environment } from '../../environments/environment'; // ✅ IMPORTAR ENVIRONMENT
 
-// Interfaces
+// Interfaces (mantidas iguais)
 export interface PlatformRevenue {
   AMAZON: number;
   MERCADO_LIVRE: number;
@@ -18,7 +19,6 @@ export interface TopProduct {
 }
 
 export interface DashboardData {
-  // ✅ CAMPOS QUE EXISTEM NO BACKEND:
   faturamentoTotal: number;
   custoEfetivoTotal: number;
   lucroBrutoTotal: number;
@@ -26,8 +26,6 @@ export interface DashboardData {
   despesasOperacionaisTotal: number;
   roiTotal: number;
   totalVendas: number;
-  
-  // ✅ CAMPOS OPCIONAIS (para compatibilidade):
   vendasMesAtual?: number;
   faturamentoPorPlataforma?: PlatformRevenue;
   produtosMaisVendidos?: TopProduct[];
@@ -77,8 +75,8 @@ export interface CardMetrics {
   providedIn: 'root'
 })
 export class DashboardService {
-  // ✅ ENDPOINT CORRETO: DashboardController
-  private apiUrl = 'http://localhost:8080';
+  // ✅ CORREÇÃO CRÍTICA: Usar environment.apiUrl
+  private apiUrl = environment.apiUrl;
 
   private platformColors: { [key: string]: string } = {
     'AMAZON': '#1E88E5',
@@ -92,7 +90,6 @@ export class DashboardService {
     'SHOPEE': 'Shopee'
   };
 
-  // ✅ Dados do mês anterior para cálculo de crescimento
   private previousMonthData = {
     faturamento: 4500,
     custoEfetivo: 3200,
@@ -150,7 +147,6 @@ export class DashboardService {
   }
 
   private transformCardsMetrics(dashboardData: DashboardData): CardMetrics {
-    // ✅ USA DADOS REAIS DO BACKEND (com fallback para valores padrão)
     const faturamentoAtual = dashboardData.faturamentoTotal || 0;
     
     const faturamentoGrowth = this.calculateGrowth(faturamentoAtual, this.previousMonthData.faturamento);
