@@ -1,0 +1,51 @@
+name: 🚄 Railway Auto Schedule
+on:
+  schedule:
+    # LIGA às 6h da manhã (horário Brasil)
+    - cron: '0 9 * * *'  # 9h UTC = 6h Brasília
+    # DESLIGA às 23h (horário Brasil)  
+    - cron: '0 2 * * *'  # 2h UTC = 23h Brasília
+  workflow_dispatch:  # Permite executar manualmente
+
+jobs:
+  control-railway:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🕒 Check current time
+        run: echo "Horário UTC: $(date)"
+        
+      - name: 🔄 Determine action based on schedule
+        id: schedule
+        run: |
+          if [[ "${{ github.event.schedule }}" == "0 9 * * *" ]]; then
+            echo "action=wake" >> $GITHUB_OUTPUT
+            echo "🚀 Acordando Railway - Início do dia (6h Brasília)"
+          else
+            echo "action=sleep" >> $GITHUB_OUTPUT
+            echo "💤 Colocando Railway para dormir - Fim do dia (23h Brasília)"
+          fi
+          
+      - name: 🚀 Wake Up Railway
+        if: steps.schedule.outputs.action == 'wake'
+        run: |
+          curl -X POST "https://backpack-api.railway.app/graphql/v2" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+          -d '{
+            "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: false }) { id sleep } }"
+          }'
+          
+      - name: 💤 Sleep Railway
+        if: steps.schedule.outputs.action == 'sleep'
+        run: |
+          curl -X POST "https://backpack-api.railway.app/graphql/v2" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+          -d '{
+            "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: true }) { id sleep } }"
+          }'
+          
+      - name: ✅ Verify action
+        run: |
+          echo "✅ Ação executada: ${{ steps.schedule.outputs.action }}"
+          echo "⏰ Horário UTC: $(date)"
