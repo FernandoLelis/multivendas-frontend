@@ -1,34 +1,32 @@
 name: Railway Auto Schedule
 on:
   schedule:
-    - cron: '0 9 * * *'
-    - cron: '0 2 * * *'
+    - cron: '0 9 * * *'  # 6h Brasília - LIGAR
+    - cron: '0 2 * * *'  # 23h Brasília - DESLIGAR
   workflow_dispatch:
 
 jobs:
   control-railway:
     runs-on: ubuntu-latest
     steps:
-      - name: Test Railway API Access
+      - name: Wake Up Railway (6h Brasília)
         run: |
-          echo "🔍 Testando acesso à API do Railway..."
-          
-          # Primeiro: testar se o token funciona com query simples
+          echo "🚀 Acordando Railway..."
           response=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
             -d '{
-              "query": "{ me { name email } }"
+              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: false }) { id name sleep } }"
             }')
+          echo "Resposta: $response"
           
-          echo "Resposta do 'me': $response"
-          
-          # Segundo: tentar listar serviços para verificar Service ID
-          response2=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
+      - name: Sleep Railway (23h Brasília)
+        run: |
+          echo "💤 Colocando Railway para dormir..."
+          response=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
             -d '{
-              "query": "{ projects { edges { node { id name services { edges { node { id name } } } } } } }"
+              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: true }) { id name sleep } }"
             }')
-          
-          echo "Resposta dos projetos: $response2"
+          echo "Resposta: $response"
