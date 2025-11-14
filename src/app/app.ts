@@ -18,7 +18,7 @@ import { filter } from 'rxjs/operators';
   styleUrls: ['./app.css']
 })
 export class App {
-  title = 'ERP MultiVendas';
+  title = 'MultiVendas';
   currentRoute = '';
 
   constructor(private router: Router) {
