@@ -1,43 +1,34 @@
 name: Railway Auto Schedule
 on:
   schedule:
-    - cron: '0 9 * * *'  # 6h Brasília - LIGAR
-    - cron: '0 2 * * *'  # 23h Brasília - DESLIGAR
+    - cron: '0 9 * * *'
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 jobs:
   control-railway:
     runs-on: ubuntu-latest
     steps:
-      - name: Determine action
-        id: schedule
+      - name: Test Railway API Access
         run: |
-          # Força ação de WAKE para teste manual
-          echo "action=wake" >> $GITHUB_OUTPUT
-          echo "Ação definida: wake"
+          echo "🔍 Testando acesso à API do Railway..."
           
-      - name: Wake Up Railway
-        if: steps.schedule.outputs.action == 'wake'
-        run: |
-          echo "🚀 Tentando acordar Railway..."
-          response=$(curl -s -w "\n%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+          # Primeiro: testar se o token funciona com query simples
+          response=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
             -d '{
-              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", sleep: false) { id name sleep } }"
+              "query": "{ me { name email } }"
             }')
           
-          echo "Resposta completa: $response"
+          echo "Resposta do 'me': $response"
           
-      - name: Sleep Railway
-        if: steps.schedule.outputs.action == 'sleep'
-        run: |
-          echo "💤 Tentando colocar Railway para dormir..."
-          response=$(curl -s -w "\n%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+          # Segundo: tentar listar serviços para verificar Service ID
+          response2=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
             -d '{
-              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", sleep: true) { id name sleep } }"
+              "query": "{ projects { edges { node { id name services { edges { node { id name } } } } } } }"
             }')
           
-          echo "Resposta completa: $response"
+          echo "Resposta dos projetos: $response2"
