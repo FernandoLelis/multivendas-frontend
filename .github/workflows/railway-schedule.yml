@@ -9,18 +9,13 @@ jobs:
   control-railway:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 Wake Up Railway (6h Brasília)
+      - name: 🚀 Trigger Railway Deploy (Ligar)
         run: |
-          echo "Instalando Railway CLI..."
-          npm install -g @railway/cli
-          
-          echo "Acordando serviço..."
-          railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --token ${{ secrets.RAILWAY_TOKEN }}
-          
-      - name: 💤 Sleep Railway (23h Brasília)
-        run: |
-          echo "Instalando Railway CLI..."
-          npm install -g @railway/cli
-          
-          echo "Colocando serviço para dormir..."
-          railway down --service ${{ secrets.RAILWAY_SERVICE_ID }} --token ${{ secrets.RAILWAY_TOKEN }}
+          echo "🚀 Acionando deploy no Railway para ligar o serviço..."
+          response=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -d '{
+              "query": "mutation { deploymentCreate(input: { serviceId: \"${{ secrets.RAILWAY_SERVICE_ID }}\" }) { id status } }"
+            }')
+          echo "Resposta do deploy: $response"
