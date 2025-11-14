@@ -9,24 +9,18 @@ jobs:
   control-railway:
     runs-on: ubuntu-latest
     steps:
-      - name: Wake Up Railway (6h Brasília)
+      - name: 🚀 Wake Up Railway
         run: |
-          echo "🚀 Acordando Railway..."
-          response=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            -d '{
-              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: false }) { id name sleep } }"
-            }')
-          echo "Resposta: $response"
+          echo "Instalando Railway CLI..."
+          npm install -g @railway/cli
           
-      - name: Sleep Railway (23h Brasília)
+          echo "Acordando serviço..."
+          railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --token ${{ secrets.RAILWAY_TOKEN }}
+          
+      - name: 💤 Sleep Railway  
         run: |
-          echo "💤 Colocando Railway para dormir..."
-          response=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            -d '{
-              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: true }) { id name sleep } }"
-            }')
-          echo "Resposta: $response"
+          echo "Instalando Railway CLI..."
+          npm install -g @railway/cli
+          
+          echo "Colocando serviço para dormir..."
+          railway down --service ${{ secrets.RAILWAY_SERVICE_ID }} --token ${{ secrets.RAILWAY_TOKEN }}
