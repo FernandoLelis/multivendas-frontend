@@ -2,14 +2,17 @@ name: Railway Auto Schedule
 
 on:
   schedule:
-    - cron: '0 9 * * *'
-    - cron: '0 2 * * *'
+    - cron: '0 9 * * *'  # 9h UTC = 6h Brasília - LIGAR
+    - cron: '0 2 * * *'  # 2h UTC = 23h Brasília - DESLIGAR
   workflow_dispatch:
 
 jobs:
   railway-control:
     runs-on: ubuntu-latest
     steps:
+      - name: Check current time
+        run: echo "Horario UTC: $(date)"
+        
       - name: Determine action
         id: schedule
         run: |
@@ -34,3 +37,7 @@ jobs:
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
           -d '{"query":"mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: true }) { id } }"}'
+
+      - name: Verify action
+        run: |
+          echo "Acao executada: ${{ steps.schedule.outputs.action }}"
