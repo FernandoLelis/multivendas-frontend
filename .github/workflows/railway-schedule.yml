@@ -9,7 +9,7 @@ jobs:
   control-railway:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 Wake Up Railway
+      - name: 🚀 Wake Up Railway (6h Brasília)
         run: |
           echo "Instalando Railway CLI..."
           npm install -g @railway/cli
@@ -17,7 +17,7 @@ jobs:
           echo "Acordando serviço..."
           railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --token ${{ secrets.RAILWAY_TOKEN }}
           
-      - name: 💤 Sleep Railway  
+      - name: 💤 Sleep Railway (23h Brasília)
         run: |
           echo "Instalando Railway CLI..."
           npm install -g @railway/cli
