@@ -1,35 +1,43 @@
 name: Railway Auto Schedule
 on:
   schedule:
-    - cron: '0 9 * * *'
-    - cron: '0 2 * * *'
+    - cron: '0 9 * * *'  # 6h Brasília - LIGAR
+    - cron: '0 2 * * *'  # 23h Brasília - DESLIGAR
   workflow_dispatch:
 
 jobs:
   control-railway:
     runs-on: ubuntu-latest
     steps:
-      - name: Determine action based on schedule
+      - name: Determine action
         id: schedule
         run: |
-          if [[ "${{ github.event.schedule }}" == "0 9 * * *" ]]; then
-            echo "action=wake" >> $GITHUB_OUTPUT
-          else
-            echo "action=sleep" >> $GITHUB_OUTPUT
-          fi
+          # Força ação de WAKE para teste manual
+          echo "action=wake" >> $GITHUB_OUTPUT
+          echo "Ação definida: wake"
           
       - name: Wake Up Railway
         if: steps.schedule.outputs.action == 'wake'
         run: |
-          curl -X POST "https://backpack-api.railway.app/graphql/v2" \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-          -d '{"query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: false }) { id sleep } }"}'
+          echo "🚀 Tentando acordar Railway..."
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -d '{
+              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", sleep: false) { id name sleep } }"
+            }')
+          
+          echo "Resposta completa: $response"
           
       - name: Sleep Railway
         if: steps.schedule.outputs.action == 'sleep'
         run: |
-          curl -X POST "https://backpack-api.railway.app/graphql/v2" \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-          -d '{"query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: true }) { id sleep } }"}'
+          echo "💤 Tentando colocar Railway para dormir..."
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -d '{
+              "query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", sleep: true) { id name sleep } }"
+            }')
+          
+          echo "Resposta completa: $response"
