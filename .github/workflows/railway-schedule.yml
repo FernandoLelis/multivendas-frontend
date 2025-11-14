@@ -1,5 +1,4 @@
 name: Railway Auto Schedule
-
 on:
   schedule:
     - cron: '0 9 * * *'
@@ -7,30 +6,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  railway-control:
+  control-railway:
     runs-on: ubuntu-latest
     steps:
-      - name: Determine action
+      - name: Determine action based on schedule
         id: schedule
         run: |
-          if [ "${{ github.event.schedule }}" = "0 9 * * *" ]; then
+          if [[ "${{ github.event.schedule }}" == "0 9 * * *" ]]; then
             echo "action=wake" >> $GITHUB_OUTPUT
           else
             echo "action=sleep" >> $GITHUB_OUTPUT
           fi
-
-      - name: Wake Railway
+          
+      - name: Wake Up Railway
         if: steps.schedule.outputs.action == 'wake'
         run: |
           curl -X POST "https://backpack-api.railway.app/graphql/v2" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-          -d '{"query":"mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: false }) { id } }"}'
-
+          -d '{"query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: false }) { id sleep } }"}'
+          
       - name: Sleep Railway
         if: steps.schedule.outputs.action == 'sleep'
         run: |
           curl -X POST "https://backpack-api.railway.app/graphql/v2" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-          -d '{"query":"mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: true }) { id } }"}'
+          -d '{"query": "mutation { serviceInstanceUpdate(id: \"${{ secrets.RAILWAY_SERVICE_ID }}\", input: { sleep: true }) { id sleep } }"}'
