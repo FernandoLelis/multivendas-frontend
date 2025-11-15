@@ -212,17 +212,17 @@
   
   .metric-card {
     padding: 8px 6px;
-    min-height: 82px;
+    min-height: 84px;
     gap: 6px;
     align-items: stretch;
   }
   
   .metric-main-value {
-    font-size: 16px;
+    font-size: 14px;
   }
   
   .info-column h3 {
-    font-size: 12px;
+    font-size: 10px;
     margin: 0 0 2px 0;
   }
   
@@ -248,7 +248,7 @@
   }
   
   .metric-growth {
-    font-size: 12px;
+    font-size: 10px;
   }
   
   .growth-arrow {
