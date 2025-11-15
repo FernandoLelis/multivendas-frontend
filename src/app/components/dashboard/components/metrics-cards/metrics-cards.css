@@ -231,8 +231,12 @@
   }
   
   .metric-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
+  }
+
+    .metric-icon i {
+    font-size: 30px !important;
   }
   
   .icon-column {
