@@ -78,19 +78,6 @@
   flex: 1;
 }
 
-/* CATEGORIA ALINHADA À DIREITA NO HEADER - APENAS CONTORNO */
-.categoria-tag {
-  color: #06A8F4; /* Texto azul */
-  background-color: transparent; /* Sem fundo */
-  border: 2px solid #06A8F4; /* Contorno azul de 2px */
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-  margin-left: 10px;
-}
-
 /* CONTEÚDO PRINCIPAL DO CARD */
 .compra-content {
   padding: 0 20px 20px 20px;
