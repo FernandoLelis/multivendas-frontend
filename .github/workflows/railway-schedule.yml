@@ -1,0 +1,21 @@
+name: Railway Auto Schedule
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 6h Brasília - LIGAR
+    - cron: '0 2 * * *'  # 23h Brasília - DESLIGAR
+  workflow_dispatch:
+
+jobs:
+  control-railway:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚀 Trigger Railway Deploy (Ligar)
+        run: |
+          echo "🚀 Acionando deploy no Railway para ligar o serviço..."
+          response=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -d '{
+              "query": "mutation { deploymentCreate(input: { serviceId: \"${{ secrets.RAILWAY_SERVICE_ID }}\" }) { id status } }"
+            }')
+          echo "Resposta do deploy: $response"
