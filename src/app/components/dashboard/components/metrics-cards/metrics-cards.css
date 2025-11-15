@@ -207,13 +207,13 @@
 @media (max-width: 768px) {
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 6px;
   }
   
   .metric-card {
-    padding: 18px 14px;
-    min-height: 110px;
-    gap: 11px;
+    padding: 8px 6px;
+    min-height: 82px;
+    gap: 6px;
     align-items: stretch;
   }
   
@@ -240,7 +240,7 @@
   }
   
   .icon-column {
-    padding: 0 6px;
+    padding: 0 4px;
   }
   
   .growth-column {
