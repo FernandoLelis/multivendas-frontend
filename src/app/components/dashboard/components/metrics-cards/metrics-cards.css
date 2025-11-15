@@ -212,6 +212,7 @@
   
   .metric-card {
     padding: 8px 6px;
+    border: 2px solid #1a3a5f;
     min-height: 84px;
     gap: 6px;
     align-items: stretch;
