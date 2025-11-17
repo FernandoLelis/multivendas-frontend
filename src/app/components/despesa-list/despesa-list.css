@@ -79,7 +79,7 @@
 }
 
 /* TAGS DE CATEGORIA - MESMO ESTILO DAS PLATAFORMAS */
-.categoria-tag {
+/* .categoria-tag {
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 12.8px;
@@ -93,7 +93,7 @@
 .categoria-marketing { background: transparent; border: 2px solid #9C27B0; color: #9C27B0; }
 .categoria-transporte { background: transparent; border:2px solid #E53935; color: #E53935; }
 .categoria-outros { background: transparent; border:2px solid #757575; color: #757575; }
-.categoria-default { background: transparent; border: 2px solid #06A8F4; color: #06A8F4; }
+.categoria-default { background: transparent; border: 2px solid #06A8F4; color: #06A8F4; } */
 
 /* CONTEÚDO PRINCIPAL DO CARD */
 .despesa-content {
@@ -196,6 +196,14 @@
 @media (max-width: 768px) {
   .despesa-list {
     padding: 15px;
+  }
+
+  .despesa-card {
+    border: 2px solid #1a3a5f;
+  }
+
+  .despesa-header {
+    padding: 20px 20px 15px 15px;
   }
   
   .header-actions {

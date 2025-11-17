@@ -11,14 +11,18 @@
       <!-- Header -->
       <div class="despesa-header">
         <h3>{{ despesa.descricao }}</h3>
-        <span class="categoria-tag {{ getClasseCategoria(despesa.categoria) }}">
+        <!-- <span class="categoria-tag {{ getClasseCategoria(despesa.categoria) }}">
           {{ despesa.categoria }}
-        </span>
+        </span> -->
       </div>
       
       <!-- Conteúdo -->
       <div class="despesa-content">
         <div class="despesa-info">
+          <div class="info-row">
+            <span class="label">Categoria:</span>
+            <span class="value">{{ despesa.categoria }}</span>
+          </div>
           <div class="info-row">
             <span class="label">Data:</span>
             <span class="value">{{ despesa.data | date:'dd/MM/yyyy' }}</span>
