@@ -10,15 +10,19 @@
       <div class="venda-header">
         <!-- ✅ CORREÇÃO: Usar produtoNome em vez de produto.nome -->
         <h3>{{ venda.produtoNome || 'Produto' }}</h3>
-        <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
+        <!-- <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
           {{ venda.plataforma }}
-        </span>
+        </span> -->
       </div>
       
       <!-- CONTEÚDO PRINCIPAL -->
       <div class="venda-content">
         <!-- INFORMAÇÕES ALINHADAS À ESQUERDA -->
         <div class="venda-info">
+          <div class="info-row">
+            <span class="label">Plataforma:</span>
+            <span class="value">{{ venda.plataforma }}</span>
+          </div>
           <div class="info-row">
             <span class="label">ID do Pedido:</span>
             <span class="value">{{ venda.idPedido }}</span>

@@ -79,7 +79,7 @@
 }
 
 /* PLATAFORMA ALINHADA À DIREITA NO HEADER */
-.plataforma-tag {
+/* .plataforma-tag {
   color: white;
   padding: 6px 12px;
   border-radius: 6px;
@@ -94,8 +94,7 @@
 }
 
 .plataforma-tag.mercado-livre {
-  background: #ffe600;
-  color: #2d2d2d;
+  color: #ffe600;
 }
 
 .plataforma-tag.shopee {
@@ -104,7 +103,7 @@
 
 .plataforma-tag.outro {
   background: #06A8F4;
-}
+} */
 
 /* CONTEÚDO PRINCIPAL DO CARD */
 .venda-content {
@@ -281,6 +280,10 @@
 @media (max-width: 768px) {
   .venda-list {
     padding: 15px;
+  }
+
+  .venda-card {
+    border: 2px solid #1a3a5f;
   }
   
   .header-actions {
