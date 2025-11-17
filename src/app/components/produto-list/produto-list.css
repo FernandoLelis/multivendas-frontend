@@ -192,6 +192,10 @@
   .produto-card {
     border: 2px solid #1a3a5f;
   }
+
+  .produto-header {
+    padding: 20px 20px 15px 15px;
+  }
   
   .produto-content {
     padding: 0 15px 15px 15px;

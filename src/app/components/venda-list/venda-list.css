@@ -285,6 +285,10 @@
   .venda-card {
     border: 2px solid #1a3a5f;
   }
+
+  .venda-header {
+    padding: 20px 20px 15px 15px;
+  }
   
   .header-actions {
     flex-direction: column;
