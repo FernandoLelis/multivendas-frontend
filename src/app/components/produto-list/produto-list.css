@@ -63,7 +63,7 @@
 /* HEADER DO CARD APENAS COM NOME - SEM BORDA */
 .produto-header {
   background: #01182d;
-  padding: 20px 20px 15px 15px;
+  padding: 20px 20px 15px 20px;
 }
 
 .produto-header h3 {
