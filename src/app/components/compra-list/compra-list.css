@@ -180,6 +180,10 @@
   .compra-list {
     padding: 15px;
   }
+
+  .compra-card {
+    border: 2px solid #1a3a5f;
+  }
   
   .header-actions {
     flex-direction: column;
@@ -236,6 +240,8 @@
     align-self: flex-start;
   }
 }
+
+
 
 @media (max-width: 480px) {
   /* AJUSTES PARA TELAS MUITO PEQUENAS */
