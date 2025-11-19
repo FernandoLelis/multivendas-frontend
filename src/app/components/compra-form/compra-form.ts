@@ -83,6 +83,9 @@ export class CompraFormComponent implements OnChanges {
   }
 
   private getCompraVazia(): Compra {
+    // ✅ CORREÇÃO: Criar variável para data atual formatada corretamente
+    const hoje = new Date().toISOString().split('T')[0];
+    
     return {
       categoria: 'Produto', // ✅ CATEGORIA FIXA NO BACKEND
       fornecedor: '',
@@ -90,7 +93,7 @@ export class CompraFormComponent implements OnChanges {
       quantidade: 1,
       custoTotal: 0,
       custoUnitario: 0,
-      dataEntrada: new Date().toISOString().split('T')[0],
+      dataEntrada: hoje, // ✅ CORREÇÃO: Usa variável formatada
       // ✅ CORREÇÃO: Usar as novas propriedades do DTO
       produtoId: 0,
       produtoNome: '',
