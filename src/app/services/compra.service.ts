@@ -46,14 +46,18 @@ export class ComprasService {
       return throwError(() => new Error('ID do Pedido e Categoria são obrigatórios'));
     }
     
+    // ✅ CORREÇÃO: Converter data para formato ISO (LocalDateTime do Java)
+    const dataEntradaFormatada = this.formatarDataParaBackend(compra.dataEntrada);
+    
     const params = new HttpParams()
-      .set('produtoId', compra.produtoId.toString()) // ✅ CORREÇÃO: produtoId
+      .set('produtoId', compra.produtoId.toString())
       .set('quantidade', compra.quantidade.toString())
       .set('custoTotal', compra.custoTotal.toString())
       .set('fornecedor', compra.fornecedor || '')
       .set('idPedidoCompra', compra.idPedidoCompra)
       .set('categoria', compra.categoria)
-      .set('observacoes', compra.observacoes || '');
+      .set('observacoes', compra.observacoes || '')
+      .set('dataEntrada', dataEntradaFormatada); // ✅ NOVO: enviar dataEntrada
 
     console.log('🔍 DEBUG SERVICE - Parâmetros enviados:', params.toString());
 
@@ -76,14 +80,18 @@ export class ComprasService {
       return throwError(() => new Error('ID do Pedido e Categoria são obrigatórios'));
     }
     
+    // ✅ CORREÇÃO: Converter data para formato ISO (LocalDateTime do Java)
+    const dataEntradaFormatada = this.formatarDataParaBackend(compra.dataEntrada);
+    
     const params = new HttpParams()
-      .set('produtoId', compra.produtoId.toString()) // ✅ CORREÇÃO: produtoId
+      .set('produtoId', compra.produtoId.toString())
       .set('quantidade', compra.quantidade.toString())
       .set('custoTotal', compra.custoTotal.toString())
       .set('fornecedor', compra.fornecedor || '')
       .set('idPedidoCompra', compra.idPedidoCompra)
       .set('categoria', compra.categoria)
-      .set('observacoes', compra.observacoes || '');
+      .set('observacoes', compra.observacoes || '')
+      .set('dataEntrada', dataEntradaFormatada); // ✅ NOVO: enviar dataEntrada
 
     console.log('🔍 DEBUG SERVICE - Parâmetros para atualização:', params.toString());
 
@@ -108,6 +116,27 @@ export class ComprasService {
     return this.http.get<any[]>(`${environment.apiUrl}/api/produtos`).pipe(
       catchError(error => this.handleError(error, 'Erro ao carregar produtos'))
     );
+  }
+
+  // ✅ NOVO MÉTODO: Formatar data para o backend (LocalDateTime)
+  private formatarDataParaBackend(dataString: string): string {
+    if (!dataString) {
+      return new Date().toISOString().replace('Z', '');
+    }
+    
+    try {
+      // Converter de "YYYY-MM-DD" (input date) para "YYYY-MM-DDTHH:mm:ss" (LocalDateTime)
+      const data = new Date(dataString);
+      const ano = data.getFullYear();
+      const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+      const dia = data.getDate().toString().padStart(2, '0');
+      
+      // Usar meia-noite como horário padrão
+      return `${ano}-${mes}-${dia}T00:00:00`;
+    } catch (e) {
+      console.warn('Erro ao formatar data, usando data atual:', e);
+      return new Date().toISOString().replace('Z', '');
+    }
   }
 
   // ✅ NOVO MÉTODO: Tratamento específico para erros de compra

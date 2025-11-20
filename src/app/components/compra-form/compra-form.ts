@@ -43,7 +43,7 @@ export class CompraFormComponent implements OnChanges {
     
     if (this.compra) {
       this.compraEdit = { ...this.compra };
-      // CORREÇÃO: Garantir que a data seja formatada corretamente para o input date
+      // ✅ CORREÇÃO: Garantir que a data seja formatada corretamente para o input date
       if (this.compraEdit.dataEntrada) {
         this.compraEdit.dataEntrada = this.formatarDataParaInput(this.compraEdit.dataEntrada);
       }
@@ -74,7 +74,8 @@ export class CompraFormComponent implements OnChanges {
     if (!data) return new Date().toISOString().split('T')[0];
     
     try {
-      const dataObj = new Date(data);
+      // ✅ CORREÇÃO: Extrair apenas a parte da data (YYYY-MM-DD) do LocalDateTime
+      const dataObj = new Date(data.split('T')[0]);
       return dataObj.toISOString().split('T')[0];
     } catch (e) {
       console.warn('Erro ao formatar data:', data, e);
