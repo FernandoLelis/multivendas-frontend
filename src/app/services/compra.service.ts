@@ -46,8 +46,9 @@ export class ComprasService {
       return throwError(() => new Error('ID do Pedido e Categoria são obrigatórios'));
     }
     
-    // ✅ CORREÇÃO: Converter data para formato ISO (LocalDateTime do Java)
+    // ✅ CORREÇÃO: Converter data para formato ISO (LocalDateTime do Java) SEM timezone
     const dataEntradaFormatada = this.formatarDataParaBackend(compra.dataEntrada);
+    console.log('📅 DEBUG SERVICE - Data formatada para backend:', dataEntradaFormatada);
     
     const params = new HttpParams()
       .set('produtoId', compra.produtoId.toString())
@@ -80,8 +81,9 @@ export class ComprasService {
       return throwError(() => new Error('ID do Pedido e Categoria são obrigatórios'));
     }
     
-    // ✅ CORREÇÃO: Converter data para formato ISO (LocalDateTime do Java)
+    // ✅ CORREÇÃO: Converter data para formato ISO (LocalDateTime do Java) SEM timezone
     const dataEntradaFormatada = this.formatarDataParaBackend(compra.dataEntrada);
+    console.log('📅 DEBUG SERVICE - Data formatada para backend:', dataEntradaFormatada);
     
     const params = new HttpParams()
       .set('produtoId', compra.produtoId.toString())
@@ -118,24 +120,24 @@ export class ComprasService {
     );
   }
 
-  // ✅ NOVO MÉTODO: Formatar data para o backend (LocalDateTime)
+  // ✅ CORREÇÃO CRÍTICA: Formatar data para o backend SEM problema de timezone
   private formatarDataParaBackend(dataString: string): string {
     if (!dataString) {
-      return new Date().toISOString().replace('Z', '');
+      // Usar data atual no formato correto
+      const hoje = new Date().toISOString().split('T')[0];
+      return `${hoje}T00:00:00`;
     }
     
     try {
-      // Converter de "YYYY-MM-DD" (input date) para "YYYY-MM-DDTHH:mm:ss" (LocalDateTime)
-      const data = new Date(dataString);
-      const ano = data.getFullYear();
-      const mes = (data.getMonth() + 1).toString().padStart(2, '0');
-      const dia = data.getDate().toString().padStart(2, '0');
-      
-      // Usar meia-noite como horário padrão
-      return `${ano}-${mes}-${dia}T00:00:00`;
+      // ✅ SOLUÇÃO SIMPLES: Usar a data diretamente do input + "T00:00:00"
+      // Input date envia "YYYY-MM-DD" (ex: "2025-11-18")
+      // Output: "YYYY-MM-DDT00:00:00" (ex: "2025-11-18T00:00:00")
+      // Isso evita completamente problemas de timezone
+      return `${dataString}T00:00:00`;
     } catch (e) {
       console.warn('Erro ao formatar data, usando data atual:', e);
-      return new Date().toISOString().replace('Z', '');
+      const hoje = new Date().toISOString().split('T')[0];
+      return `${hoje}T00:00:00`;
     }
   }
 
