@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
-import { environment } from '../../environments/environment'; // ✅ IMPORTAR ENVIRONMENT
+import { environment } from '../../environments/environment';
 
-// Interfaces (mantidas iguais)
+// Interfaces
 export interface PlatformRevenue {
   AMAZON: number;
   MERCADO_LIVRE: number;
@@ -71,11 +71,28 @@ export interface CardMetrics {
   };
 }
 
+// 🆕 Interface para vendas por dia
+export interface VendasPorDia {
+  [key: string]: number;
+}
+
+// 🆕 Interface para produtos mais vendidos
+export interface ProdutoMaisVendido {
+  nome: string;
+  quantidadeVendida: number;
+}
+
+// 🆕 Interface para vendas por plataforma
+export interface VendasPorPlataforma {
+  plataforma: string;
+  faturamento: number;
+  quantidadeVendas: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardService {
-  // ✅ CORREÇÃO CRÍTICA: Usar environment.apiUrl
   private apiUrl = environment.apiUrl;
 
   private platformColors: { [key: string]: string } = {
@@ -101,6 +118,7 @@ export class DashboardService {
 
   constructor(private http: HttpClient) {}
 
+  // ✅ MÉTODOS EXISTENTES
   getDashboardData(): Observable<DashboardData> {
     return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`).pipe(
       catchError(error => {
@@ -130,6 +148,59 @@ export class DashboardService {
     );
   }
 
+  // 🆕 MÉTODO PARA VENDAS POR DIA
+  getVendasPorDia(mes?: number, ano?: number): Observable<VendasPorDia> {
+    let url = `${this.apiUrl}/api/vendas/vendas-por-dia`;
+    
+    if (mes && ano) {
+      url += `?mes=${mes}&ano=${ano}`;
+    }
+    
+    return this.http.get<VendasPorDia>(url).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar vendas por dia:', error);
+        return of(this.getMockVendasPorDia());
+      })
+    );
+  }
+
+  // 🆕 MÉTODO PARA PRODUTOS MAIS VENDIDOS
+  getProdutosMaisVendidos(limite: number = 5): Observable<ProdutoMaisVendido[]> {
+    const url = `${this.apiUrl}/api/vendas/produtos-mais-vendidos?limite=${limite}`;
+    
+    return this.http.get<ProdutoMaisVendido[]>(url).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar produtos mais vendidos:', error);
+        return of(this.getMockProdutosMaisVendidos(limite));
+      })
+    );
+  }
+
+  // 🆕 MÉTODO PARA VENDAS POR PLATAFORMA
+  getVendasPorPlataforma(): Observable<VendasPorPlataforma[]> {
+    const url = `${this.apiUrl}/api/vendas/vendas-por-plataforma`;
+    
+    return this.http.get<VendasPorPlataforma[]>(url).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar vendas por plataforma:', error);
+        return of(this.getMockVendasPorPlataforma());
+      })
+    );
+  }
+
+  // 🆕 MÉTODO PARA COMPARAÇÃO MENSAL
+  getComparacaoMensal(): Observable<any> {
+    const url = `${this.apiUrl}/api/vendas/comparacao-mensal`;
+    
+    return this.http.get<any>(url).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar dados de comparação mensal:', error);
+        return of(this.getMockComparacaoMensal());
+      })
+    );
+  }
+
+  // ✅ MÉTODOS PRIVADOS EXISTENTES
   private transformPlatformData(faturamentoMap: PlatformRevenue | undefined): PlatformData[] {
     if (!faturamentoMap) {
       return this.getMockPlatformData();
@@ -196,6 +267,82 @@ export class DashboardService {
     return Number(growth.toFixed(1));
   }
 
+  // 🆕 MÉTODOS MOCK PARA OS NOVOS ENDPOINTS
+  private getMockVendasPorDia(): VendasPorDia {
+    const vendas: VendasPorDia = {};
+    const hoje = new Date();
+    
+    for (let i = 29; i >= 0; i--) {
+      const data = new Date(hoje);
+      data.setDate(hoje.getDate() - i);
+      const dataStr = data.toISOString().split('T')[0];
+      vendas[dataStr] = Math.floor(Math.random() * 15) + 1;
+    }
+    
+    return vendas;
+  }
+
+  private getMockProdutosMaisVendidos(limite: number): ProdutoMaisVendido[] {
+    const produtos = [
+      { nome: 'Smartphone XYZ', quantidadeVendida: 25 },
+      { nome: 'Fone Bluetooth', quantidadeVendida: 18 },
+      { nome: 'Carregador USB-C', quantidadeVendida: 15 },
+      { nome: 'Tablet Android', quantidadeVendida: 12 },
+      { nome: 'Smartwatch', quantidadeVendida: 10 },
+      { nome: 'Cabo HDMI', quantidadeVendida: 8 },
+      { nome: 'Power Bank', quantidadeVendida: 7 }
+    ];
+    
+    return produtos.slice(0, limite);
+  }
+
+  private getMockVendasPorPlataforma(): VendasPorPlataforma[] {
+    return [
+      { plataforma: 'AMAZON', faturamento: 2800, quantidadeVendas: 18 },
+      { plataforma: 'MERCADO_LIVRE', faturamento: 1300, quantidadeVendas: 12 },
+      { plataforma: 'SHOPEE', faturamento: 800, quantidadeVendas: 8 }
+    ];
+  }
+
+  private getMockComparacaoMensal(): any {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    
+    const mesAnterior = mesAtual === 1 ? 12 : mesAtual - 1;
+    const anoAnterior = mesAtual === 1 ? anoAtual - 1 : anoAtual;
+    
+    return {
+      mesAtual: this.gerarDadosMensal(30),
+      mesAnterior: this.gerarDadosMensal(30),
+      mesAtualLabel: this.getNomeMes(mesAtual) + ' ' + anoAtual,
+      mesAnteriorLabel: this.getNomeMes(mesAnterior) + ' ' + anoAnterior
+    };
+  }
+
+  private gerarDadosMensal(dias: number): { [key: string]: number } {
+    const dados: { [key: string]: number } = {};
+    const hoje = new Date();
+    
+    for (let i = dias - 1; i >= 0; i--) {
+      const data = new Date(hoje);
+      data.setDate(hoje.getDate() - i);
+      const dataStr = data.toISOString().split('T')[0];
+      dados[dataStr] = Math.floor(Math.random() * 12) + 1;
+    }
+    
+    return dados;
+  }
+
+  private getNomeMes(mes: number): string {
+    const meses = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    return meses[mes - 1];
+  }
+
+  // ✅ MÉTODOS MOCK EXISTENTES
   private getMockDashboardData(): DashboardData {
     return {
       faturamentoTotal: 4900,

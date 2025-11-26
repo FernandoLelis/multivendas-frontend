@@ -1,63 +1,37 @@
-<div class="sales-chart">
-  <!-- Cabeçalho com título e botões alinhados -->
+<div class="sales-chart-container">
   <div class="chart-header">
-    <h2>VENDAS POR DIA</h2>
-    
-    <!-- Botões Toggle -->
-    <div class="filter-buttons">
-      <button 
-        *ngFor="let period of timePeriods"
-        [class.active]="selectedPeriod === period"
-        (click)="selectPeriod(period)"
-        class="toggle-btn">
-        {{ period }}
-      </button>
+    <h3>VENDAS POR DIA</h3>
+    <div class="legend-container">
+      <div class="legend-item">
+        <div class="legend-color blue"></div>
+        <span>Mês atual</span>
+      </div>
+      <!-- ✅ ESPAÇO RESERVADO PARA MÊS ANTERIOR -->
+      <div class="legend-item" style="opacity: 0.5;">
+        <div class="legend-color gray"></div>
+        <span>Mês anterior</span>
+      </div>
     </div>
   </div>
 
-  <!-- Gráfico de Linhas -->
-  <div class="chart-container">
-    <div class="chart">
-      <!-- Eixo Y -->
-      <div class="y-axis">
-        <span>65</span>
-        <span>30</span>
-        <span>16</span>
-        <span>0</span>
-      </div>
-      
-      <!-- Área do Gráfico -->
-      <div class="chart-area">
-        <!-- Grade de fundo -->
-        <div class="grid-lines">
-          <div class="grid-line"></div>
-          <div class="grid-line"></div>
-          <div class="grid-line"></div>
-          <div class="grid-line"></div>
-        </div>
-        
-        <!-- Linha do gráfico -->
-        <svg class="line-chart" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path class="line" d="M0,50 L20,30 L40,60 L60,20 L80,80 L100,10" />
-        </svg>
-        
-        <!-- Pontos do gráfico -->
-        <div class="data-points">
-          <div *ngFor="let point of chartData; let i = index" 
-               class="point" 
-               [style.left]="i * 5 + '%'"
-               [style.bottom]="point.height + '%'">
-          </div>
-        </div>
-        
-        <!-- Dias (eixo X) -->
-        <div class="x-axis">
-          <span *ngFor="let day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]" 
-                class="day-label">
-            {{ day }}
-          </span>
-        </div>
-      </div>
+  <div class="chart-content">
+    <div *ngIf="isLoading" class="loading">
+      <p>Carregando dados de vendas...</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error">
+      <p>{{ errorMessage }}</p>
+      <button (click)="refreshChart()" class="retry-btn">
+        Tentar Novamente
+      </button>
+    </div>
+
+    <div *ngIf="!isLoading && !errorMessage" class="chart-wrapper">
+      <canvas baseChart
+              [data]="lineChartData"
+              [options]="lineChartOptions"
+              type="line">
+      </canvas>
     </div>
   </div>
 </div>
