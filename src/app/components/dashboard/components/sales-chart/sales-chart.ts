@@ -25,7 +25,7 @@ export class SalesChartComponent implements AfterViewInit {
     datasets: [
       {
         data: [],
-        label: 'Mês atual', // ✅ LEGENDA ATUALIZADA
+        label: 'Mês atual',
         borderColor: '#3b82f6',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         fill: true,
@@ -39,7 +39,7 @@ export class SalesChartComponent implements AfterViewInit {
       },
       {
         data: [],
-        label: 'Mês anterior', // ✅ LINHA DO MÊS ANTERIOR
+        label: 'Mês anterior',
         borderColor: '#6b7280',
         backgroundColor: 'rgba(107, 114, 128, 0.1)',
         fill: true,
@@ -50,7 +50,7 @@ export class SalesChartComponent implements AfterViewInit {
         pointBackgroundColor: '#6b7280',
         pointBorderColor: '#ffffff',
         pointBorderWidth: 1,
-        borderDash: [5, 5] // ✅ LINHA TRACEJADA PARA DIFERENCIAR
+        borderDash: [5, 5]
       }
     ]
   };
@@ -60,7 +60,7 @@ export class SalesChartComponent implements AfterViewInit {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false // ✅ LEGENDA OCULTA (USAMOS A PERSONALIZADA)
+        display: false
       },
       tooltip: {
         mode: 'index',
@@ -81,7 +81,6 @@ export class SalesChartComponent implements AfterViewInit {
           font: {
             size: 11
           },
-          // ✅ APENAS NÚMEROS INTEIROS
           stepSize: 1,
           callback: function(value) {
             return Number.isInteger(Number(value)) ? value : '';
@@ -155,8 +154,13 @@ export class SalesChartComponent implements AfterViewInit {
     const data = labels.map(label => salesData[label]);
 
     const formattedLabels = labels.map(label => {
-      const date = new Date(label);
-      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      // ✅ CORREÇÃO DO FUSO HORÁRIO
+      const date = new Date(label + 'T00:00:00');
+      return date.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit',
+        timeZone: 'America/Sao_Paulo'
+      });
     });
 
     this.lineChartData = {
@@ -176,7 +180,6 @@ export class SalesChartComponent implements AfterViewInit {
           pointBorderColor: '#ffffff',
           pointBorderWidth: 1
         },
-        // ✅ MÊS ANTERIOR VAZIO POR ENQUANTO
         {
           data: [],
           label: 'Mês anterior',
