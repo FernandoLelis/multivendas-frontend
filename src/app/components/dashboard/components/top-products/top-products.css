@@ -1,17 +1,17 @@
 .top-products-container {
   background: #01182d;
   border-radius: 8px;
-  padding: 25px;
+  padding: 24px;
   border: 3px solid #1a3a5f;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  max-height: 350px;
+  margin-bottom: 24px;
 }
 
 .top-products-header {
-  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .top-products-header h3 {
@@ -25,9 +25,9 @@
 }
 
 .top-products-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  max-height: 250px;
+  min-height: 250px;
+  position: relative;
 }
 
 .loading, .error {
@@ -35,13 +35,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
+  min-height: 250px;
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .loading p {
-  font-size: 1rem;
+  font-size: 1.125rem;
   margin: 0;
 }
 
@@ -50,7 +50,7 @@
 }
 
 .error p {
-  font-size: 1rem;
+  font-size: 1.125rem;
   margin-bottom: 16px;
 }
 
@@ -58,30 +58,39 @@
   background: #E53935;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #c62828;
+  transform: translateY(-1px);
 }
 
 .products-list {
+  position: relative;
+  width: 100%;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
-/* ✅ VERSÃO FINAL COM PADDING 8px */
+/* ✅ ABORDAGEM COM DIVISÓRIAS E PADDING MENOR */
 .product-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 0px; /* ✅ PADDING UNIFORME 8px */
+  padding: 6px 2px;
   flex: 1;
-  min-height: 48px; /* ✅ REDUZIDO PARA PADDING MENOR */
+  min-height: 52px;
   border-bottom: 1px solid rgba(26, 58, 95, 0.5);
 }
 
+/* ✅ REMOVER BORDA DO ÚLTIMO ITEM */
 .product-item:last-child {
   border-bottom: none;
 }
@@ -90,8 +99,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 29px;
-  height: 29px;
+  width: 28px;
+  height: 28px;
   background: #3b82f6;
   border-radius: 6px;
   flex-shrink: 0;
@@ -100,7 +109,7 @@
 .rank-number {
   color: white;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .product-info {
@@ -127,14 +136,53 @@
 }
 
 /* ========== RESPONSIVO ========== */
+@media (max-width: 1024px) {
+  .top-products-container {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .top-products-header {
+    margin-bottom: 16px;
+  }
+  
+  .products-list {
+    height: 250px;
+  }
+}
+
 @media (max-width: 768px) {
   .top-products-container {
     padding: 16px;
+    margin-bottom: 16px;
+    border: 2px solid #1a3a5f;
+  }
+  
+  .top-products-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .top-products-header h3 {
+    font-size: 16px;
+  }
+  
+  .products-list {
+    height: 200px;
+  }
+  
+  .top-products-content {
+    min-height: 200px;
+  }
+  
+  .loading, .error {
+    min-height: 200px;
   }
   
   .product-item {
-    padding: 6px; /* ✅ AINDA MENOR NO MOBILE */
-    min-height: 44px;
+    padding: 10px 6px;
+    min-height: 48px;
     gap: 10px;
   }
   
