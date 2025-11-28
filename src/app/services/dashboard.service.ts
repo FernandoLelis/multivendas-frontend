@@ -120,7 +120,7 @@ export class DashboardService {
 
   // ✅ MÉTODOS EXISTENTES
   getDashboardData(): Observable<DashboardData> {
-    return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe(
+    return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`).pipe(
       catchError(error => {
         console.error('Erro ao buscar dados do dashboard:', error);
         return of(this.getMockDashboardData());
@@ -189,6 +189,7 @@ export class DashboardService {
       })
     );
   }
+
 
   // 🆕 MÉTODO PARA VENDAS POR PLATAFORMA
   getVendasPorPlataforma(): Observable<VendasPorPlataforma[]> {
