@@ -1,0 +1,157 @@
+.top-products-container {
+  background: #01182d;
+  border-radius: 8px;
+  padding: 20px;
+  border: 3px solid #1a3a5f;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-height: 350px;
+}
+
+.top-products-header {
+  margin-bottom: 20px;
+}
+
+.top-products-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.top-products-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading, .error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loading p {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.error {
+  color: #E53935;
+}
+
+.error p {
+  font-size: 1rem;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  background: #E53935;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.products-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ✅ VERSÃO FINAL COM PADDING 8px */
+.product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px; /* ✅ PADDING UNIFORME 8px */
+  flex: 1;
+  min-height: 48px; /* ✅ REDUZIDO PARA PADDING MENOR */
+  border-bottom: 1px solid rgba(26, 58, 95, 0.5);
+}
+
+.product-item:last-child {
+  border-bottom: none;
+}
+
+.product-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  background: #3b82f6;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.rank-number {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+}
+
+.product-name {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-sales {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* ========== RESPONSIVO ========== */
+@media (max-width: 768px) {
+  .top-products-container {
+    padding: 16px;
+  }
+  
+  .product-item {
+    padding: 6px; /* ✅ AINDA MENOR NO MOBILE */
+    min-height: 44px;
+    gap: 10px;
+  }
+  
+  .product-rank {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .rank-number {
+    font-size: 11px;
+  }
+  
+  .product-name {
+    font-size: 12px;
+  }
+  
+  .product-sales {
+    font-size: 10px;
+  }
+}

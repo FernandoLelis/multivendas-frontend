@@ -120,7 +120,7 @@ export class DashboardService {
 
   // ✅ MÉTODOS EXISTENTES
   getDashboardData(): Observable<DashboardData> {
-    return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`).pipe(
+    return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe(
       catchError(error => {
         console.error('Erro ao buscar dados do dashboard:', error);
         return of(this.getMockDashboardData());
@@ -164,11 +164,25 @@ export class DashboardService {
     );
   }
 
-  // 🆕 MÉTODO PARA PRODUTOS MAIS VENDIDOS
+  // 🆕 MÉTODO CORRIGIDO PARA PRODUTOS MAIS VENDIDOS
   getProdutosMaisVendidos(limite: number = 5): Observable<ProdutoMaisVendido[]> {
-    const url = `${this.apiUrl}/api/vendas/produtos-mais-vendidos?limite=${limite}`;
-    
-    return this.http.get<ProdutoMaisVendido[]>(url).pipe(
+    return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe(
+      map(dashboardData => {
+        console.log('🔍 DEBUG: DashboardData completo:', dashboardData);
+        console.log('🔍 DEBUG: produtosMaisVendidos:', dashboardData.produtosMaisVendidos);
+        
+        // ✅ EXTRAIR DO DASHBOARD DATA
+        const produtos = dashboardData.produtosMaisVendidos || [];
+        
+        // ✅ CONVERTER DE TopProduct[] para ProdutoMaisVendido[]
+        const produtosConvertidos = produtos.slice(0, limite).map(produto => ({
+          nome: produto.produto, // ✅ "produto" vem como string no TopProduct
+          quantidadeVendida: produto.quantidadeVendida
+        }));
+        
+        console.log('🔍 DEBUG: Produtos convertidos:', produtosConvertidos);
+        return produtosConvertidos;
+      }),
       catchError(error => {
         console.error('Erro ao buscar produtos mais vendidos:', error);
         return of(this.getMockProdutosMaisVendidos(limite));

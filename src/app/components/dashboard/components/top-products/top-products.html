@@ -1,0 +1,31 @@
+<div class="top-products-container">
+  <div class="top-products-header">
+    <h3>PRODUTOS MAIS VENDIDOS</h3>
+  </div>
+
+  <div class="top-products-content">
+    <div *ngIf="isLoading" class="loading">
+      <p>Carregando produtos...</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error">
+      <p>{{ errorMessage }}</p>
+      <button (click)="refreshData()" class="retry-btn">
+        Tentar Novamente
+      </button>
+    </div>
+
+    <div *ngIf="!isLoading && !errorMessage" class="products-list">
+      <div *ngFor="let product of topProducts; let i = index" class="product-item">
+        <div class="product-rank">
+          <span class="rank-number">{{ i + 1 }}</span>
+        </div>
+        
+        <div class="product-info">
+          <span class="product-name">{{ product.nome }}</span>
+          <span class="product-sales">{{ product.quantidadeVendida }} vendas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
