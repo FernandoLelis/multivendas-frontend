@@ -120,13 +120,13 @@ export class DashboardService {
 
   // ✅ MÉTODOS EXISTENTES
   getDashboardData(): Observable<DashboardData> {
-    return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`).pipe(
-      catchError(error => {
-        console.error('Erro ao buscar dados do dashboard:', error);
-        return of(this.getMockDashboardData());
-      })
-    );
-  }
+  return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe( // ← CORRIGIDO
+    catchError(error => {
+      console.error('Erro ao buscar dados do dashboard:', error);
+      return of(this.getMockDashboardData());
+    })
+  );
+}
 
   getPlatformData(): Observable<PlatformData[]> {
     return this.getDashboardData().pipe(
