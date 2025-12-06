@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, forkJoin, map, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 // Interfaces
@@ -118,15 +118,61 @@ export class DashboardService {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ MÉTODOS EXISTENTES
+  // ✅ MÉTODOS EXISTENTES - MODIFICADO
   getDashboardData(): Observable<DashboardData> {
-  return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe( // ← CORRIGIDO
-    catchError(error => {
-      console.error('Erro ao buscar dados do dashboard:', error);
-      return of(this.getMockDashboardData());
-    })
-  );
-}
+    return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar dados do dashboard:', error);
+        return of(this.getMockDashboardData());
+      })
+    );
+  }
+
+  // 🆕 MÉTODO PARA BUSCAR TOTAL DE DESPESAS
+  getTotalDespesas(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/api/despesas/total-mes-atual`).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar total de despesas:', error);
+        return of(0); // Retorna 0 em caso de erro
+      })
+    );
+  }
+
+  // ✅ MÉTODO ATUALIZADO: Agora combina vendas + despesas
+  getCardsMetrics(): Observable<CardMetrics> {
+    // Buscar dados de vendas E despesas em paralelo
+    return forkJoin({
+      vendas: this.getDashboardData(),
+      despesas: this.getTotalDespesas()
+    }).pipe(
+      map(({ vendas, despesas }) => {
+        // Usar despesas reais em vez das das vendas
+        const despesasReais = despesas;
+        
+        // Recalcular lucro líquido com despesas reais
+        const lucroLiquidoComDespesasReais = vendas.lucroBrutoTotal - despesasReais;
+        
+        // Recalcular ROI com despesas reais
+        const roiComDespesasReais = vendas.custoEfetivoTotal > 0 ? 
+          (lucroLiquidoComDespesasReais / vendas.custoEfetivoTotal) * 100 : 0;
+        
+        // Criar objeto DashboardData com valores atualizados
+        const dashboardDataAtualizado: DashboardData = {
+          ...vendas,
+          despesasOperacionaisTotal: despesasReais,
+          lucroLiquidoTotal: lucroLiquidoComDespesasReais,
+          roiTotal: roiComDespesasReais
+        };
+        
+        // Transformar para CardMetrics
+        return this.transformCardsMetrics(dashboardDataAtualizado);
+      }),
+      catchError(error => {
+        console.error('Erro ao processar métricas dos cards:', error);
+        return of(this.getMockCardsMetrics());
+      })
+    );
+  }
 
   getPlatformData(): Observable<PlatformData[]> {
     return this.getDashboardData().pipe(
@@ -134,16 +180,6 @@ export class DashboardService {
       catchError(error => {
         console.error('Erro ao processar dados das plataformas:', error);
         return of(this.getMockPlatformData());
-      })
-    );
-  }
-
-  getCardsMetrics(): Observable<CardMetrics> {
-    return this.getDashboardData().pipe(
-      map(dashboardData => this.transformCardsMetrics(dashboardData)),
-      catchError(error => {
-        console.error('Erro ao processar métricas dos cards:', error);
-        return of(this.getMockCardsMetrics());
       })
     );
   }
@@ -189,7 +225,6 @@ export class DashboardService {
       })
     );
   }
-
 
   // 🆕 MÉTODO PARA VENDAS POR PLATAFORMA
   getVendasPorPlataforma(): Observable<VendasPorPlataforma[]> {
