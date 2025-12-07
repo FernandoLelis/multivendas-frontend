@@ -1,7 +1,11 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
-import { DashboardService, VendasPorDia } from '../../../../services/dashboard.service';
+import { 
+  DashboardService, 
+  VendasPorDia, 
+  DadosComparacaoMensal  // 🆕 IMPORTAR NOVA INTERFACE
+} from '../../../../services/dashboard.service';
 import { ChartConfiguration, Chart, registerables } from 'chart.js';
 
 // ✅ REGISTRAR TODOS OS COMPONENTES DO CHART.JS
@@ -18,6 +22,10 @@ export class SalesChartComponent implements AfterViewInit {
   
   isLoading: boolean = true;
   errorMessage: string = '';
+  
+  // 🆕 ADICIONAR PROPRIEDADES PARA LABELS
+  mesAtualLabel: string = '';
+  mesAnteriorLabel: string = '';
 
   // ✅ Configuração do gráfico com duas linhas
   public lineChartData: ChartConfiguration<'line'>['data'] = {
@@ -41,8 +49,8 @@ export class SalesChartComponent implements AfterViewInit {
         data: [],
         label: 'Mês anterior',
         borderColor: '#6b7280',
-        backgroundColor: 'rgba(107, 114, 128, 0.1)',
-        fill: true,
+        backgroundColor: 'rgba(107, 114, 128, 0.05)', // 🆕 TRANSPARENTE
+        fill: false, // 🆕 APENAS LINHA, SEM PREENCHIMENTO
         tension: 0.4,
         borderWidth: 1.5,
         pointRadius: 3,
@@ -50,7 +58,7 @@ export class SalesChartComponent implements AfterViewInit {
         pointBackgroundColor: '#6b7280',
         pointBorderColor: '#ffffff',
         pointBorderWidth: 1,
-        borderDash: [5, 5]
+        borderDash: [5, 5] // 🆕 LINHA TRACEJADA
       }
     ]
   };
@@ -135,26 +143,36 @@ export class SalesChartComponent implements AfterViewInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.dashboardService.getVendasPorDia().subscribe({
-      next: (data: VendasPorDia) => {
-        this.updateChartData(data);
+    // 🆕 MUDAR PARA USAR O NOVO MÉTODO DE COMPARAÇÃO
+    this.dashboardService.getDadosComparacaoMensal().subscribe({
+      next: (dados: DadosComparacaoMensal) => {
+        this.mesAtualLabel = dados.mesAtualLabel;
+        this.mesAnteriorLabel = dados.mesAnteriorLabel;
+        this.updateChartData(dados.mesAtual, dados.mesAnterior);
         this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Erro ao carregar dados:', error);
         this.errorMessage = 'Erro ao carregar dados do gráfico';
         this.isLoading = false;
-        this.updateChartData(this.getMockData());
+        // 🆕 ATUALIZAR MOCK PARA DOIS CONJUNTOS
+        this.updateChartData(this.getMockData(), this.getMockDataAnterior());
       }
     });
   }
 
-  private updateChartData(salesData: VendasPorDia): void {
-    const labels = Object.keys(salesData).sort();
-    const data = labels.map(label => salesData[label]);
-
-    const formattedLabels = labels.map(label => {
-      // ✅ CORREÇÃO DO FUSO HORÁRIO
+  // 🆕 MODIFICAR PARA ACEITAR DOIS CONJUNTOS DE DADOS
+  private updateChartData(salesDataMesAtual: VendasPorDia, salesDataMesAnterior: VendasPorDia): void {
+    // Processar mês atual
+    const labelsMesAtual = Object.keys(salesDataMesAtual).sort();
+    const dataMesAtual = labelsMesAtual.map(label => salesDataMesAtual[label]);
+    
+    // Processar mês anterior
+    const labelsMesAnterior = Object.keys(salesDataMesAnterior).sort();
+    const dataMesAnterior = labelsMesAnterior.map(label => salesDataMesAnterior[label]);
+    
+    // 🆕 USAR DATAS DO MÊS ATUAL PARA OS LABELS (evita bug de datas acumuladas)
+    const formattedLabels = labelsMesAtual.map(label => {
       const date = new Date(label + 'T00:00:00');
       return date.toLocaleDateString('pt-BR', { 
         day: '2-digit', 
@@ -163,12 +181,24 @@ export class SalesChartComponent implements AfterViewInit {
       });
     });
 
+    // 🆕 GARANTIR QUE OS DOIS DATASETS TENHAM O MESMO NÚMERO DE PONTOS
+    const maxPoints = Math.max(dataMesAtual.length, dataMesAnterior.length);
+    
+    // Preencher dados faltantes com 0
+    while (dataMesAtual.length < maxPoints) {
+      dataMesAtual.push(0);
+    }
+    
+    while (dataMesAnterior.length < maxPoints) {
+      dataMesAnterior.push(0);
+    }
+
     this.lineChartData = {
       labels: formattedLabels,
       datasets: [
         {
-          data: data,
-          label: 'Mês atual',
+          data: dataMesAtual,
+          label: this.mesAtualLabel || 'Mês atual',
           borderColor: '#3b82f6',
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
           fill: true,
@@ -181,11 +211,11 @@ export class SalesChartComponent implements AfterViewInit {
           pointBorderWidth: 1
         },
         {
-          data: [],
-          label: 'Mês anterior',
+          data: dataMesAnterior,
+          label: this.mesAnteriorLabel || 'Mês anterior',
           borderColor: '#6b7280',
-          backgroundColor: 'rgba(107, 114, 128, 0.1)',
-          fill: true,
+          backgroundColor: 'rgba(107, 114, 128, 0.05)',
+          fill: false, // 🆕 APENAS LINHA
           tension: 0.4,
           borderWidth: 1.5,
           pointRadius: 3,
@@ -199,13 +229,41 @@ export class SalesChartComponent implements AfterViewInit {
     };
   }
 
+  // 🆕 MOCK PARA MÊS ATUAL
   private getMockData(): VendasPorDia {
     const vendas: VendasPorDia = {};
-    for (let i = 0; i < 30; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    
+    // Gerar dados para o mês atual (últimos 30 dias do mês atual)
+    const diasNoMes = new Date(anoAtual, mesAtual, 0).getDate();
+    const diasParaGerar = Math.min(diasNoMes, 30); // Máximo 30 dias
+    
+    for (let i = 1; i <= diasParaGerar; i++) {
+      const dateStr = `${anoAtual}-${mesAtual.toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
       vendas[dateStr] = Math.floor(Math.random() * 10) + 1;
+    }
+    return vendas;
+  }
+
+  // 🆕 MOCK PARA MÊS ANTERIOR
+  private getMockDataAnterior(): VendasPorDia {
+    const vendas: VendasPorDia = {};
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    
+    const mesAnterior = mesAtual === 1 ? 12 : mesAtual - 1;
+    const anoAnterior = mesAnterior === 12 ? anoAtual - 1 : anoAtual;
+    
+    // Gerar dados para o mês anterior
+    const diasNoMes = new Date(anoAnterior, mesAnterior, 0).getDate();
+    const diasParaGerar = Math.min(diasNoMes, 30); // Máximo 30 dias
+    
+    for (let i = 1; i <= diasParaGerar; i++) {
+      const dateStr = `${anoAnterior}-${mesAnterior.toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+      vendas[dateStr] = Math.floor(Math.random() * 8) + 1; // 🆕 Valores menores para mês anterior
     }
     return vendas;
   }

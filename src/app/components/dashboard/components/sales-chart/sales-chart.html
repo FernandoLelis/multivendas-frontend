@@ -4,12 +4,13 @@
     <div class="legend-container">
       <div class="legend-item">
         <div class="legend-color blue"></div>
-        <span>Mês atual</span>
+        <!-- 🆕 USAR LABEL DINÂMICO -->
+        <span>{{ mesAtualLabel || 'Mês atual' }}</span>
       </div>
-      <!-- ✅ ESPAÇO RESERVADO PARA MÊS ANTERIOR -->
-      <div class="legend-item" style="opacity: 0.5;">
+      <div class="legend-item">
         <div class="legend-color gray"></div>
-        <span>Mês anterior</span>
+        <!-- 🆕 USAR LABEL DINÂMICO -->
+        <span>{{ mesAnteriorLabel || 'Mês anterior' }}</span>
       </div>
     </div>
   </div>
