@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, map, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-// Interfaces
+// Interfaces (mantidas iguais)
 export interface PlatformRevenue {
   AMAZON: number;
   MERCADO_LIVRE: number;
@@ -65,8 +65,8 @@ export interface CardMetrics {
     growth: number
   };
   despesasOperacionais: {
-    atual: number,    // MÊS atual
-    total: number,    // ANO atual
+    atual: number,    // MÊS atual (DESPESAS VARIÁVEIS)
+    total: number,    // ANO atual (DESPESAS VARIÁVEIS)
     growth: number
   };
 }
@@ -124,7 +124,10 @@ export class DashboardService {
     roi: 40
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // DEBUG TEMPORÁRIO
+    this.debugCalculos();
+  }
 
   // ✅ MÉTODOS EXISTENTES
   getDashboardData(): Observable<DashboardData> {
@@ -136,9 +139,12 @@ export class DashboardService {
     );
   }
 
-  // ✅ MÉTODO PARA DESPESAS DO ANO ATUAL
+  // ✅ MÉTODO PARA DESPESAS DO ANO ATUAL (DESPESAS VARIÁVEIS)
   getTotalDespesas(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/api/despesas/total-ano-atual`).pipe(
+      map((total: any) => {
+        return typeof total === 'object' ? total : Number(total);
+      }),
       catchError(error => {
         console.error('Erro ao buscar total de despesas do ano atual:', error);
         return of(0);
@@ -146,9 +152,12 @@ export class DashboardService {
     );
   }
 
-  // 🆕 MÉTODO PARA DESPESAS DO MÊS ATUAL
+  // ✅ MÉTODO PARA DESPESAS DO MÊS ATUAL (DESPESAS VARIÁVEIS)
   getTotalDespesasMesAtual(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/api/despesas/total-mes-atual`).pipe(
+      map((total: any) => {
+        return typeof total === 'object' ? total : Number(total);
+      }),
       catchError(error => {
         console.error('Erro ao buscar despesas do mês atual:', error);
         return of(0);
@@ -156,7 +165,7 @@ export class DashboardService {
     );
   }
 
-  // 🆕 MÉTODOS PARA DADOS DO MÊS ATUAL DE VENDAS
+  // ✅ MÉTODOS PARA DADOS DO MÊS ATUAL DE VENDAS
 
   // Faturamento do mês atual
   getFaturamentoMesAtual(): Observable<number> {
@@ -178,7 +187,7 @@ export class DashboardService {
     );
   }
 
-  // Lucro bruto do mês atual
+  // Lucro bruto do mês atual - ATENÇÃO: Backend corrigido agora
   getLucroBrutoMesAtual(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-bruto-mes-atual`).pipe(
       catchError(error => {
@@ -188,7 +197,7 @@ export class DashboardService {
     );
   }
 
-  // Lucro líquido do mês atual
+  // ⚠️ OBSERVAÇÃO: NÃO vamos usar lucroLiquidoMesAtual do backend para cálculos
   getLucroLiquidoMesAtual(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-liquido-mes-atual`).pipe(
       catchError(error => {
@@ -198,38 +207,60 @@ export class DashboardService {
     );
   }
 
-  // ✅ MÉTODO ATUALIZADO: Agora busca todos os dados (mês + ano)
+  // ✅ MÉTODO ATUALIZADO: Cálculos corretos conforme fórmulas estabelecidas
   getCardsMetrics(): Observable<CardMetrics> {
     // Buscar TODOS os dados em paralelo
     return forkJoin({
-      vendas: this.getDashboardData(),
-      despesasMes: this.getTotalDespesasMesAtual(),
-      despesasAno: this.getTotalDespesas(),
+      vendas: this.getDashboardData(),           // Dados anuais das vendas
+      despesasMes: this.getTotalDespesasMesAtual(), // Despesas variáveis do MÊS
+      despesasAno: this.getTotalDespesas(),        // Despesas variáveis do ANO
       faturamentoMes: this.getFaturamentoMesAtual(),
-      custoEfetivoMes: this.getCustoEfetivoMesAtual(),
-      lucroBrutoMes: this.getLucroBrutoMesAtual(),
-      lucroLiquidoMes: this.getLucroLiquidoMesAtual()
+      custoEfetivoMes: this.getCustoEfetivoMesAtual()
+      // ⚠️ Não usar getLucroBrutoMesAtual() até backend estar corrigido
+      // Podemos usar após correção: lucroBrutoMes: this.getLucroBrutoMesAtual()
     }).pipe(
       map(({ 
         vendas, 
         despesasMes, 
         despesasAno, 
         faturamentoMes,
-        custoEfetivoMes,
-        lucroBrutoMes,
-        lucroLiquidoMes
+        custoEfetivoMes
       }) => {
         
-        // 1. Cálculos com despesas do ANO
+        console.log('🔍 DEBUG getCardsMetrics - Valores recebidos:');
+        console.log('  Faturamento Mês:', faturamentoMes);
+        console.log('  Custo Efetivo Mês:', custoEfetivoMes);
+        console.log('  Despesas Mês:', despesasMes);
+        
+        // 🎯 CÁLCULOS CONFORME FÓRMULAS ESTABELECIDAS:
+        // Fórmulas: https://github.com/FernandoLelis/multivendas-backend
+        
+        // 1. LUCRO BRUTO MENSAL (CALCULAR NO FRONTEND - fórmula correta)
+        // 📊 LUCRO BRUTO = FATURAMENTO - CUSTO EFETIVO
+        const lucroBrutoMes = faturamentoMes - custoEfetivoMes;
+        console.log('  Lucro Bruto Calculado:', lucroBrutoMes);
+        
+        // 2. LUCRO LÍQUIDO MENSAL (FÓRMULA CORRETA)
+        // 💵 LUCRO LÍQUIDO = LUCRO BRUTO - DESPESAS VARIÁVEIS
+        const lucroLiquidoMes = lucroBrutoMes - despesasMes;
+        console.log('  Lucro Líquido Calculado:', lucroLiquidoMes);
+        
+        // 3. ROI MENSAL (FÓRMULA CORRETA)
+        // 🎯 ROI = (LUCRO LÍQUIDO / CUSTO EFETIVO) × 100
+        const roiMes = custoEfetivoMes > 0 ? 
+          (lucroLiquidoMes / custoEfetivoMes) * 100 : 0;
+        console.log('  ROI Mês:', roiMes);
+        
+        // 4. LUCRO LÍQUIDO ANUAL (FÓRMULA CORRETA)
+        // 💵 LUCRO LÍQUIDO = LUCRO BRUTO - DESPESAS VARIÁVEIS
         const lucroLiquidoAno = vendas.lucroBrutoTotal - despesasAno;
+        
+        // 5. ROI ANUAL (FÓRMULA CORRETA)
+        // 🎯 ROI = (LUCRO LÍQUIDO / CUSTO EFETIVO) × 100
         const roiAno = vendas.custoEfetivoTotal > 0 ? 
           (lucroLiquidoAno / vendas.custoEfetivoTotal) * 100 : 0;
         
-        // 2. Calcular ROI do mês (se possível)
-        const roiMes = custoEfetivoMes > 0 ? 
-          (lucroLiquidoMes / custoEfetivoMes) * 100 : 0;
-        
-        // 3. Calcular growths
+        // 6. Calcular growths
         const faturamentoGrowth = this.calculateGrowth(faturamentoMes, this.previousMonthData.faturamento);
         const custoEfetivoGrowth = this.calculateGrowth(custoEfetivoMes, this.previousMonthData.custoEfetivo);
         const lucroBrutoGrowth = this.calculateGrowth(lucroBrutoMes, this.previousMonthData.lucroBruto);
@@ -237,6 +268,7 @@ export class DashboardService {
         const despesasGrowth = this.calculateGrowth(despesasMes, this.previousMonthData.despesasOperacionais);
         const roiGrowth = this.calculateGrowth(roiMes, this.previousMonthData.roi);
         
+        // 7. Retornar métricas calculadas corretamente
         return {
           faturamento: { 
             atual: faturamentoMes,           // MÊS atual
@@ -249,8 +281,8 @@ export class DashboardService {
             growth: custoEfetivoGrowth
           },
           lucroBruto: {
-            atual: lucroBrutoMes,           // MÊS atual
-            total: vendas.lucroBrutoTotal,  // ANO atual
+            atual: lucroBrutoMes,           // MÊS atual (CALCULADO CORRETAMENTE)
+            total: vendas.lucroBrutoTotal,  // ANO atual (backend corrigido)
             growth: lucroBrutoGrowth
           },
           lucroLiquido: { 
@@ -275,6 +307,24 @@ export class DashboardService {
         return of(this.getMockCardsMetrics());
       })
     );
+  }
+
+  // 🆕 MÉTODO TEMPORÁRIO PARA DEBUG
+  private debugCalculos(): void {
+    setTimeout(() => {
+      forkJoin({
+        faturamento: this.getFaturamentoMesAtual(),
+        custoEfetivo: this.getCustoEfetivoMesAtual(),
+        lucroBrutoBackend: this.getLucroBrutoMesAtual()
+      }).subscribe(({ faturamento, custoEfetivo, lucroBrutoBackend }) => {
+        console.log('🔍 DEBUG SERVICE - Cálculos:');
+        console.log('  Faturamento:', faturamento);
+        console.log('  Custo Efetivo:', custoEfetivo);
+        console.log('  Lucro Bruto (Backend):', lucroBrutoBackend);
+        console.log('  Lucro Bruto (Calculado):', faturamento - custoEfetivo);
+        console.log('  Diferença:', (faturamento - custoEfetivo) - lucroBrutoBackend);
+      });
+    }, 3000);
   }
 
   getPlatformData(): Observable<PlatformData[]> {
@@ -306,13 +356,12 @@ export class DashboardService {
   // 🆕 MÉTODO PARA DADOS DE COMPARAÇÃO MENSAL - CORRIGIDO
   getDadosComparacaoMensal(): Observable<DadosComparacaoMensal> {
     const agora = new Date();
-    const mesAtualNumero = agora.getMonth() + 1; // ✅ VARIÁVEL CORRETA (NUMBER)
+    const mesAtualNumero = agora.getMonth() + 1;
     const anoAtual = agora.getFullYear();
     
-    const mesAnteriorNumero = mesAtualNumero === 1 ? 12 : mesAtualNumero - 1; // ✅ VARIÁVEL CORRETA (NUMBER)
+    const mesAnteriorNumero = mesAtualNumero === 1 ? 12 : mesAtualNumero - 1;
     const anoAnterior = mesAnteriorNumero === 12 ? anoAtual - 1 : anoAtual;
 
-    // Buscar dados dos dois meses em paralelo
     return forkJoin({
       mesAtual: this.getVendasPorDia(mesAtualNumero, anoAtual),
       mesAnterior: this.getVendasPorDia(mesAnteriorNumero, anoAnterior)
@@ -320,17 +369,16 @@ export class DashboardService {
       map(({ mesAtual, mesAnterior }) => ({
         mesAtual,
         mesAnterior,
-        mesAtualLabel: this.getNomeMes(mesAtualNumero) + ' ' + anoAtual, // ✅ USA VARIÁVEL NUMBER
-        mesAnteriorLabel: this.getNomeMes(mesAnteriorNumero) + ' ' + anoAnterior // ✅ USA VARIÁVEL NUMBER
+        mesAtualLabel: this.getNomeMes(mesAtualNumero) + ' ' + anoAtual,
+        mesAnteriorLabel: this.getNomeMes(mesAnteriorNumero) + ' ' + anoAnterior
       })),
       catchError(error => {
         console.error('Erro ao buscar dados de comparação mensal:', error);
-        // Retornar mock em caso de erro
         return of({
           mesAtual: this.getMockVendasPorDia(),
           mesAnterior: this.getMockVendasPorDia(),
-          mesAtualLabel: this.getNomeMes(mesAtualNumero) + ' ' + anoAtual, // ✅ USA VARIÁVEL NUMBER
-          mesAnteriorLabel: this.getNomeMes(mesAnteriorNumero) + ' ' + anoAnterior // ✅ USA VARIÁVEL NUMBER
+          mesAtualLabel: this.getNomeMes(mesAtualNumero) + ' ' + anoAtual,
+          mesAnteriorLabel: this.getNomeMes(mesAnteriorNumero) + ' ' + anoAnterior
         });
       })
     );
@@ -340,15 +388,11 @@ export class DashboardService {
   getProdutosMaisVendidos(limite: number = 5): Observable<ProdutoMaisVendido[]> {
     return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe(
       map(dashboardData => {
-        // ✅ EXTRAIR DO DASHBOARD DATA
         const produtos = dashboardData.produtosMaisVendidos || [];
-        
-        // ✅ CONVERTER DE TopProduct[] para ProdutoMaisVendido[]
         const produtosConvertidos = produtos.slice(0, limite).map(produto => ({
           nome: produto.produto,
           quantidadeVendida: produto.quantidadeVendida
         }));
-        
         return produtosConvertidos;
       }),
       catchError(error => {
@@ -361,7 +405,6 @@ export class DashboardService {
   // 🆕 MÉTODO PARA VENDAS POR PLATAFORMA
   getVendasPorPlataforma(): Observable<VendasPorPlataforma[]> {
     const url = `${this.apiUrl}/api/vendas/vendas-por-plataforma`;
-    
     return this.http.get<VendasPorPlataforma[]>(url).pipe(
       catchError(error => {
         console.error('Erro ao buscar vendas por plataforma:', error);
@@ -370,10 +413,9 @@ export class DashboardService {
     );
   }
 
-  // 🆕 MÉTODO PARA COMPARAÇÃO MENSAL (legado - manter para compatibilidade)
+  // 🆕 MÉTODO PARA COMPARAÇÃO MENSAL (legado)
   getComparacaoMensal(): Observable<any> {
     const url = `${this.apiUrl}/api/vendas/comparacao-mensal`;
-    
     return this.http.get<any>(url).pipe(
       catchError(error => {
         console.error('Erro ao buscar dados de comparação mensal:', error);
@@ -405,18 +447,16 @@ export class DashboardService {
     return Number(growth.toFixed(1));
   }
 
-  // 🆕 MÉTODOS MOCK PARA OS NOVOS ENDPOINTS
+  // 🆕 MÉTODOS MOCK
   private getMockVendasPorDia(): VendasPorDia {
     const vendas: VendasPorDia = {};
     const hoje = new Date();
-    
     for (let i = 29; i >= 0; i--) {
       const data = new Date(hoje);
       data.setDate(hoje.getDate() - i);
       const dataStr = data.toISOString().split('T')[0];
       vendas[dataStr] = Math.floor(Math.random() * 15) + 1;
     }
-    
     return vendas;
   }
 
@@ -430,7 +470,6 @@ export class DashboardService {
       { nome: 'Cabo HDMI', quantidadeVendida: 8 },
       { nome: 'Power Bank', quantidadeVendida: 7 }
     ];
-    
     return produtos.slice(0, limite);
   }
 
@@ -446,7 +485,6 @@ export class DashboardService {
     const hoje = new Date();
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
-    
     const mesAnterior = mesAtual === 1 ? 12 : mesAtual - 1;
     const anoAnterior = mesAtual === 1 ? anoAtual - 1 : anoAtual;
     
@@ -461,14 +499,12 @@ export class DashboardService {
   private gerarDadosMensal(dias: number): { [key: string]: number } {
     const dados: { [key: string]: number } = {};
     const hoje = new Date();
-    
     for (let i = dias - 1; i >= 0; i--) {
       const data = new Date(hoje);
       data.setDate(hoje.getDate() - i);
       const dataStr = data.toISOString().split('T')[0];
       dados[dataStr] = Math.floor(Math.random() * 12) + 1;
     }
-    
     return dados;
   }
 
@@ -515,33 +551,33 @@ export class DashboardService {
   private getMockCardsMetrics(): CardMetrics {
     return {
       faturamento: { 
-        atual: 580,    // Mês atual (mock)
-        total: 4900,   // Ano atual (mock)
+        atual: 580,
+        total: 4900,
         growth: 8.9
       },
       custoEfetivo: { 
-        atual: 380,    // Mês atual
-        total: 3200,   // Ano atual
+        atual: 380,
+        total: 3200,
         growth: 0
       },
       lucroBruto: { 
-        atual: 200,    // Mês atual
-        total: 1700,   // Ano atual
+        atual: 200,
+        total: 1700,
         growth: 30.8
       },
       lucroLiquido: { 
-        atual: 120,    // Mês atual
-        total: 890,    // Ano atual
+        atual: 120,
+        total: 890,
         growth: 4.7
       },
       despesasOperacionais: {
-        atual: 80,     // Mês atual
-        total: 810,    // Ano atual
+        atual: 80,
+        total: 810,
         growth: 25.0
       },
       roi: { 
-        atual: 42,     // ROI anual
-        total: 42,     // ROI anual
+        atual: 42,
+        total: 42,
         growth: 5.0
       }
     };

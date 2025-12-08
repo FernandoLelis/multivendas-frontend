@@ -18,6 +18,7 @@ export class MetricsCardsComponent implements OnInit {
   constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
+    console.log('🔍 MetricsCardsComponent inicializado');
     this.loadMetricsData();
   }
 
@@ -29,6 +30,16 @@ export class MetricsCardsComponent implements OnInit {
       next: (data: CardMetrics) => {
         this.metricsData = data;
         this.isLoading = false;
+        
+        // DEBUG: Verificar cálculos
+        console.log('📊 DEBUG Component - Valores recebidos:');
+        console.log('  Faturamento Mês:', data.faturamento.atual);
+        console.log('  Custo Efetivo Mês:', data.custoEfetivo.atual);
+        console.log('  Lucro Bruto Mês:', data.lucroBruto.atual);
+        console.log('  Cálculo esperado:', 
+          data.faturamento.atual - data.custoEfetivo.atual);
+        console.log('  Diferença:', 
+          data.lucroBruto.atual - (data.faturamento.atual - data.custoEfetivo.atual));
       },
       error: (error: any) => {
         console.error('Erro ao carregar métricas:', error);
@@ -69,6 +80,7 @@ export class MetricsCardsComponent implements OnInit {
   }
 
   refreshData(): void {
+    console.log('🔄 Atualizando dados...');
     this.loadMetricsData();
   }
 }
