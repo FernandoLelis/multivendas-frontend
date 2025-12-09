@@ -22,7 +22,8 @@
         </div>
         
         <div class="product-info">
-          <span class="product-name">{{ product.nome }}</span>
+          <!-- ✅ ADICIONADO: Tooltip com atributo title para mostrar nome completo -->
+          <span class="product-name" [title]="product.nome">{{ product.nome }}</span>
           <span class="product-sales">{{ product.quantidadeVendida }} vendas</span>
         </div>
       </div>

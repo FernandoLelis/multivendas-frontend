@@ -117,6 +117,8 @@
   flex-direction: column;
   flex: 1;
   gap: 2px;
+  /* ✅ ADICIONADO: Permite que o container flexível encolha abaixo do tamanho do conteúdo */
+  min-width: 0;
 }
 
 .product-name {
@@ -127,6 +129,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* ✅ ADICIONADO: Ocupa 100% da largura disponível do container pai */
+  width: 100%;
+  display: block;
 }
 
 .product-sales {
@@ -136,6 +141,8 @@
 }
 
 /* ========== RESPONSIVO ========== */
+
+/* TABLET (1024px) */
 @media (max-width: 1024px) {
   .top-products-container {
     padding: 20px;
@@ -151,6 +158,7 @@
   }
 }
 
+/* MOBILE GRANDE (768px) */
 @media (max-width: 768px) {
   .top-products-container {
     padding: 16px;
@@ -184,6 +192,8 @@
     padding: 10px 0px;
     min-height: 48px;
     gap: 10px;
+    /* ✅ GARANTIR comportamento flex correto no mobile */
+    min-width: 0;
   }
   
   .product-rank {
@@ -202,4 +212,108 @@
   .product-sales {
     font-size: 10px;
   }
+  
+  /* ✅ REFORÇAR para mobile */
+  .product-info {
+    min-width: 0;
+  }
 }
+
+/* ✅ NOVO BREAKPOINT CRÍTICO: MOBILE PEQUENO (480px) */
+@media (max-width: 480px) {
+  .top-products-container {
+    padding: 12px;
+    margin-bottom: 12px;
+    border-width: 1px;
+  }
+  
+  .top-products-header {
+    margin-bottom: 12px;
+  }
+  
+  .top-products-header h3 {
+    font-size: 14px;
+  }
+  
+  .product-item {
+    padding: 8px 0px;
+    min-height: 42px;
+    gap: 8px;
+  }
+  
+  .product-rank {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+  }
+  
+  .rank-number {
+    font-size: 10px;
+  }
+  
+  /* ✅ SOLUÇÃO DEFINITIVA PARA MOBILE PEQUENO */
+  .product-name {
+    font-size: 11px;
+    /* Força truncamento com largura máxima calculada */
+    max-width: calc(100vw - 120px); /* Largura da tela menos espaço dos outros elementos */
+  }
+  
+  .product-sales {
+    font-size: 9px;
+  }
+}
+
+/* ✅ BREAKPOINT PARA MOBILE MUITO PEQUENO (360px) - CELULARES ANTIGOS */
+@media (max-width: 360px) {
+  .top-products-container {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .top-products-header h3 {
+    font-size: 13px;
+  }
+  
+  .product-item {
+    gap: 6px;
+    padding: 6px 0px;
+    min-height: 38px;
+  }
+  
+  .product-name {
+    font-size: 10px;
+    max-width: calc(100vw - 100px); /* Ainda mais ajustado */
+  }
+  
+  .product-rank {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+  }
+  
+  .rank-number {
+    font-size: 9px;
+  }
+  
+  .product-sales {
+    font-size: 8px;
+  }
+}
+
+/* ✅ CORREÇÃO DE EMERGÊNCIA - SE NADA FUNCIONAR */
+/* Descomente apenas se os breakpoints acima não resolverem */
+/*
+@media (max-width: 480px) {
+  .top-products-container {
+    overflow-x: hidden !important;
+  }
+  
+  .products-list {
+    overflow-x: hidden !important;
+  }
+  
+  .product-name {
+    max-width: 150px !important;
+  }
+}
+*/
