@@ -206,7 +206,7 @@
   }
   
   .product-name {
-    font-size: 12px;
+    font-size: 14px;
   }
   
   .product-sales {
@@ -225,6 +225,7 @@
     padding: 12px;
     margin-bottom: 12px;
     border-width: 1px;
+    border: 2px solid #1a3a5f;
   }
   
   .top-products-header {
@@ -253,7 +254,7 @@
   
   /* ✅ SOLUÇÃO DEFINITIVA PARA MOBILE PEQUENO */
   .product-name {
-    font-size: 11px;
+    font-size: 12px;
     /* Força truncamento com largura máxima calculada */
     max-width: calc(100vw - 120px); /* Largura da tela menos espaço dos outros elementos */
   }
