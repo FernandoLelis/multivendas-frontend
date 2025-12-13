@@ -38,7 +38,20 @@ export interface PlatformData {
   percentage: number;
 }
 
+// 🆕 Interface para quantidade de vendas
+export interface QuantidadeVendas {
+  mesAtual: number;
+  anoAtual: number;
+  variacao: number;
+}
+
 export interface CardMetrics {
+  // 🆕 NOVO CARD PRIMEIRO
+  quantidadeVendas: {
+    atual: number;    // Vendas do mês
+    total: number;    // Vendas do ano  
+    growth: number;   // Variação vs mês anterior
+  };
   faturamento: { 
     atual: number,    // MÊS atual
     total: number,    // ANO atual
@@ -121,7 +134,8 @@ export class DashboardService {
     lucroBruto: 1300,
     lucroLiquido: 850,
     despesasOperacionais: 450,
-    roi: 40
+    roi: 40,
+    quantidadeVendas: 7 // 🆕 ADICIONADO para cálculo de variação
   };
 
   constructor(private http: HttpClient) {
@@ -207,6 +221,20 @@ export class DashboardService {
     );
   }
 
+  // 🆕 MÉTODO: Quantidade de vendas (mês atual, ano atual, variação)
+  getQuantidadeVendas(): Observable<QuantidadeVendas> {
+    return this.http.get<QuantidadeVendas>(`${this.apiUrl}/api/vendas/quantidade-vendas`).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar quantidade de vendas:', error);
+        return of({
+          mesAtual: 0,
+          anoAtual: 0,
+          variacao: 0
+        });
+      })
+    );
+  }
+
   // ✅ MÉTODO ATUALIZADO: Cálculos corretos conforme fórmulas estabelecidas
   getCardsMetrics(): Observable<CardMetrics> {
     // Buscar TODOS os dados em paralelo
@@ -215,22 +243,26 @@ export class DashboardService {
       despesasMes: this.getTotalDespesasMesAtual(), // Despesas variáveis do MÊS
       despesasAno: this.getTotalDespesas(),        // Despesas variáveis do ANO
       faturamentoMes: this.getFaturamentoMesAtual(),
-      custoEfetivoMes: this.getCustoEfetivoMesAtual()
-      // ⚠️ Não usar getLucroBrutoMesAtual() até backend estar corrigido
-      // Podemos usar após correção: lucroBrutoMes: this.getLucroBrutoMesAtual()
+      custoEfetivoMes: this.getCustoEfetivoMesAtual(),
+      // 🆕 ADICIONAR: quantidade de vendas
+      quantidadeVendas: this.getQuantidadeVendas()
     }).pipe(
       map(({ 
         vendas, 
         despesasMes, 
         despesasAno, 
         faturamentoMes,
-        custoEfetivoMes
+        custoEfetivoMes,
+        quantidadeVendas // 🆕 NOVO
       }) => {
         
         console.log('🔍 DEBUG getCardsMetrics - Valores recebidos:');
         console.log('  Faturamento Mês:', faturamentoMes);
         console.log('  Custo Efetivo Mês:', custoEfetivoMes);
         console.log('  Despesas Mês:', despesasMes);
+        console.log('  Quantidade Vendas Mês:', quantidadeVendas.mesAtual);
+        console.log('  Quantidade Vendas Ano:', quantidadeVendas.anoAtual);
+        console.log('  Variação Vendas:', quantidadeVendas.variacao);
         
         // 🎯 CÁLCULOS CONFORME FÓRMULAS ESTABELECIDAS:
         // Fórmulas: https://github.com/FernandoLelis/multivendas-backend
@@ -268,8 +300,17 @@ export class DashboardService {
         const despesasGrowth = this.calculateGrowth(despesasMes, this.previousMonthData.despesasOperacionais);
         const roiGrowth = this.calculateGrowth(roiMes, this.previousMonthData.roi);
         
+        // 🆕 Calcular growth para quantidade de vendas
+        const quantidadeVendasGrowth = quantidadeVendas.variacao || 0;
+        
         // 7. Retornar métricas calculadas corretamente
         return {
+          // 🆕 NOVO CARD PRIMEIRO (como você pediu)
+          quantidadeVendas: {
+            atual: quantidadeVendas.mesAtual || 0,
+            total: quantidadeVendas.anoAtual || 0,
+            growth: quantidadeVendasGrowth
+          },
           faturamento: { 
             atual: faturamentoMes,           // MÊS atual
             total: vendas.faturamentoTotal,  // ANO atual
@@ -315,14 +356,18 @@ export class DashboardService {
       forkJoin({
         faturamento: this.getFaturamentoMesAtual(),
         custoEfetivo: this.getCustoEfetivoMesAtual(),
-        lucroBrutoBackend: this.getLucroBrutoMesAtual()
-      }).subscribe(({ faturamento, custoEfetivo, lucroBrutoBackend }) => {
+        lucroBrutoBackend: this.getLucroBrutoMesAtual(),
+        quantidadeVendas: this.getQuantidadeVendas()
+      }).subscribe(({ faturamento, custoEfetivo, lucroBrutoBackend, quantidadeVendas }) => {
         console.log('🔍 DEBUG SERVICE - Cálculos:');
         console.log('  Faturamento:', faturamento);
         console.log('  Custo Efetivo:', custoEfetivo);
         console.log('  Lucro Bruto (Backend):', lucroBrutoBackend);
         console.log('  Lucro Bruto (Calculado):', faturamento - custoEfetivo);
         console.log('  Diferença:', (faturamento - custoEfetivo) - lucroBrutoBackend);
+        console.log('  Quantidade Vendas Mês:', quantidadeVendas.mesAtual);
+        console.log('  Quantidade Vendas Ano:', quantidadeVendas.anoAtual);
+        console.log('  Variação Vendas:', quantidadeVendas.variacao);
       });
     }, 3000);
   }
@@ -550,6 +595,12 @@ export class DashboardService {
 
   private getMockCardsMetrics(): CardMetrics {
     return {
+      // 🆕 NOVO CARD PRIMEIRO
+      quantidadeVendas: {
+        atual: 8,
+        total: 45,
+        growth: 14.3
+      },
       faturamento: { 
         atual: 580,
         total: 4900,

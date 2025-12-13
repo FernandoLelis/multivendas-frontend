@@ -11,7 +11,43 @@
     <button (click)="refreshData()">Tentar novamente</button>
   </div>
 
-  <!-- Card 1 - FATURAMENTO -->
+  <!-- ✅ NOVO CARD 1 - QUANTIDADE DE VENDAS (PRIMEIRO) -->
+  <div class="metric-card" *ngIf="metricsData && !isLoading">
+    <div class="metric-column icon-column">
+      <div class="metric-icon">
+        <!-- Ícone de shopping bag para vendas -->
+        <i class="fas fa-shopping-bag" style="font-size: 52px; color: #06A8F4;"></i>
+      </div>
+    </div>
+    
+    <div class="metric-column info-column">
+      <h3>VENDAS</h3>
+      <!-- Quantidade do mês em destaque (formato inteiro) -->
+      <div class="metric-main-value">{{ metricsData.quantidadeVendas.atual }}</div>
+      <!-- Total do ano abaixo -->
+      <div class="metric-total">Total: {{ metricsData.quantidadeVendas.total }}</div>
+    </div>
+    
+    <div class="metric-column growth-column">
+      <div class="growth-container">
+        <svg [class.positive]="formatGrowth(metricsData.quantidadeVendas.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.quantidadeVendas.growth).isPositive"
+             class="growth-arrow" viewBox="0 0 24 24" fill="currentColor">
+          <path *ngIf="formatGrowth(metricsData.quantidadeVendas.growth).isPositive" 
+                d="M12 3l9 7.5-3.5 1.5V21H6.5V12L3 10.5 12 3z"/>
+          <path *ngIf="!formatGrowth(metricsData.quantidadeVendas.growth).isPositive" 
+                d="M12 21l-9-7.5 3.5-1.5V3h11v8.5l3.5 1.5L12 21z"/>
+        </svg>
+        <div [class.positive]="formatGrowth(metricsData.quantidadeVendas.growth).isPositive"
+             [class.negative]="!formatGrowth(metricsData.quantidadeVendas.growth).isPositive"
+             class="metric-growth">
+          {{ formatGrowth(metricsData.quantidadeVendas.growth).value }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2 - FATURAMENTO (agora segundo) -->
   <div class="metric-card" *ngIf="metricsData && !isLoading">
     <div class="metric-column icon-column">
       <div class="metric-icon">
@@ -48,7 +84,7 @@
     </div>
   </div>
 
-  <!-- Card 2 - CUSTO EFETIVO -->
+  <!-- Card 3 - CUSTO EFETIVO (agora terceiro) -->
   <div class="metric-card" *ngIf="metricsData && !isLoading">
     <div class="metric-column icon-column">
       <div class="metric-icon">
@@ -81,7 +117,8 @@
     </div>
   </div>
 
-  <!-- Card 3 - LUCRO BRUTO -->
+  <!-- ⚠️ CARD DE LUCRO BRUTO REMOVIDO/OCULTADO (mantido comentado para possível uso futuro) -->
+  <!--
   <div class="metric-card" *ngIf="metricsData && !isLoading">
     <div class="metric-column icon-column">
       <div class="metric-icon">
@@ -113,8 +150,9 @@
       </div>
     </div>
   </div>
+  -->
 
-  <!-- Card 4 - DESPESAS OPERACIONAIS -->
+  <!-- Card 4 - DESPESAS OPERACIONAIS (agora quarto) -->
   <div class="metric-card" *ngIf="metricsData && !isLoading">
     <div class="metric-column icon-column">
       <div class="metric-icon">
@@ -147,7 +185,7 @@
     </div>
   </div>
 
-  <!-- Card 5 - LUCRO LÍQUIDO -->
+  <!-- Card 5 - LUCRO LÍQUIDO (agora quinto) -->
   <div class="metric-card" *ngIf="metricsData && !isLoading">
     <div class="metric-column icon-column">
       <div class="metric-icon">
@@ -180,7 +218,7 @@
     </div>
   </div>
 
-  <!-- Card 6 - ROI -->
+  <!-- Card 6 - ROI (agora sexto) -->
   <div class="metric-card" *ngIf="metricsData && !isLoading">
     <div class="metric-column icon-column">
       <div class="metric-icon">
