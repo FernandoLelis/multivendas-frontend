@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://multivendas-backend-eep6.onrender.com'
+  apiUrl: 'https://web-production-f9e9a.up.railway.app'
 };
