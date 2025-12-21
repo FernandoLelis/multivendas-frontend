@@ -60,13 +60,14 @@
   overflow: hidden;
 }
 
-/* HEADER DO CARD COM PLATAFORMA À DIREITA - SEM BORDA */
+/* HEADER DO CARD COM PLATAFORMA À DIREITA */
 .venda-header {
   background: #01182d;
   padding: 20px 20px 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #1a3a5f;
 }
 
 .venda-header h3 {
@@ -78,8 +79,8 @@
   flex: 1;
 }
 
-/* PLATAFORMA ALINHADA À DIREITA NO HEADER */
-/* .plataforma-tag {
+/* TAG DA PLATAFORMA */
+.plataforma-tag {
   color: white;
   padding: 6px 12px;
   border-radius: 6px;
@@ -87,6 +88,7 @@
   font-weight: 600;
   white-space: nowrap;
   margin-left: 10px;
+  background: #1a3a5f;
 }
 
 .plataforma-tag.amazon {
@@ -94,7 +96,8 @@
 }
 
 .plataforma-tag.mercado-livre {
-  color: #ffe600;
+  background: #ffe600;
+  color: #01182d;
 }
 
 .plataforma-tag.shopee {
@@ -103,7 +106,7 @@
 
 .plataforma-tag.outro {
   background: #06A8F4;
-} */
+}
 
 /* CONTEÚDO PRINCIPAL DO CARD */
 .venda-content {
@@ -118,6 +121,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: 15px;
 }
 
 .info-row {
@@ -150,12 +154,118 @@
   font-weight: 400;
 }
 
-/* BOX DE CÁLCULOS COM FUNDO #1A3A5F - SEM BORDA E COM SOMBRA EXTERNA */
+/* ✅ NOVO: ESTILOS PARA LISTA DE PRODUTOS */
+.produtos-resumo {
+  margin: 15px 0;
+  border-top: 1px solid #1a3a5f;
+  border-bottom: 1px solid #1a3a5f;
+  padding: 15px 0;
+  background: rgba(26, 58, 95, 0.2);
+}
+
+.produtos-header {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #06A8F4;
+  font-weight: 500;
+  padding: 5px 0;
+  transition: all 0.3s ease;
+}
+
+.produtos-header:hover {
+  color: #0590d6;
+}
+
+.toggle-icon {
+  margin-right: 10px;
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.produtos-header.expanded .toggle-icon {
+  transform: rotate(90deg);
+}
+
+.produtos-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.produtos-lista {
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Estilizar scrollbar */
+.produtos-lista::-webkit-scrollbar {
+  width: 6px;
+}
+
+.produtos-lista::-webkit-scrollbar-track {
+  background: #1a3a5f;
+  border-radius: 3px;
+}
+
+.produtos-lista::-webkit-scrollbar-thumb {
+  background: #06A8F4;
+  border-radius: 3px;
+}
+
+.produto-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid rgba(26, 58, 95, 0.5);
+  background: rgba(1, 24, 45, 0.5);
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.produto-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.produto-nome {
+  flex: 2;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.produto-quantidade {
+  flex: 0 0 50px;
+  text-align: center;
+  font-weight: bold;
+  color: #7df525;
+  font-size: 13px;
+  background: rgba(125, 245, 37, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin: 0 10px;
+}
+
+.produto-preco {
+  flex: 0 0 80px;
+  text-align: right;
+  font-size: 12px;
+  color: #06A8F4;
+  font-weight: 500;
+}
+
+/* BOX DE CÁLCULOS COM FUNDO #1A3A5F */
 .calculos-section {
   background: #1A3A5F;
   border-radius: 8px;
   padding: 15px;
-  margin: 0;
+  margin: 15px 0 0 0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   width: 100%;
 }
@@ -176,7 +286,7 @@
   font-size: 0.95rem;
 }
 
-/* CORES DINÂMICAS PARA LUCRO LÍQUIDO E ROI - CORRIGIDO */
+/* CORES DINÂMICAS PARA LUCRO LÍQUIDO E ROI */
 .lucro-liquido.positive,
 .roi.positive {
   color: #7df525 !important;
@@ -198,16 +308,17 @@
   color: #E53935 !important;
 }
 
-/* BOTÕES ALINHADOS À ESQUERDA SEM BORDA */
+/* BOTÕES ALINHADOS À ESQUERDA */
 .venda-actions {
   background: #01182d;
   padding: 15px 20px;
   display: flex;
   gap: 10px;
   justify-content: flex-start;
+  border-top: 1px solid #1a3a5f;
 }
 
-/* BOTÃO DETALHES COM FUNDO TRANSPARENTE E BORDA AZUL DE 2PX */
+/* BOTÃO DETALHES COM FUNDO TRANSPARENTE E BORDA AZUL */
 .btn-detalhes {
   background-color: transparent;
   color: #06A8F4;
@@ -221,7 +332,7 @@
   transition: all 0.3s ease;
 }
 
-/* BOTÃO EDITAR COM FUNDO AZUL E BORDA DE 2PX */
+/* BOTÃO EDITAR COM FUNDO AZUL */
 .btn-editar {
   background-color: #06A8F4;
   color: white;
@@ -235,7 +346,7 @@
   transition: all 0.3s ease;
 }
 
-/* BOTÃO EXCLUIR COM FUNDO VERMELHO E BORDA DE 2PX */
+/* BOTÃO EXCLUIR COM FUNDO VERMELHO */
 .btn-excluir {
   background-color: #E53935;
   color: white;
@@ -274,9 +385,12 @@
   font-style: italic;
   padding: 40px;
   font-family: 'Roboto', sans-serif;
+  background: #01182d;
+  border: 2px solid #1a3a5f;
+  border-radius: 8px;
 }
 
-/* RESPONSIVIDADE - MESMO PADRÃO DO PRODUTO-LIST */
+/* RESPONSIVIDADE */
 @media (max-width: 768px) {
   .venda-list {
     padding: 15px;
@@ -288,6 +402,18 @@
 
   .venda-header {
     padding: 20px 20px 15px 15px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .venda-header h3 {
+    font-size: 16px;
+  }
+  
+  .plataforma-tag {
+    margin-left: 0;
+    align-self: flex-start;
   }
   
   .header-actions {
@@ -304,50 +430,67 @@
     padding: 0 15px 15px 15px;
   }
   
+  .venda-info {
+    gap: 6px;
+  }
+  
+  .label {
+    min-width: 100px;
+    font-size: 0.85rem;
+  }
+  
+  .value {
+    font-size: 0.85rem;
+  }
+  
+  /* ✅ AJUSTES PARA LISTA DE PRODUTOS EM MOBILE */
+  .produto-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 8px;
+  }
+  
+  .produto-nome {
+    width: 100%;
+    white-space: normal;
+    margin-bottom: 5px;
+  }
+  
+  .produto-quantidade {
+    align-self: flex-start;
+    margin: 0;
+  }
+  
+  .produto-preco {
+    align-self: flex-start;
+    text-align: left;
+  }
+  
+  .produtos-lista {
+    max-height: 150px;
+  }
+  
+  /* BOTÕES EM MOBILE */
   .venda-actions {
     flex-direction: column;
     padding: 15px;
+    gap: 8px;
   }
   
   .btn-detalhes, .btn-editar, .btn-excluir {
     width: 100%;
+    text-align: center;
   }
   
   .btn-nova-venda {
     width: 100%;
   }
   
-  /* CORREÇÃO PRINCIPAL: MANTÉM INFO-ROW EM LINHA */
-  .info-row {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .label {
-    min-width: 100px;
-    font-size: 0.9rem;
-  }
-  
-  .value {
-    font-size: 0.85rem;
-    text-align: left;
-  }
-  
-  .venda-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .plataforma-tag {
-    margin-left: 0;
-    align-self: flex-start;
-  }
-  
   /* AJUSTES PARA CÁLCULOS SECTION EM MOBILE */
   .calculos-section {
     padding: 12px;
+    margin: 10px 0 0 0;
   }
   
   .calculos-section .label {
@@ -383,4 +526,61 @@
   .calculos-section .value {
     font-size: 0.8rem;
   }
+  
+  /* ✅ AJUSTES PARA PRODUTOS EM TELAS PEQUENAS */
+  .produtos-resumo {
+    margin: 10px 0;
+    padding: 10px 0;
+  }
+  
+  .produtos-label {
+    font-size: 13px;
+  }
+  
+  .produto-item {
+    padding: 6px;
+    margin-bottom: 4px;
+  }
+  
+  .produto-nome {
+    font-size: 12px;
+  }
+  
+  .produto-quantidade {
+    font-size: 12px;
+    padding: 1px 4px;
+  }
+  
+  .produto-preco {
+    font-size: 11px;
+  }
+  
+  .venda-header {
+    padding: 15px 15px 10px 15px;
+  }
+  
+  .venda-header h3 {
+    font-size: 15px;
+  }
+  
+  .plataforma-tag {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+}
+
+/* ✅ ANIMAÇÃO PARA EXPANSÃO DOS PRODUTOS */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+  }
+}
+
+.produtos-lista {
+  animation: slideDown 0.3s ease-out;
 }

@@ -6,13 +6,13 @@
 
   <div class="vendas-grid">
     <div *ngFor="let venda of vendas" class="venda-card">
-      <!-- HEADER COM NOME DO PRODUTO E PLATAFORMA À DIREITA - SEM BORDA -->
+      <!-- HEADER COM RESUMO DOS PRODUTOS E PLATAFORMA -->
       <div class="venda-header">
-        <!-- ✅ CORREÇÃO: Usar produtoNome em vez de produto.nome -->
-        <h3>{{ venda.produtoNome || 'Produto' }}</h3>
-        <!-- <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
+        <!-- ✅ CORREÇÃO: Resumo dos produtos (primeiro produto + contagem) -->
+        <h3>{{ getResumoProdutos(venda) }}</h3>
+        <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
           {{ venda.plataforma }}
-        </span> -->
+        </span>
       </div>
       
       <!-- CONTEÚDO PRINCIPAL -->
@@ -31,10 +31,19 @@
             <span class="label">Data:</span>
             <span class="value">{{ venda.data | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
+          
+          <!-- ✅ CORREÇÃO: Quantidade total de TODOS os itens -->
           <div class="info-row">
-            <span class="label">Quantidade:</span>
-            <span class="value">{{ venda.quantidade }} unidades</span>
+            <span class="label">Quantidade Total:</span>
+            <span class="value">{{ getQuantidadeTotal(venda) }} unidades</span>
           </div>
+          
+          <!-- ✅ NOVO: Número de produtos diferentes -->
+          <div class="info-row">
+            <span class="label">Produtos:</span>
+            <span class="value">{{ getNumeroProdutos(venda) }} itens</span>
+          </div>
+          
           <div class="info-row">
             <span class="label">Valor Total:</span>
             <span class="value highlight">{{ venda.precoVenda | brlCurrency }}</span>
@@ -62,6 +71,22 @@
                    [class.negative]="venda.roi < 0">
               {{ formatarROI(venda.roi) }}
             </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ NOVO: LISTA RÁPIDA DOS PRODUTOS (expandível) -->
+      <div class="produtos-resumo" *ngIf="venda.itens && venda.itens.length > 0">
+        <div class="produtos-header" (click)="toggleProdutos(venda)">
+          <span class="toggle-icon">{{ venda.mostrarProdutos ? '▼' : '▶' }}</span>
+          <span class="produtos-label">Ver produtos ({{ venda.itens.length }})</span>
+        </div>
+        
+        <div class="produtos-lista" *ngIf="venda.mostrarProdutos">
+          <div *ngFor="let item of venda.itens" class="produto-item">
+            <span class="produto-nome">{{ item.produtoNome || 'Produto' }}</span>
+            <span class="produto-quantidade">{{ item.quantidade }}x</span>
+            <span class="produto-preco">{{ item.custoUnitario | brlCurrency }} un.</span>
           </div>
         </div>
       </div>

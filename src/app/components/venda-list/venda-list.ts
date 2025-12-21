@@ -6,6 +6,8 @@ import { CompraFormComponent } from '../compra-form/compra-form';
 import { ModalService } from '../../services/modal.service';
 import { BrazilianCurrencyPipe } from '../../pipes/brazilian-currency.pipe';
 import { Produto } from '../../models/produto';
+import { Venda } from '../../models/venda';
+import { ItemVenda } from '../../models/item-venda';
 
 @Component({
   selector: 'app-venda-list',
@@ -44,7 +46,15 @@ export class VendaListComponent implements OnInit {
           return new Date(b.data).getTime() - new Date(a.data).getTime();
         });
         
-        this.vendas = vendasOrdenadas.map(venda => this.calcularLucroERoi(venda));
+        // ✅ Garantir que todas as vendas tenham o campo mostrarProdutos
+        this.vendas = vendasOrdenadas.map(venda => {
+          const vendaCalculada = this.calcularLucroERoi(venda);
+          // ✅ Adicionar propriedade para controlar exibição dos produtos
+          return {
+            ...vendaCalculada,
+            mostrarProdutos: false
+          };
+        });
         
         console.log('🔍 DEBUG - Vendas ordenadas:', this.vendas);
       },
@@ -52,6 +62,49 @@ export class VendaListComponent implements OnInit {
         console.error('❌ Erro ao carregar vendas:', error);
       }
     });
+  }
+
+  // ✅ NOVO: Métodos para lidar com múltiplos itens
+
+  // Quantidade total de TODOS os itens da venda
+  getQuantidadeTotal(venda: any): number {
+    if (!venda.itens || venda.itens.length === 0) return 0;
+    
+    return venda.itens.reduce((total: number, item: ItemVenda) => {
+      return total + (item.quantidade || 0);
+    }, 0);
+  }
+
+  // Número de produtos diferentes na venda
+  getNumeroProdutos(venda: any): number {
+    return venda.itens ? venda.itens.length : 0;
+  }
+
+  // Resumo dos produtos (ex: "Produto A, Produto B + 2 mais")
+  getResumoProdutos(venda: any): string {
+    if (!venda.itens || venda.itens.length === 0) {
+      return 'Venda sem produtos';
+    }
+    
+    if (venda.itens.length === 1) {
+      return venda.itens[0].produtoNome || 'Produto';
+    }
+    
+    if (venda.itens.length === 2) {
+      const produto1 = venda.itens[0].produtoNome || 'Produto 1';
+      const produto2 = venda.itens[1].produtoNome || 'Produto 2';
+      return `${produto1} e ${produto2}`;
+    }
+    
+    // Para 3 ou mais produtos
+    const primeiroProduto = venda.itens[0].produtoNome || 'Produto';
+    const outrosQuantidade = venda.itens.length - 1;
+    return `${primeiroProduto} + ${outrosQuantidade} mais`;
+  }
+
+  // Alternar exibição da lista de produtos
+  toggleProdutos(venda: any): void {
+    venda.mostrarProdutos = !venda.mostrarProdutos;
   }
 
   calcularLucroERoi(venda: any): any {
