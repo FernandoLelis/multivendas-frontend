@@ -10,9 +10,9 @@
       <div class="venda-header">
         <!-- ✅ CORREÇÃO: Resumo dos produtos (primeiro produto + contagem) -->
         <h3>{{ getResumoProdutos(venda) }}</h3>
-        <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
+        <!-- <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
           {{ venda.plataforma }}
-        </span>
+        </span> -->
       </div>
       
       <!-- CONTEÚDO PRINCIPAL -->
@@ -29,7 +29,7 @@
           </div>
           <div class="info-row">
             <span class="label">Data:</span>
-            <span class="value">{{ venda.data | date:'dd/MM/yyyy HH:mm' }}</span>
+            <span class="value">{{ venda.data | date:'dd/MM/yyyy' }}</span>
           </div>
           
           <!-- ✅ CORREÇÃO: Quantidade total de TODOS os itens -->
