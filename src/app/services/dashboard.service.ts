@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, map, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-// Interfaces (mantidas iguais)
+// Interfaces (atualizadas)
 export interface PlatformRevenue {
   AMAZON: number;
   MERCADO_LIVRE: number;
@@ -11,8 +11,10 @@ export interface PlatformRevenue {
   [key: string]: number;
 }
 
+// ⚠️ ATUALIZADA: Mudado de 'produto' para 'produtoNome' conforme backend
 export interface TopProduct {
-  produto: string;
+  produtoId: number;
+  produtoNome: string;
   quantidadeVendida: number;
   faturamento: number;
   lucroLiquido: number;
@@ -434,10 +436,26 @@ export class DashboardService {
     return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe(
       map(dashboardData => {
         const produtos = dashboardData.produtosMaisVendidos || [];
-        const produtosConvertidos = produtos.slice(0, limite).map(produto => ({
-          nome: produto.produto,
-          quantidadeVendida: produto.quantidadeVendida
-        }));
+        
+        // DEBUG: Verificar estrutura dos dados
+        console.log('🔍 DEBUG getProdutosMaisVendidos - Dados do backend:', produtos);
+        if (produtos.length > 0) {
+          console.log('🔍 DEBUG - Estrutura do primeiro item:', Object.keys(produtos[0]));
+          console.log('🔍 DEBUG - Primeiro item completo:', produtos[0]);
+        }
+        
+        // Converter para o formato esperado pelo componente
+        const produtosConvertidos = produtos.slice(0, limite).map(item => {
+          // O backend retorna 'produtoNome' (com N maiúsculo)
+          const nomeProduto = item.produtoNome || 'Produto sem nome';
+          
+          return {
+            nome: nomeProduto,
+            quantidadeVendida: item.quantidadeVendida || 0
+          };
+        });
+        
+        console.log('🔍 DEBUG - Produtos convertidos:', produtosConvertidos);
         return produtosConvertidos;
       }),
       catchError(error => {
@@ -578,9 +596,9 @@ export class DashboardService {
         SHOPEE: 800
       },
       produtosMaisVendidos: [
-        { produto: 'Smartphone XYZ', quantidadeVendida: 15, faturamento: 7500, lucroLiquido: 1200 },
-        { produto: 'Fone Bluetooth', quantidadeVendida: 12, faturamento: 1200, lucroLiquido: 400 },
-        { produto: 'Carregador USB-C', quantidadeVendida: 10, faturamento: 500, lucroLiquido: 150 }
+        { produtoId: 1, produtoNome: 'Smartphone XYZ', quantidadeVendida: 15, faturamento: 7500, lucroLiquido: 1200 },
+        { produtoId: 2, produtoNome: 'Fone Bluetooth', quantidadeVendida: 12, faturamento: 1200, lucroLiquido: 400 },
+        { produtoId: 3, produtoNome: 'Carregador USB-C', quantidadeVendida: 10, faturamento: 500, lucroLiquido: 150 }
       ]
     };
   }
