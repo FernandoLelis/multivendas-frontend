@@ -1,194 +1,340 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Compra } from '../../models/compra';
+import { Compra, criarCompraVazia, calcularCustoTotalCompra } from '../../models/compra';
+import { ItemCompra, criarItemCompraDeProduto, calcularCustoTotalItem } from '../../models/item-compra';
 import { Produto } from '../../models/produto';
 import { ComprasService } from '../../services/compra.service';
 import { ProdutoService } from '../../services/produto.service';
 import { ProdutoFormComponent } from '../produto-form/produto-form';
-import { BrazilianCurrencyDirective } from '../../pipes/brazilian-currency.directive';
-import { ModalService } from '../../services/modal.service';
+import { BrazilianCurrencyPipe } from '../../pipes/brazilian-currency.pipe';
 
 @Component({
   selector: 'app-compra-form',
   standalone: true,
   imports: [
     CommonModule, 
-    FormsModule, 
+    FormsModule,
     ProdutoFormComponent,
-    BrazilianCurrencyDirective
+    BrazilianCurrencyPipe
   ],
   templateUrl: './compra-form.html',
   styleUrls: ['./compra-form.css']
 })
-export class CompraFormComponent implements OnChanges {
+export class CompraFormComponent implements OnInit {
   @Input() compra: Compra | null = null;
   @Output() fecharModal = new EventEmitter<void>();
   @Output() compraSalva = new EventEmitter<void>();
   
+  // Dados da compra principal
   compraEdit: Compra = this.getCompraVazia();
+  
+  // Produtos disponíveis para compra
   produtos: Produto[] = [];
-
+  categoriaFixa: string = 'Produto'; // ✅ CATEGORIA FIXA - APENAS PRODUTOS
+  modoEdicao: boolean = false;
+  
+  // Sistema de carrinho (similar ao de vendas)
+  produtoSelecionado: Produto | null = null;
+  quantidadeSelecionada: number = 1;
+  custoUnitarioSelecionado: number = 0;
+  custoTotalSelecionado: number = 0;
+  
   // Estado do modal de produto
   mostrarModalProduto: boolean = false;
+  
+  // Controle de estoque (para verificar se produto já existe no estoque)
+  produtoJaNoEstoque: boolean = false;
+  saldoAtual: number = 0;
+  
+  // Quantidade do produto já no carrinho
+  quantidadeNoCarrinho: number = 0;
 
   constructor(
     private compraService: ComprasService,
-    private produtoService: ProdutoService,
-    private modalService: ModalService
+    private produtoService: ProdutoService
   ) {}
 
-  ngOnChanges(): void {
-    console.log('🔍 DEBUG - Compra recebida para edição:', this.compra);
-    
-    if (this.compra) {
-      this.compraEdit = { ...this.compra };
-      // ✅ CORREÇÃO: Garantir que a data seja formatada corretamente para o input date
-      if (this.compraEdit.dataEntrada) {
-        this.compraEdit.dataEntrada = this.formatarDataParaInput(this.compraEdit.dataEntrada);
-      }
-      // ✅ INICIALIZAR CAMPOS DE CUSTO PARA AUTO-CÁLCULO
-      this.inicializarCamposCusto();
-    } else {
-      this.compraEdit = this.getCompraVazia();
-    }
-
+  ngOnInit(): void {
+    console.log('🔍 [COMPRA-FORM] ngOnInit iniciado');
+    console.log('🔍 [COMPRA-FORM] compra recebida no @Input:', this.compra);
+    console.log('🔍 [COMPRA-FORM] Data inicial:', this.compraEdit.dataEntrada);
     this.carregarProdutos();
   }
 
-  // ✅ INICIALIZAR CAMPOS DE CUSTO PARA AUTO-CÁLCULO
-  private inicializarCamposCusto(): void {
-    if (this.compraEdit.custoTotal && this.compraEdit.quantidade) {
-      // Se já existe custoTotal, calcular unitário
-      this.compraEdit.custoUnitario = this.compraEdit.quantidade > 0 ? 
-        this.compraEdit.custoTotal / this.compraEdit.quantidade : 0;
-      
-      // Arredondar para 2 casas decimais (sistema monetário brasileiro)
-      this.compraEdit.custoUnitario = Math.round(this.compraEdit.custoUnitario * 100) / 100;
-    } else {
-      this.compraEdit.custoUnitario = 0;
-    }
-  }
-
-  private formatarDataParaInput(data: string): string {
-    if (!data) return new Date().toISOString().split('T')[0];
-    
-    try {
-      // ✅ CORREÇÃO: Extrair apenas a parte da data (YYYY-MM-DD) do LocalDateTime
-      const dataObj = new Date(data.split('T')[0]);
-      return dataObj.toISOString().split('T')[0];
-    } catch (e) {
-      console.warn('Erro ao formatar data:', data, e);
-      return new Date().toISOString().split('T')[0];
-    }
-  }
-
+  // ✅ Método para criar compra vazia com data atual
   private getCompraVazia(): Compra {
-    // ✅ CORREÇÃO: Criar variável para data atual formatada corretamente
-    const hoje = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const dataFormatada = now.toISOString().split('T')[0];
     
     return {
-      categoria: 'Produto', // ✅ CATEGORIA FIXA NO BACKEND
-      fornecedor: '',
+      dataEntrada: dataFormatada,
       idPedidoCompra: '',
-      quantidade: 1,
-      custoTotal: 0,
-      custoUnitario: 0,
-      dataEntrada: hoje, // ✅ CORREÇÃO: Usa variável formatada
-      // ✅ CORREÇÃO: Usar as novas propriedades do DTO
-      produtoId: 0,
-      produtoNome: '',
-      produtoSku: '',
-      saldo: 0,
-      observacoes: ''
+      fornecedor: '',
+      categoria: 'Produto', // ✅ CATEGORIA FIXA
+      observacoes: '',
+      itens: []
     };
   }
 
-  private carregarProdutos(): void {
+  carregarProdutos(): void {
+    console.log('🔍 [COMPRA-FORM] Carregando produtos...');
     this.produtoService.getProdutos().subscribe({
-      next: (produtos) => {
+      next: (produtos: Produto[]) => {
         this.produtos = produtos;
+        console.log('✅ [COMPRA-FORM] Produtos carregados:', produtos.length);
+        
+        this.inicializarFormulario();
       },
-      error: (error) => {
-        console.error('Erro ao carregar produtos:', error);
-        this.modalService.abrirModal({
-          titulo: 'Erro ao Carregar Produtos',
-          mensagem: 'Não foi possível carregar a lista de produtos.',
-          tipo: 'erro',
-          textoBotaoPrimario: 'Entendi'
-        });
+      error: (error: any) => {
+        console.error('❌ Erro ao carregar produtos:', error);
       }
     });
   }
 
-  // ✅ CALCULAR CUSTO TOTAL BASEADO NO UNITÁRIO E QUANTIDADE
-  calcularCustoTotal(): void {
-    const custoUnitario = this.compraEdit.custoUnitario || 0;
-    const quantidade = this.compraEdit.quantidade || 0;
+  inicializarFormulario(): void {
+    console.log('🔍 [COMPRA-FORM] Inicializando formulário...');
+    console.log('🔍 [COMPRA-FORM] this.compra:', this.compra);
     
-    if (custoUnitario && quantidade) {
-      this.compraEdit.custoTotal = custoUnitario * quantidade;
-      // Arredondar para 2 casas decimais (sistema monetário brasileiro)
-      this.compraEdit.custoTotal = Math.round(this.compraEdit.custoTotal * 100) / 100;
+    if (this.compra && this.compra.id) {
+      // MODO EDIÇÃO: Carregar compra existente
+      this.modoEdicao = true;
+      this.compraEdit = { ...this.compra };
+      
+      // ✅ CORREÇÃO: Garantir formato de data correto para type="date"
+      if (this.compraEdit.dataEntrada && this.compraEdit.dataEntrada.includes('T')) {
+        this.compraEdit.dataEntrada = this.compraEdit.dataEntrada.split('T')[0];
+      }
+      
+      // Garantir que itens existem (para compatibilidade)
+      if (!this.compraEdit.itens) {
+        this.compraEdit.itens = [];
+      }
+      
+      console.log('🔍 [COMPRA-FORM] Modo EDIÇÃO, itens:', this.compraEdit.itens.length);
     } else {
-      this.compraEdit.custoTotal = 0;
+      // MODO NOVA COMPRA: Já iniciou com data preenchida no getCompraVazia()
+      this.modoEdicao = false;
+      console.log('🔍 [COMPRA-FORM] Modo NOVA COMPRA, data:', this.compraEdit.dataEntrada);
     }
   }
 
-  // ✅ CALCULAR CUSTO UNITÁRIO BASEADO NO TOTAL E QUANTIDADE
-  calcularCustoUnitario(): void {
-    const custoTotal = this.compraEdit.custoTotal || 0;
-    const quantidade = this.compraEdit.quantidade || 0;
+  // Método para calcular quantidade já no carrinho
+  calcularQuantidadeNoCarrinho(produtoId: number): number {
+    if (!produtoId) return 0;
     
-    if (custoTotal && quantidade && quantidade > 0) {
-      this.compraEdit.custoUnitario = custoTotal / quantidade;
-      // Arredondar para 2 casas decimais (sistema monetário brasileiro)
-      this.compraEdit.custoUnitario = Math.round(this.compraEdit.custoUnitario * 100) / 100;
+    const quantidadeTotal = this.compraEdit.itens
+      .filter(item => item.produtoId === produtoId)
+      .reduce((total, item) => total + item.quantidade, 0);
+    
+    return quantidadeTotal;
+  }
+
+  // Método chamado quando o produto é alterado
+  onProdutoChange(): void {
+    console.log('🔍 [COMPRA-FORM] Produto alterado:', this.produtoSelecionado?.nome);
+    
+    if (this.produtoSelecionado) {
+      // Verificar se produto já tem estoque
+      this.verificarProdutoNoEstoque();
     } else {
-      this.compraEdit.custoUnitario = 0;
+      this.produtoJaNoEstoque = false;
+      this.quantidadeNoCarrinho = 0;
     }
   }
 
-  // MÉTODOS HELPER PARA O TEMPLATE
-  getDataCompra(): string {
-    return this.compraEdit.dataEntrada;
+  // Verificar se produto já existe no estoque
+  verificarProdutoNoEstoque(): void {
+    if (!this.produtoSelecionado) return;
+    
+    const produtoId = this.produtoSelecionado.id!;
+    
+    // Calcular quanto já está no carrinho
+    this.quantidadeNoCarrinho = this.calcularQuantidadeNoCarrinho(produtoId);
+    
+    // Buscar produto atualizado para pegar estoque
+    this.produtoService.getProduto(produtoId).subscribe({
+      next: (produtoAtualizado: Produto) => {
+        const estoqueAtual = produtoAtualizado.quantidadeEstoqueTotal || 0;
+        this.saldoAtual = estoqueAtual;
+        
+        // Produto já tem estoque
+        this.produtoJaNoEstoque = estoqueAtual > 0;
+        
+        console.log(`📦 [COMPRA-FORM] VERIFICAÇÃO ESTOQUE:`);
+        console.log(`📦 Disponível: ${estoqueAtual} unidades`);
+        console.log(`📦 No carrinho: ${this.quantidadeNoCarrinho} unidades`);
+        console.log(`📦 Já no estoque: ${this.produtoJaNoEstoque}`);
+      },
+      error: (error: any) => {
+        console.error('Erro ao verificar estoque:', error);
+        this.produtoJaNoEstoque = false;
+      }
+    });
   }
 
-  setDataCompra(value: string): void {
-    this.compraEdit.dataEntrada = value;
+  // Método chamado quando a quantidade é alterada
+  onQuantidadeChange(): void {
+    console.log('🔍 [COMPRA-FORM] Quantidade alterada:', this.quantidadeSelecionada);
+    
+    // Calcular custo total quando quantidade muda
+    this.calcularCustoTotal();
   }
 
-  getCompraProduto(): any {
-    return this.compraEdit;
-  }
-
-  // ✅ CORREÇÃO: MÉTODO ATUALIZADO PARA LIDAR COM SELEÇÃO DE PRODUTO
+  // Método para lidar com seleção de produto no select
   onProdutoSelecionado(event: any): void {
     const produtoId = event.target.value;
+    console.log('🔍 [COMPRA-FORM] onProdutoSelecionado chamado:', produtoId);
     
     if (produtoId === 'novo') {
       this.abrirModalProduto();
-      this.compraEdit.produtoId = 0;
-      this.compraEdit.produtoNome = '';
-      this.compraEdit.produtoSku = '';
+      this.produtoSelecionado = null;
+      this.produtoJaNoEstoque = false;
+      this.quantidadeNoCarrinho = 0;
       setTimeout(() => {
         event.target.value = '';
       });
     } else {
       const produtoSelecionado = this.produtos.find(p => p.id === Number(produtoId));
       if (produtoSelecionado) {
-        this.compraEdit.produtoId = produtoSelecionado.id!;
-        this.compraEdit.produtoNome = produtoSelecionado.nome;
-        this.compraEdit.produtoSku = produtoSelecionado.sku;
+        this.produtoSelecionado = produtoSelecionado;
+        this.onProdutoChange(); // Chamar verificação de estoque
       } else {
-        this.compraEdit.produtoId = 0;
-        this.compraEdit.produtoNome = '';
-        this.compraEdit.produtoSku = '';
+        this.produtoSelecionado = null;
+        this.produtoJaNoEstoque = false;
+        this.quantidadeNoCarrinho = 0;
       }
     }
   }
 
-  // MÉTODOS PARA MODAL DE PRODUTO
+  // Métodos para cálculo automático
+  calcularCustoTotal(): void {
+    const custoUnitario = this.custoUnitarioSelecionado || 0;
+    const quantidade = this.quantidadeSelecionada || 0;
+    
+    if (custoUnitario && quantidade) {
+      this.custoTotalSelecionado = custoUnitario * quantidade;
+      this.custoTotalSelecionado = Math.round(this.custoTotalSelecionado * 100) / 100;
+    } else {
+      this.custoTotalSelecionado = 0;
+    }
+  }
+
+  calcularCustoUnitario(): void {
+    const custoTotal = this.custoTotalSelecionado || 0;
+    const quantidade = this.quantidadeSelecionada || 0;
+    
+    if (custoTotal && quantidade && quantidade > 0) {
+      this.custoUnitarioSelecionado = custoTotal / quantidade;
+      this.custoUnitarioSelecionado = Math.round(this.custoUnitarioSelecionado * 100) / 100;
+    } else {
+      this.custoUnitarioSelecionado = 0;
+    }
+  }
+
+  // ✅ ATUALIZADO: Validação para adicionar ao carrinho
+  adicionarAoCarrinho(): void {
+    if (!this.produtoSelecionado) {
+      alert('Por favor, selecione um produto primeiro.');
+      return;
+    }
+    
+    if (this.quantidadeSelecionada <= 0) {
+      alert('A quantidade deve ser maior que zero.');
+      return;
+    }
+    
+    if (this.custoTotalSelecionado <= 0) {
+      alert('O custo total deve ser maior que zero.');
+      return;
+    }
+    
+    const produtoId = this.produtoSelecionado.id!;
+    
+    // Verificar se produto já está no carrinho
+    const itemExistente = this.compraEdit.itens.find(
+      item => item.produtoId === produtoId
+    );
+    
+    if (itemExistente) {
+      // Atualizar quantidade e custo do item existente
+      itemExistente.quantidade += this.quantidadeSelecionada;
+      itemExistente.custoUnitario = this.custoUnitarioSelecionado;
+      itemExistente.custoTotal = calcularCustoTotalItem(itemExistente);
+    } else {
+      // Criar novo item no carrinho
+      const novoItem: ItemCompra = criarItemCompraDeProduto(
+        this.produtoSelecionado, 
+        this.quantidadeSelecionada,
+        this.custoUnitarioSelecionado
+      );
+      
+      novoItem.custoTotal = this.custoTotalSelecionado;
+      
+      this.compraEdit.itens.push(novoItem);
+    }
+    
+    // Atualizar custo total da compra
+    this.atualizarCustoTotalCompra();
+    
+    // Limpar seleção
+    this.limparSelecaoProduto();
+    
+    console.log('🛒 [COMPRA-FORM] Produto adicionado ao carrinho');
+    console.log('🛒 [COMPRA-FORM] Itens no carrinho:', this.compraEdit.itens);
+  }
+
+  // Método para limpar seleção
+  limparSelecaoProduto(): void {
+    this.produtoSelecionado = null;
+    this.quantidadeSelecionada = 1;
+    this.custoUnitarioSelecionado = 0;
+    this.custoTotalSelecionado = 0;
+    this.produtoJaNoEstoque = false;
+    this.quantidadeNoCarrinho = 0;
+    
+    // Resetar o select
+    const selectElement = document.getElementById('produtoSelecionado') as HTMLSelectElement;
+    if (selectElement) {
+      selectElement.value = '';
+    }
+  }
+
+  removerDoCarrinho(index: number): void {
+    if (confirm('Remover este produto do carrinho?')) {
+      this.compraEdit.itens.splice(index, 1);
+      this.atualizarCustoTotalCompra();
+      console.log('🛒 [COMPRA-FORM] Item removido do carrinho');
+    }
+  }
+
+  // ✅ NOVO: Método para verificar se produto já está no carrinho
+  produtoJaNoCarrinho(produtoId: number): boolean {
+    return this.compraEdit.itens.some(item => item.produtoId === produtoId);
+  }
+
+  // ✅ ATUALIZADO: Carrinho bloqueado para edição (mesmo padrão de vendas)
+  atualizarQuantidade(item: ItemCompra, novaQuantidade: number): void {
+    alert('Para alterar a quantidade, remova o produto do carrinho e adicione novamente com a nova quantidade na seção "Adicionar Produto".');
+    return;
+  }
+
+  atualizarCustoUnitario(item: ItemCompra, novoCusto: number): void {
+    alert('Para alterar o custo, remova o produto do carrinho e adicione novamente com o novo custo na seção "Adicionar Produto".');
+    return;
+  }
+
+  atualizarCustoTotalCompra(): void {
+    this.compraEdit.custoTotal = calcularCustoTotalCompra(this.compraEdit.itens);
+  }
+
+  calcularTotalCarrinho(): number {
+    return this.compraEdit.itens.reduce((total, item) => {
+      return total + (item.custoTotal || 0);
+    }, 0);
+  }
+
+  // Modal de produto
   abrirModalProduto(): void {
     this.mostrarModalProduto = true;
   }
@@ -207,96 +353,59 @@ export class CompraFormComponent implements OnChanges {
   }
 
   salvarCompra(): void {
-    console.log('🔍 DEBUG - Objeto compra:', this.compraEdit);
+    console.log('💾 [COMPRA-FORM] Salvando compra...');
+    console.log('💾 [COMPRA-FORM] Modo:', this.modoEdicao ? 'EDIÇÃO' : 'NOVA COMPRA');
+    console.log('💾 [COMPRA-FORM] Compra completa:', this.compraEdit);
+    console.log('💾 [COMPRA-FORM] Número de itens:', this.compraEdit.itens.length);
     
-    // VALIDAÇÃO DOS CAMPOS OBRIGATÓRIOS
-    if (!this.compraEdit.idPedidoCompra || this.compraEdit.idPedidoCompra.trim() === '') {
-      this.modalService.abrirModal({
-        titulo: 'Campo Obrigatório',
-        mensagem: 'ID do Pedido de Compra é obrigatório!',
-        tipo: 'erro',
-        textoBotaoPrimario: 'Entendi'
-      });
+    if (this.compraEdit.itens.length === 0) {
+      alert('Adicione pelo menos um produto ao carrinho.');
       return;
     }
-
-    // ✅ CORREÇÃO: Validação atualizada para produtoId
-    if (!this.compraEdit.produtoId) {
-      this.modalService.abrirModal({
-        titulo: 'Campo Obrigatório',
-        mensagem: 'É necessário selecionar um produto!',
-        tipo: 'erro',
-        textoBotaoPrimario: 'Entendi'
-      });
+    
+    if (!this.compraEdit.idPedidoCompra.trim()) {
+      alert('ID do Pedido de Compra é obrigatório.');
       return;
     }
-
-    // ✅ VALIDAÇÃO: Custo deve ser maior que zero
-    const custoTotal = this.compraEdit.custoTotal || 0;
-    if (custoTotal <= 0) {
-      this.modalService.abrirModal({
-        titulo: 'Valor Inválido',
-        mensagem: 'O custo total deve ser maior que zero.',
-        tipo: 'erro',
-        textoBotaoPrimario: 'Entendi'
-      });
+    
+    if (!this.compraEdit.fornecedor.trim()) {
+      alert('Fornecedor é obrigatório.');
       return;
     }
-
-    this.salvarCompraProduto();
-  }
-
-  // ✅ MÉTODO CORRIGIDO: Remove tratamento de erro local - deixa o serviço tratar
-  private salvarCompraProduto(): void {
-    if (this.compraEdit.id) {
-      console.log('🔍 DEBUG - Atualizando compra existente ID:', this.compraEdit.id);
-      this.compraService.atualizarCompra(this.compraEdit.id, this.compraEdit).subscribe({
-        next: (compraAtualizada) => {
-          console.log('Compra atualizada com sucesso:', compraAtualizada);
+    
+    // ✅ GARANTIR CATEGORIA FIXA
+    this.compraEdit.categoria = 'Produto';
+    
+    if (this.modoEdicao && this.compraEdit.id) {
+      this.compraService.atualizarCompraMultiplos(this.compraEdit.id, this.compraEdit).subscribe({
+        next: (compraAtualizada: Compra) => {
+          console.log('✅ Compra atualizada:', compraAtualizada);
           this.compraSalva.emit();
           this.fechar();
         },
-        error: (error) => {
-          console.error('Erro ao atualizar compra:', error);
-          // ✅ REMOVIDO: Não faz mais tratamento local - o serviço já trata
-          // O serviço compra.service.ts já mostra o modal apropriado automaticamente
+        error: (error: any) => {
+          console.error('❌ Erro ao atualizar:', error);
+          alert('Erro ao atualizar compra! Verifique o console.');
         }
       });
     } else {
-      console.log('🔍 DEBUG - Criando nova compra');
-      this.compraService.criarCompraProduto(this.compraEdit).subscribe({
-        next: (compraSalva) => {
-          console.log('Compra salva com sucesso:', compraSalva);
+      this.compraService.criarCompra(this.compraEdit).subscribe({
+        next: (compraSalva: Compra) => {
+          console.log('✅ Compra criada:', compraSalva);
           this.compraSalva.emit();
           this.fechar();
         },
-        error: (error) => {
-          console.error('Erro ao salvar compra:', error);
-          // ✅ REMOVIDO: Não faz mais tratamento local - o serviço já trata
-          // O serviço compra.service.ts já mostra o modal apropriado automaticamente
+        error: (error: any) => {
+          console.error('❌ Erro ao criar compra:', error);
+          console.error('❌ Status:', error.status);
+          console.error('❌ Mensagem:', error.message);
+          alert('Erro ao salvar compra! Verifique o console.');
         }
       });
     }
   }
 
-  // ✅ MÉTODO SIMPLIFICADO PARA MOSTRAR MODAL PEPS
-  private mostrarModalPepsAlerta(mensagemErro: string): void {
-    // Extrair informações da mensagem de erro
-    const saldoMatch = mensagemErro.match(/Saldo atual: (\d+)/);
-    const quantidadeMatch = mensagemErro.match(/Quantidade antiga: (\d+)/);
-    
-    const saldoAtual = saldoMatch ? parseInt(saldoMatch[1]) : 0;
-    const quantidadeAntiga = quantidadeMatch ? parseInt(quantidadeMatch[1]) : 0;
-
-    // ✅ USA O MÉTODO ESPECÍFICO DO MODAL SERVICE
-    this.modalService.mostrarAlertaPeps(saldoAtual, quantidadeAntiga);
-  }
-
-  // ✅ MÉTODO AUXILIAR: Obter nome do produto selecionado para exibição
-  getProdutoSelecionadoNome(): string {
-    if (this.compraEdit.produtoId && this.compraEdit.produtoNome) {
-      return this.compraEdit.produtoNome;
-    }
-    return 'Selecione um produto';
+  get tituloModal(): string {
+    return this.modoEdicao ? 'Editar Compra' : 'Nova Compra';
   }
 }

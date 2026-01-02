@@ -7,51 +7,76 @@
   <div class="compras-grid">
     <!-- CARDS DINÂMICOS -->
     <div class="compra-card" *ngFor="let compra of compras">
+      
+      <!-- HEADER SIMPLIFICADO -->
       <div class="compra-header">
-        <!-- ✅ CORREÇÃO: Usar produtoNome em vez de produto.nome -->
-        <h3>{{ compra.produtoNome || 'Item de Compra' }}</h3>
+        <div class="header-info">
+          <h3>Compra #{{ compra.idPedidoCompra }}</h3>
+          <div class="header-subtitle">
+            <span class="fornecedor">{{ compra.fornecedor || 'Fornecedor não informado' }}</span>
+            <span class="separator">•</span>
+            <span class="data">{{ getDataCompra(compra) }}</span>
+          </div>
+        </div>
       </div>
       
+      <!-- CONTEÚDO PRINCIPAL -->
       <div class="compra-content">
         <div class="compra-info">
-          <!-- QUANTIDADE -->
+          <!-- INFORMAÇÕES ESSENCIAIS -->
           <div class="info-row">
-            <span class="label">Quantidade:</span>
-            <span class="value">{{ compra.quantidade }} unidades</span>
+            <span class="label">Quantidade Total:</span>
+            <span class="value">{{ getQuantidadeTotal(compra) }} unidades</span>
           </div>
           
-          <!-- CUSTO TOTAL -->
+          <div class="info-row">
+            <span class="label">Produtos:</span>
+            <span class="value">{{ getNumeroProdutos(compra) }} itens</span>
+          </div>
+          
           <div class="info-row">
             <span class="label">Custo Total:</span>
-            <span class="value">{{ compra.custoTotal | brlCurrency }}</span>
+            <span class="value highlight">{{ compra.custoTotal | brlCurrency }}</span>
           </div>
           
-          <!-- FORNECEDOR -->
-          <div class="info-row">
-            <span class="label">Fornecedor:</span>
-            <span class="value">{{ compra.fornecedor || 'Não informado' }}</span>
-          </div>
-          
-          <!-- ID DO PEDIDO DE COMPRA -->
-          <div class="info-row">
-            <span class="label">ID do Pedido:</span>
-            <span class="value">{{ compra.idPedidoCompra }}</span>
-          </div>
-          
-          <!-- DATA -->
-          <div class="info-row">
-            <span class="label">Data:</span>
-            <span class="value">{{ getDataCompra(compra) }}</span>
-          </div>
-          
-          <!-- OBSERVAÇÕES -->
+          <!-- OBSERVAÇÕES (se existir) -->
           <div class="info-row" *ngIf="compra.observacoes">
             <span class="label">Observações:</span>
-            <span class="value">{{ compra.observacoes }}</span>
+            <span class="value observacoes">{{ compra.observacoes }}</span>
           </div>
         </div>
       </div>
 
+      
+      <!-- LISTA DE PRODUTOS -->
+      <div class="produtos-resumo" *ngIf="compra.itens && compra.itens.length > 0">
+        <div class="produtos-header" (click)="toggleProdutos(compra)">
+          <span class="toggle-icon">{{ getMostrarProdutos(compra) ? '▼' : '▶' }}</span>
+          <span class="produtos-label">
+            Detalhes dos Produtos ({{ compra.itens.length }})
+          </span>
+        </div>
+        
+        <div class="produtos-lista" *ngIf="getMostrarProdutos(compra)">
+          <div *ngFor="let item of compra.itens" class="produto-item">
+            <div class="produto-info">
+              <span class="produto-nome">{{ item.produtoNome || 'Produto não identificado' }}</span>
+              <span class="produto-sku" *ngIf="item.produtoSku">({{ item.produtoSku }})</span>
+            </div>
+            <div class="produto-detalhes">
+              <span class="produto-quantidade">{{ item.quantidade }} unidades</span>
+              <span class="separator">•</span>
+              <span class="produto-custo">{{ item.custoUnitario | brlCurrency }} /un</span>
+              <span class="separator">•</span>
+              <span class="produto-subtotal">
+                Subtotal: {{ (item.quantidade * item.custoUnitario) | brlCurrency }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÕES DE AÇÃO -->
       <div class="compra-actions">
         <button class="btn-editar" (click)="editarCompra(compra)">Editar</button>
         <button class="btn-excluir" (click)="excluirCompra(compra)">Excluir</button>
@@ -60,7 +85,7 @@
 
     <!-- MENSAGEM QUANDO NÃO HÁ COMPRAS -->
     <div class="sem-compras" *ngIf="compras.length === 0">
-      Nenhuma compra cadastrada
+        Nenhuma compra cadastrada
     </div>
   </div>
 

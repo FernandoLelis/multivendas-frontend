@@ -1,105 +1,219 @@
 <div class="modal-overlay" (click)="fechar()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-content large-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>{{ compra?.id ? 'Editar' : 'Nova' }} Compra</h2>
+      <h2>{{ tituloModal }}</h2>
       <button class="btn-fechar" (click)="fechar()">×</button>
     </div>
     
     <div class="form-container">
       <form class="compra-form" (ngSubmit)="salvarCompra()">
-        <!-- PRODUTO (SEMPRE OBRIGATÓRIO) -->
-        <div class="form-group">
-          <label for="produto">Produto *</label>
-          <select id="produto" name="produto" 
-                  [(ngModel)]="compraEdit.produtoId" 
-                  (change)="onProdutoSelecionado($event)" required>
-            <option value="">Selecione um produto</option>
-            <option *ngFor="let produto of produtos" [value]="produto.id">
-              {{ produto.nome }} ({{ produto.sku }})
-            </option>
-            <option value="novo">+ Cadastrar Novo Produto</option>
-          </select>
+        
+        <!-- === SEÇÃO 1: DADOS DA COMPRA === -->
+        <div class="form-section">
+          <!-- ID do Pedido - 100% -->
+          <div class="form-group full-width">
+            <label for="idPedidoCompra">ID do Pedido de Compra *</label>
+            <input type="text" id="idPedidoCompra" name="idPedidoCompra" 
+                   [(ngModel)]="compraEdit.idPedidoCompra" required 
+                   placeholder="Ex: PO-12345-2024">
+          </div>
           
-          <!-- ✅ REMOVIDO: Mensagem do produto selecionado abaixo do campo -->
-        </div>
-
-        <!-- ID DO PEDIDO DE COMPRA (OBRIGATÓRIO) -->
-        <div class="form-group">
-          <label for="idPedidoCompra">ID do Pedido de Compra *</label>
-          <input type="text" id="idPedidoCompra" name="idPedidoCompra" 
-                 [(ngModel)]="compraEdit.idPedidoCompra" 
-                 placeholder="Número único do pedido no fornecedor"
-                 required>
-        </div>
-
-        <!-- FORNECEDOR (OPCIONAL) -->
-        <div class="form-group">
-          <label for="fornecedor">Fornecedor</label>
-          <input type="text" id="fornecedor" name="fornecedor" 
-                 [(ngModel)]="compraEdit.fornecedor" 
-                 placeholder="Nome do fornecedor (opcional)">
-        </div>
-
-        <div class="form-row">
-          <!-- QUANTIDADE -->
-          <div class="form-group">
-            <label for="quantidade">Quantidade *</label>
-            <input type="number" id="quantidade" name="quantidade" 
-                   [(ngModel)]="compraEdit.quantidade" 
-                   min="1" required
-                   (input)="calcularCustoTotal()">
+          <!-- Fornecedor e Data - 50%/50% -->
+          <div class="form-row">
+            <div class="form-group half-width">
+              <label for="fornecedor">Fornecedor *</label>
+              <input type="text" id="fornecedor" name="fornecedor" 
+                     [(ngModel)]="compraEdit.fornecedor" required
+                     placeholder="Nome do fornecedor">
+            </div>
+            
+            <div class="form-group half-width">
+              <label for="dataEntrada">Data da Compra *</label>
+              <input type="date" id="dataEntrada" name="dataEntrada" 
+                     [(ngModel)]="compraEdit.dataEntrada" required>
+            </div>
           </div>
 
-          <!-- DATA -->
-          <div class="form-group">
-            <label for="data">Data da Compra *</label>
-            <input type="date" id="data" name="data" 
-                   [(ngModel)]="compraEdit.dataEntrada" 
-                   required>
+          <!-- ✅ CATEGORIA FIXA - APENAS PRODUTOS (não editável) -->
+          <!-- <div class="form-group full-width">
+            <label for="categoria">Categoria</label>
+            <input type="text" id="categoria" name="categoria" 
+                   [(ngModel)]="compraEdit.categoria" 
+                   value="Produto" 
+                   readonly
+                   class="campo-bloqueado">
+          </div> -->
+        </div>
+
+        <!-- === SEÇÃO 2: ADICIONAR PRODUTO AO CARRINHO === -->
+        <div class="form-section">
+          <div class="carrinho-add-container">
+            <!-- Produto -->
+            <div class="form-group">
+              <label for="produtoSelecionado">Produto</label>
+              <select id="produtoSelecionado" 
+                      (change)="onProdutoSelecionado($event)"
+                      name="produtoSelecionado">
+                <option value="">Selecione um produto</option>
+                <option *ngFor="let produto of produtos" [value]="produto.id">
+                  {{ produto.nome }} ({{ produto.sku }}) - Estoque: {{ produto.quantidadeEstoqueTotal }}
+                </option>
+                <option value="novo">+ Cadastrar Novo Produto</option>
+              </select>
+            </div>
+            
+            <!-- Quantidade, Custo Unitário e Custo Total - 33%/33%/33% -->
+            <div class="form-row-three">
+              <div class="form-group third-width">
+                <label for="quantidadeSelecionada">Quantidade</label>
+                <input type="number" id="quantidadeSelecionada" 
+                       [(ngModel)]="quantidadeSelecionada"
+                       [ngModelOptions]="{standalone: true}"
+                       name="quantidadeSelecionada" min="1" value="1"
+                       (input)="onQuantidadeChange()"
+                       (change)="calcularCustoTotal()">
+              </div>
+              
+              <div class="form-group third-width">
+                <label for="custoUnitarioSelecionado">Custo Unitário (R$)</label>
+                <input type="number" id="custoUnitarioSelecionado" 
+                       [(ngModel)]="custoUnitarioSelecionado"
+                       [ngModelOptions]="{standalone: true}"
+                       name="custoUnitarioSelecionado" step="0.01" min="0" placeholder="0.00"
+                       (input)="calcularCustoTotal()">
+              </div>
+              
+              <div class="form-group third-width">
+                <label for="custoTotalSelecionado">Custo Total (R$)</label>
+                <input type="number" id="custoTotalSelecionado" 
+                       [(ngModel)]="custoTotalSelecionado"
+                       [ngModelOptions]="{standalone: true}"
+                       name="custoTotalSelecionado" step="0.01" min="0" placeholder="0.00"
+                       (input)="calcularCustoUnitario()">
+              </div>
+            </div>
+            
+            <!-- ✅ ALERTA SE PRODUTO JÁ TEM ESTOQUE -->
+            <div *ngIf="produtoJaNoEstoque && produtoSelecionado" class="alerta-estoque">
+              <div class="alerta-content">
+                <span class="alerta-icon">ℹ️</span>
+                <div class="alerta-texto">
+                  <strong>Produto já tem estoque!</strong>
+                  <br>
+                  Estoque atual: {{ saldoAtual }} unidades
+                  <br>
+                  Esta compra irá criar um novo lote no sistema PEPS.
+                </div>
+              </div>
+            </div>
+            
+            <!-- ✅ BOTÃO ADICIONAR AO CARRINHO -->
+            <div class="form-group full-width">
+              <button type="button" 
+                      class="btn-adicionar" 
+                      (click)="adicionarAoCarrinho()"
+                      [disabled]="!produtoSelecionado">
+                <span *ngIf="!produtoSelecionado">Selecione um produto</span>
+                <span *ngIf="produtoSelecionado">
+                  + Adicionar ao Carrinho
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- CUSTO UNITÁRIO E CUSTO TOTAL COM MÁSCARA BRASILEIRA -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="custoUnitario">Custo Unitário (R$)</label>
-            <input type="text" id="custoUnitario" name="custoUnitario" 
-                   [(ngModel)]="compraEdit.custoUnitario" 
-                   appBrazilianCurrency
-                   (input)="calcularCustoTotal()"
-                   placeholder="R$ 0,00">
-          </div>
-
-          <div class="form-group">
-            <label for="custoTotal">Custo Total (R$) *</label>
-            <input type="text" id="custoTotal" name="custoTotal" 
-                   [(ngModel)]="compraEdit.custoTotal" 
-                   appBrazilianCurrency
-                   (input)="calcularCustoUnitario()"
-                   placeholder="R$ 0,00" required>
+        <!-- === SEÇÃO 3: CARRINHO DE PRODUTOS === -->
+        <div class="form-section" *ngIf="compraEdit.itens.length > 0">
+          <div class="carrinho-container">
+            <!-- Tabela de produtos -->
+            <div class="carrinho-table">
+              <div class="carrinho-header">
+                <div class="carrinho-col produto">Produto</div>
+                <div class="carrinho-col quantidade">Quantidade</div>
+                <div class="carrinho-col preco">Custo Unitário</div>
+                <div class="carrinho-col total">Total</div>
+                <div class="carrinho-col acoes">Ações</div>
+              </div>
+              
+              <div class="carrinho-body">
+                <div class="carrinho-row" *ngFor="let item of compraEdit.itens; let i = index">
+                  <div class="carrinho-col produto">
+                    <strong>{{ item.produtoNome || 'Produto ' + item.produtoId }}</strong>
+                    <small *ngIf="item.produtoSku">SKU: {{ item.produtoSku }}</small>
+                  </div>
+                  
+                  <!-- ✅ CAMPOS BLOQUEADOS NO CARRINHO -->
+                  <div class="carrinho-col quantidade">
+                    <input type="number" 
+                           [(ngModel)]="item.quantidade"
+                           [ngModelOptions]="{standalone: true}"
+                           min="1" 
+                           readonly
+                           (click)="atualizarQuantidade(item, item.quantidade)"
+                           class="campo-bloqueado">
+                  </div>
+                  
+                  <div class="carrinho-col preco">
+                    <input type="number" 
+                           [(ngModel)]="item.custoUnitario"
+                           [ngModelOptions]="{standalone: true}"
+                           step="0.01" min="0"
+                           readonly
+                           (click)="atualizarCustoUnitario(item, item.custoUnitario || 0)"
+                           class="campo-bloqueado">
+                  </div>
+                  
+                  <div class="carrinho-col total">
+                    {{ (item.custoTotal || 0) | brlCurrency }}
+                  </div>
+                  
+                  <div class="carrinho-col acoes">
+                    <button type="button" class="btn-remover" 
+                            (click)="removerDoCarrinho(i)" title="Remover">
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Total do Carrinho -->
+              <div class="carrinho-footer">
+                <div class="carrinho-total">
+                  <span class="total-label">Total da Compra:</span>
+                  <span class="total-value">{{ calcularTotalCarrinho() | brlCurrency }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- OBSERVAÇÕES -->
-        <div class="form-group">
-          <label for="observacoes">Observações</label>
-          <textarea id="observacoes" name="observacoes" rows="3" 
-                    [(ngModel)]="compraEdit.observacoes"
-                    placeholder="Observações adicionais (opcional)"></textarea>
+        <!-- === SEÇÃO 4: OBSERVAÇÕES === -->
+        <div class="form-section">
+          <div class="form-group full-width">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" name="observacoes" rows="3" 
+                      [(ngModel)]="compraEdit.observacoes"
+                      placeholder="Observações adicionais (opcional)"></textarea>
+          </div>
         </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn-cancelar" (click)="fechar()">Cancelar</button>
-          <button type="submit" class="btn-salvar">
-            {{ compraEdit.id ? 'Atualizar' : 'Salvar' }} Compra
-          </button>
+        <!-- === SEÇÃO 5: AÇÕES === -->
+        <div class="form-section">
+          <div class="form-actions">
+            <button type="button" class="btn-cancelar" (click)="fechar()">Cancelar</button>
+            
+            <button type="submit" class="btn-salvar" 
+                    [disabled]="compraEdit.itens.length === 0">
+              {{ modoEdicao ? 'Atualizar' : 'Salvar' }} Compra
+            </button>
+          </div>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- MODAL DE PRODUTO -->
+<!-- Modal de Produto -->
 <app-produto-form 
   *ngIf="mostrarModalProduto"
   (fecharModal)="fecharModalProduto()"
