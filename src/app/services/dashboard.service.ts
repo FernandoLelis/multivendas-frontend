@@ -237,31 +237,71 @@ export class DashboardService {
     );
   }
 
+  // 🆕 MÉTODO: Faturamento do ano atual
+  getFaturamentoAnoAtual(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/faturamento-ano-atual`).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar faturamento do ano atual:', error);
+        return of(0);
+      })
+    );
+  }
+
+  // 🆕 MÉTODO: Custo efetivo do ano atual
+  getCustoEfetivoAnoAtual(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/custo-efetivo-ano-atual`).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar custo efetivo do ano atual:', error);
+        return of(0);
+      })
+    );
+  }
+
+  // 🆕 MÉTODO: Lucro bruto do ano atual
+  getLucroBrutoAnoAtual(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-bruto-ano-atual`).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar lucro bruto do ano atual:', error);
+        return of(0);
+      })
+    );
+  }
+
   // ✅ MÉTODO ATUALIZADO: Cálculos corretos conforme fórmulas estabelecidas
   getCardsMetrics(): Observable<CardMetrics> {
     // Buscar TODOS os dados em paralelo
     return forkJoin({
-      vendas: this.getDashboardData(),           // Dados anuais das vendas
-      despesasMes: this.getTotalDespesasMesAtual(), // Despesas variáveis do MÊS
-      despesasAno: this.getTotalDespesas(),        // Despesas variáveis do ANO
+      // 🆕 ALTERADO: Usar endpoints específicos do ano atual em vez de dados de todo o período
+      faturamentoAno: this.getFaturamentoAnoAtual(),
+      custoEfetivoAno: this.getCustoEfetivoAnoAtual(),
+      lucroBrutoAno: this.getLucroBrutoAnoAtual(),
+      
+      // Dados existentes
+      despesasMes: this.getTotalDespesasMesAtual(),
+      despesasAno: this.getTotalDespesas(),
       faturamentoMes: this.getFaturamentoMesAtual(),
       custoEfetivoMes: this.getCustoEfetivoMesAtual(),
-      // 🆕 ADICIONAR: quantidade de vendas
       quantidadeVendas: this.getQuantidadeVendas()
     }).pipe(
       map(({ 
-        vendas, 
+        faturamentoAno,
+        custoEfetivoAno,
+        lucroBrutoAno,
         despesasMes, 
         despesasAno, 
         faturamentoMes,
         custoEfetivoMes,
-        quantidadeVendas // 🆕 NOVO
+        quantidadeVendas
       }) => {
         
-        console.log('🔍 DEBUG getCardsMetrics - Valores recebidos:');
+        console.log('🔍 DEBUG getCardsMetrics - Valores recebidos ANO ATUAL:');
         console.log('  Faturamento Mês:', faturamentoMes);
+        console.log('  Faturamento Ano:', faturamentoAno);
         console.log('  Custo Efetivo Mês:', custoEfetivoMes);
+        console.log('  Custo Efetivo Ano:', custoEfetivoAno);
+        console.log('  Lucro Bruto Ano:', lucroBrutoAno);
         console.log('  Despesas Mês:', despesasMes);
+        console.log('  Despesas Ano:', despesasAno);
         console.log('  Quantidade Vendas Mês:', quantidadeVendas.mesAtual);
         console.log('  Quantidade Vendas Ano:', quantidadeVendas.anoAtual);
         console.log('  Variação Vendas:', quantidadeVendas.variacao);
@@ -272,12 +312,12 @@ export class DashboardService {
         // 1. LUCRO BRUTO MENSAL (CALCULAR NO FRONTEND - fórmula correta)
         // 📊 LUCRO BRUTO = FATURAMENTO - CUSTO EFETIVO
         const lucroBrutoMes = faturamentoMes - custoEfetivoMes;
-        console.log('  Lucro Bruto Calculado:', lucroBrutoMes);
+        console.log('  Lucro Bruto Calculado (Mês):', lucroBrutoMes);
         
         // 2. LUCRO LÍQUIDO MENSAL (FÓRMULA CORRETA)
         // 💵 LUCRO LÍQUIDO = LUCRO BRUTO - DESPESAS VARIÁVEIS
         const lucroLiquidoMes = lucroBrutoMes - despesasMes;
-        console.log('  Lucro Líquido Calculado:', lucroLiquidoMes);
+        console.log('  Lucro Líquido Calculado (Mês):', lucroLiquidoMes);
         
         // 3. ROI MENSAL (FÓRMULA CORRETA)
         // 🎯 ROI = (LUCRO LÍQUIDO / CUSTO EFETIVO) × 100
@@ -287,12 +327,14 @@ export class DashboardService {
         
         // 4. LUCRO LÍQUIDO ANUAL (FÓRMULA CORRETA)
         // 💵 LUCRO LÍQUIDO = LUCRO BRUTO - DESPESAS VARIÁVEIS
-        const lucroLiquidoAno = vendas.lucroBrutoTotal - despesasAno;
+        const lucroLiquidoAno = lucroBrutoAno - despesasAno;
+        console.log('  Lucro Líquido Calculado (Ano):', lucroLiquidoAno);
         
         // 5. ROI ANUAL (FÓRMULA CORRETA)
         // 🎯 ROI = (LUCRO LÍQUIDO / CUSTO EFETIVO) × 100
-        const roiAno = vendas.custoEfetivoTotal > 0 ? 
-          (lucroLiquidoAno / vendas.custoEfetivoTotal) * 100 : 0;
+        const roiAno = custoEfetivoAno > 0 ? 
+          (lucroLiquidoAno / custoEfetivoAno) * 100 : 0;
+        console.log('  ROI Ano:', roiAno);
         
         // 6. Calcular growths
         const faturamentoGrowth = this.calculateGrowth(faturamentoMes, this.previousMonthData.faturamento);
@@ -315,17 +357,17 @@ export class DashboardService {
           },
           faturamento: { 
             atual: faturamentoMes,           // MÊS atual
-            total: vendas.faturamentoTotal,  // ANO atual
+            total: faturamentoAno,           // ANO atual (✅ CORRIGIDO)
             growth: faturamentoGrowth
           },
           custoEfetivo: { 
             atual: custoEfetivoMes,           // MÊS atual
-            total: vendas.custoEfetivoTotal,  // ANO atual
+            total: custoEfetivoAno,           // ANO atual (✅ CORRIGIDO)
             growth: custoEfetivoGrowth
           },
           lucroBruto: {
             atual: lucroBrutoMes,           // MÊS atual (CALCULADO CORRETAMENTE)
-            total: vendas.lucroBrutoTotal,  // ANO atual (backend corrigido)
+            total: lucroBrutoAno,           // ANO atual (✅ CORRIGIDO)
             growth: lucroBrutoGrowth
           },
           lucroLiquido: { 
@@ -335,7 +377,7 @@ export class DashboardService {
           },
           despesasOperacionais: {
             atual: despesasMes,    // MÊS atual
-            total: despesasAno,    // ANO atual
+            total: despesasAno,    // ANO atual (já estava correto)
             growth: despesasGrowth
           },
           roi: { 
@@ -356,17 +398,30 @@ export class DashboardService {
   private debugCalculos(): void {
     setTimeout(() => {
       forkJoin({
-        faturamento: this.getFaturamentoMesAtual(),
-        custoEfetivo: this.getCustoEfetivoMesAtual(),
+        faturamentoMes: this.getFaturamentoMesAtual(),
+        faturamentoAno: this.getFaturamentoAnoAtual(),
+        custoEfetivoMes: this.getCustoEfetivoMesAtual(),
+        custoEfetivoAno: this.getCustoEfetivoAnoAtual(),
         lucroBrutoBackend: this.getLucroBrutoMesAtual(),
+        lucroBrutoAno: this.getLucroBrutoAnoAtual(),
         quantidadeVendas: this.getQuantidadeVendas()
-      }).subscribe(({ faturamento, custoEfetivo, lucroBrutoBackend, quantidadeVendas }) => {
-        console.log('🔍 DEBUG SERVICE - Cálculos:');
-        console.log('  Faturamento:', faturamento);
-        console.log('  Custo Efetivo:', custoEfetivo);
-        console.log('  Lucro Bruto (Backend):', lucroBrutoBackend);
-        console.log('  Lucro Bruto (Calculado):', faturamento - custoEfetivo);
-        console.log('  Diferença:', (faturamento - custoEfetivo) - lucroBrutoBackend);
+      }).subscribe(({ 
+        faturamentoMes, 
+        faturamentoAno,
+        custoEfetivoMes,
+        custoEfetivoAno,
+        lucroBrutoBackend, 
+        lucroBrutoAno,
+        quantidadeVendas 
+      }) => {
+        console.log('🔍 DEBUG SERVICE - Cálculos ANO ATUAL:');
+        console.log('  Faturamento Mês:', faturamentoMes);
+        console.log('  Faturamento Ano:', faturamentoAno);
+        console.log('  Custo Efetivo Mês:', custoEfetivoMes);
+        console.log('  Custo Efetivo Ano:', custoEfetivoAno);
+        console.log('  Lucro Bruto (Backend Mês):', lucroBrutoBackend);
+        console.log('  Lucro Bruto (Ano):', lucroBrutoAno);
+        console.log('  Lucro Bruto (Calculado Mês):', faturamentoMes - custoEfetivoMes);
         console.log('  Quantidade Vendas Mês:', quantidadeVendas.mesAtual);
         console.log('  Quantidade Vendas Ano:', quantidadeVendas.anoAtual);
         console.log('  Variação Vendas:', quantidadeVendas.variacao);
@@ -446,7 +501,7 @@ export class DashboardService {
         
         // Converter para o formato esperado pelo componente
         const produtosConvertidos = produtos.slice(0, limite).map(item => {
-          // O backend retorna 'produtoNome' (com N maiúsculo)
+          // O backend retorna 'produtoNome'
           const nomeProduto = item.produtoNome || 'Produto sem nome';
           
           return {
@@ -621,32 +676,32 @@ export class DashboardService {
       },
       faturamento: { 
         atual: 580,
-        total: 4900,
+        total: 2500,
         growth: 8.9
       },
       custoEfetivo: { 
         atual: 380,
-        total: 3200,
+        total: 1800,
         growth: 0
       },
       lucroBruto: { 
         atual: 200,
-        total: 1700,
+        total: 700,
         growth: 30.8
       },
       lucroLiquido: { 
         atual: 120,
-        total: 890,
+        total: 450,
         growth: 4.7
       },
       despesasOperacionais: {
         atual: 80,
-        total: 810,
+        total: 250,
         growth: 25.0
       },
       roi: { 
         atual: 42,
-        total: 42,
+        total: 25,
         growth: 5.0
       }
     };
