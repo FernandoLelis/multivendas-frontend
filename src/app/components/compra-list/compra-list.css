@@ -41,6 +41,32 @@
   transform: translateY(-2px);
 }
 
+/* INDICADOR DE CARREGAMENTO */
+.carregando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.carregando .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid #7df525;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* GRID DE COMPRAS */
 .compras-grid {
   display: flex;
@@ -81,6 +107,7 @@
   margin-top: 4px;
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.7);
+  flex-wrap: wrap;
 }
 
 .header-subtitle .fornecedor {
@@ -90,6 +117,19 @@
 
 .header-subtitle .separator {
   color: rgba(255, 255, 255, 0.3);
+}
+
+/* ✅ NOVO: BADGE PARA SISTEMA ANTIGO */
+.badge-sistema-antigo {
+  background-color: #ffc107;
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 /* CONTEÚDO PRINCIPAL DO CARD */
@@ -145,6 +185,28 @@
   border-left: 3px solid rgba(255, 255, 255, 0.3);
 }
 
+/* ✅ NOVO: AVISO PARA COMPRAS DO SISTEMA ANTIGO */
+.aviso-antigo {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left: 4px solid #ffc107;
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  align-items: flex-start;
+}
+
+.aviso-antigo .label {
+  color: #ffc107;
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.aviso-antigo .value {
+  color: #ffecb3;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 /* LISTA DE PRODUTOS EXPANDÍVEL */
 .produtos-resumo {
   margin: 0 20px;
@@ -177,11 +239,24 @@
   font-size: 0.95rem;
 }
 
+/* ✅ MELHORIA: ANIMAÇÃO PARA EXPANSÃO */
 .produtos-lista {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .produto-item {
@@ -270,14 +345,30 @@
   transition: all 0.3s ease;
 }
 
+/* ✅ NOVO: BOTÕES DESABILITADOS */
+.btn-desabilitado {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  background-color: #5a6268 !important;
+  color: #a0a0a0 !important;
+  border-color: #5a6268 !important;
+}
+
+.btn-desabilitado:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background-color: #5a6268 !important;
+  border-color: #5a6268 !important;
+}
+
 /* HOVER DOS BOTÕES */
-.btn-editar:hover {
+.btn-editar:hover:not(.btn-desabilitado) {
   background-color: #0590d6;
   border-color: #0590d6;
   transform: translateY(-2px);
 }
 
-.btn-excluir:hover {
+.btn-excluir:hover:not(.btn-desabilitado) {
   background-color: #c62828;
   border-color: #c62828;
   transform: translateY(-2px);
@@ -286,23 +377,28 @@
 /* MENSAGEM SEM COMPRAS */
 .sem-compras {
   text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-style: italic;
-  padding: 40px;
+  padding: 60px 20px;
+  grid-column: 1 / -1;
+}
+
+.sem-compras-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.sem-compras-texto {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
   font-family: 'Roboto', sans-serif;
 }
 
-.mensagem-vazia {
-  text-align: center;
-  padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.1rem;
-}
-
-.mensagem-vazia p {
-  margin-top: 8px;
+.sem-compras-dica {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.5);
+  font-family: 'Roboto', sans-serif;
 }
 
 /* RESPONSIVIDADE */
@@ -363,13 +459,19 @@
   }
   
   .header-subtitle {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     gap: 4px;
+    flex-wrap: wrap;
   }
   
   .header-subtitle .separator {
-    display: none;
+    display: inline;
+  }
+  
+  .badge-sistema-antigo {
+    margin-left: 0;
+    margin-top: 4px;
   }
   
   .produto-detalhes {
@@ -384,6 +486,15 @@
   
   .produto-subtotal {
     margin-left: 0;
+  }
+  
+  .aviso-antigo {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .aviso-antigo .label {
+    min-width: auto;
   }
 }
 
@@ -413,5 +524,15 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+  }
+  
+  .header-subtitle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  
+  .header-subtitle .separator {
+    display: none;
   }
 }

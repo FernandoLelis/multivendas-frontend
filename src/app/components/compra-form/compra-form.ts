@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Compra, criarCompraVazia, calcularCustoTotalCompra } from '../../models/compra';
-import { ItemCompra, criarItemCompraDeProduto, calcularCustoTotalItem } from '../../models/item-compra';
+import { ItemCompra, criarItemCompraVazio, validarItemCompra } from '../../models/item-compra';
 import { Produto } from '../../models/produto';
 import { ComprasService } from '../../services/compra.service';
 import { ProdutoService } from '../../services/produto.service';
@@ -260,16 +260,17 @@ export class CompraFormComponent implements OnInit {
       // Atualizar quantidade e custo do item existente
       itemExistente.quantidade += this.quantidadeSelecionada;
       itemExistente.custoUnitario = this.custoUnitarioSelecionado;
-      itemExistente.custoTotal = calcularCustoTotalItem(itemExistente);
+      itemExistente.custoTotal = this.calcularCustoTotalItem(itemExistente); // ✅ CORRIGIDO
     } else {
-      // Criar novo item no carrinho
-      const novoItem: ItemCompra = criarItemCompraDeProduto(
-        this.produtoSelecionado, 
-        this.quantidadeSelecionada,
-        this.custoUnitarioSelecionado
-      );
-      
-      novoItem.custoTotal = this.custoTotalSelecionado;
+      // ✅ CORREÇÃO: Criar novo item no carrinho usando criarItemCompraVazio()
+      const novoItem: ItemCompra = {
+        produtoId: this.produtoSelecionado.id!,
+        produtoNome: this.produtoSelecionado.nome,
+        produtoSku: this.produtoSelecionado.sku || '',
+        quantidade: this.quantidadeSelecionada,
+        custoUnitario: this.custoUnitarioSelecionado,
+        custoTotal: this.custoTotalSelecionado
+      };
       
       this.compraEdit.itens.push(novoItem);
     }
@@ -282,6 +283,11 @@ export class CompraFormComponent implements OnInit {
     
     console.log('🛒 [COMPRA-FORM] Produto adicionado ao carrinho');
     console.log('🛒 [COMPRA-FORM] Itens no carrinho:', this.compraEdit.itens);
+  }
+
+  // ✅ NOVO: Método para calcular custo total de um item individual
+  private calcularCustoTotalItem(item: ItemCompra): number {
+    return (item.custoUnitario || 0) * (item.quantidade || 0);
   }
 
   // Método para limpar seleção

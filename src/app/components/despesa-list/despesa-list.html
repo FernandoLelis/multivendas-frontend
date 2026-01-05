@@ -5,6 +5,11 @@
     <button class="btn-nova-despesa" (click)="novaDespesa()">Nova Despesa</button>
   </div>
 
+    <!-- INDICADOR DE CARREGAMENTO -->
+  <div class="carregando" *ngIf="despesas.length === 0">
+      <div class="spinner"></div>
+  </div>
+
   <!-- Lista de Despesas -->
   <div class="despesas-grid">
     <div *ngFor="let despesa of despesas" class="despesa-card">
@@ -44,12 +49,6 @@
         <button class="btn-excluir" (click)="excluirDespesa(despesa)">Excluir</button>
       </div>
     </div>
-
-    <!-- Mensagem quando não há despesas -->
-    <div class="sem-despesas" *ngIf="despesas.length === 0">
-      Nenhuma despesa cadastrada.
-    </div>
-  </div>
 </div>
 
 <!-- Modal de Formulário de Despesa -->

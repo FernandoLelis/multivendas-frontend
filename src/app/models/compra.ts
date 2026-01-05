@@ -1,4 +1,4 @@
-// compra.ts - ATUALIZADO PARA COMPATIBILIDADE COM BACKEND
+// compra.ts - ATUALIZADO PARA SUPORTE A COMPRAS UNIFICADAS
 import { ItemCompra, calcularCustoTotalItens, calcularQuantidadeTotalItens } from './item-compra';
 
 // Interface para compras com MÚLTIPLOS PRODUTOS
@@ -23,6 +23,9 @@ export interface Compra {
   data?: string;                // Campo alternativo para "dataEntrada" (backend usa "data")
   totalCompra?: number;         // Campo alternativo para "custoTotal" (backend usa "totalCompra")
   userId?: number;              // ID do usuário (vindo do backend)
+  
+  // ✅✅✅ NOVO: Flag para identificar compras do sistema antigo
+  sistemaAntigo?: boolean;
 }
 
 // Categorias predefinidas para compras
@@ -46,32 +49,86 @@ export function criarCompraVazia(): Compra {
     fornecedor: '',
     categoria: 'Produto',
     observacoes: '',
-    itens: []  // Array vazio - será preenchido com produtos
+    itens: [],  // Array vazio - será preenchido com produtos
+    sistemaAntigo: false
   };
 }
 
-// ✅✅✅ NOVA FUNÇÃO: Normalizar compra vinda do backend
+// ✅✅✅ NOVA FUNÇÃO: Normalizar compra vinda do backend (ATUALIZADA)
 export function normalizarCompraDoBackend(compraBackend: any): Compra {
   console.log('🔄 [COMPRA] Normalizando compra do backend:', compraBackend);
   
+  // Extrair ID absoluto (para compras antigas que têm ID negativo)
+  let idNormalizado = compraBackend.id;
+  const sistemaAntigo = compraBackend.sistemaAntigo || false;
+  
+  if (sistemaAntigo && idNormalizado && idNormalizado < 0) {
+    idNormalizado = Math.abs(idNormalizado);
+  }
+  
+  // Garantir idPedidoCompra para compras antigas
+  let idPedidoCompra = compraBackend.idPedidoCompra;
+  if (!idPedidoCompra || idPedidoCompra.trim() === '') {
+    if (sistemaAntigo) {
+      idPedidoCompra = `ENTRADA-${Math.abs(compraBackend.id || 0)}`;
+    } else {
+      idPedidoCompra = `COMPRA-${compraBackend.id || 'SEM-ID'}`;
+    }
+  }
+  
+  // Extrair data - prioridade: dataCompra → data → dataEntrada
+  let dataExtraida = compraBackend.dataCompra || compraBackend.data || compraBackend.dataEntrada;
+  
   const compraNormalizada: Compra = {
-    id: compraBackend.id,
-    dataEntrada: compraBackend.data || compraBackend.dataEntrada, // Usar "data" se "dataEntrada" não existir
-    idPedidoCompra: compraBackend.idPedidoCompra,
+    id: idNormalizado,
+    dataEntrada: dataExtraida || new Date().toISOString(),
+    idPedidoCompra: idPedidoCompra,
     fornecedor: compraBackend.fornecedor || '',
     categoria: compraBackend.categoria || 'Produto',
     observacoes: compraBackend.observacoes || '',
     itens: compraBackend.itens || [],
-    custoTotal: compraBackend.totalCompra || compraBackend.custoTotal || 0, // Usar "totalCompra" se "custoTotal" não existir
+    custoTotal: compraBackend.totalCompra || compraBackend.custoTotal || 0,
     quantidadeTotal: compraBackend.quantidadeTotal || 0,
     
-    // Manter campos originais para referência
+    // Campos originais para referência
     data: compraBackend.data,
     totalCompra: compraBackend.totalCompra,
-    userId: compraBackend.userId
+    userId: compraBackend.userId,
+    
+    // ✅ NOVO: Flag para identificar compras do sistema antigo
+    sistemaAntigo: sistemaAntigo
   };
   
-  console.log('✅ [COMPRA] Compra normalizada:', compraNormalizada);
+  // Se não tiver itens mas tiver dados de item único (compras antigas)
+  if (compraNormalizada.itens.length === 0 && 
+      (compraBackend.produtoId || compraBackend.produtoNome)) {
+    compraNormalizada.itens = [{
+      produtoId: compraBackend.produtoId,
+      produtoNome: compraBackend.produtoNome,
+      produtoSku: compraBackend.produtoSku || '',
+      quantidade: compraBackend.quantidade || 1,
+      custoUnitario: compraBackend.custoUnitario || (compraBackend.custoTotal || 0),
+      custoTotal: compraBackend.custoTotal || 0
+    }];
+  }
+  
+  // Calcular custoTotal se não estiver definido
+  if (!compraNormalizada.custoTotal || compraNormalizada.custoTotal === 0) {
+    if (compraNormalizada.itens.length > 0) {
+      compraNormalizada.custoTotal = calcularCustoTotalCompra(compraNormalizada.itens);
+      compraNormalizada.totalCompra = compraNormalizada.custoTotal;
+    }
+  }
+  
+  console.log('✅ [COMPRA] Compra normalizada:', {
+    id: compraNormalizada.id,
+    sistemaAntigo: compraNormalizada.sistemaAntigo,
+    idPedidoCompra: compraNormalizada.idPedidoCompra,
+    dataEntrada: compraNormalizada.dataEntrada,
+    itensCount: compraNormalizada.itens.length,
+    custoTotal: compraNormalizada.custoTotal
+  });
+  
   return compraNormalizada;
 }
 
@@ -143,8 +200,19 @@ export function converterCompraAntigaParaNova(compraAntiga: any): Compra {
       saldo: compraAntiga.saldo
     }],
     custoTotal: compraAntiga.totalCompra || compraAntiga.custoTotal,
-    quantidadeTotal: compraAntiga.quantidade
+    quantidadeTotal: compraAntiga.quantity,
+    sistemaAntigo: true // Marcar como sistema antigo
   };
   
   return normalizarCompra(compraConvertida);
+}
+
+// ✅ NOVA FUNÇÃO: Verificar se é uma compra do sistema antigo
+export function isCompraSistemaAntigo(compra: Compra): boolean {
+  return compra.sistemaAntigo === true;
+}
+
+// ✅ NOVA FUNÇÃO: Obter label para tipo de compra
+export function getTipoCompraLabel(compra: Compra): string {
+  return compra.sistemaAntigo ? 'Sistema Antigo' : 'Sistema Novo';
 }

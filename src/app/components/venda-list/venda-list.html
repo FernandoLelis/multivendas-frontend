@@ -4,6 +4,11 @@
     <button class="btn-nova-venda" (click)="novaVenda()">Nova Venda</button>
   </div>
 
+  <!-- INDICADOR DE CARREGAMENTO -->
+      <div class="carregando" *ngIf="vendas.length === 0">
+        <div class="spinner"></div>
+      </div>
+
   <div class="vendas-grid">
     <div *ngFor="let venda of vendas" class="venda-card">
       <!-- HEADER COM RESUMO DOS PRODUTOS E PLATAFORMA -->
@@ -99,11 +104,6 @@
       </div>
     </div>
 
-    <!-- MENSAGEM QUANDO NÃO HÁ VENDAS -->
-    <div class="sem-vendas" *ngIf="vendas.length === 0">
-      Nenhuma venda cadastrada.
-    </div>
-  </div>
 </div>
 
 <!-- MODAL DE VENDA -->

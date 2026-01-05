@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, throwError, of } from 'rxjs';
+import { Observable, catchError, throwError, tap, forkJoin } from 'rxjs';
 import { Compra } from '../models/compra';
 import { CreateCompraDTO, criarCreateCompraDTO } from '../models/item-compra';
 import { ModalService } from './modal.service';
@@ -24,7 +24,6 @@ export class ComprasService {
     if (!token) {
       console.warn('⚠️ [COMPRA-SERVICE] Token não encontrado no localStorage');
       this.modalService.mostrarErro('Sessão expirada. Faça login novamente.');
-      // Redirecionar para login
       setTimeout(() => window.location.href = '/login', 2000);
     }
     
@@ -43,6 +42,9 @@ export class ComprasService {
     return this.http.get<any[]>(`${this.apiUrl}/entradas`, { 
       headers: this.getHeaders() 
     }).pipe(
+      tap(compras => {
+        console.log('📊 [DEBUG-ENTRADAS] Total entradas recebidas:', compras.length);
+      }),
       catchError(error => this.handleError(error, 'Erro ao carregar compras'))
     );
   }
@@ -60,7 +62,6 @@ export class ComprasService {
   criarCompraProduto(compra: Compra): Observable<any> {
     console.log('🔍 [COMPRA-SERVICE] Criando compra de UM produto (legacy):', compra);
     
-    // Converter para o formato antigo se necessário
     const compraParaBackend = this.converterParaFormatoLegacy(compra);
     
     return this.http.post<any>(`${this.apiUrl}/entrada`, compraParaBackend, { 
@@ -74,7 +75,6 @@ export class ComprasService {
   atualizarCompra(id: number, compra: Compra): Observable<any> {
     console.log('🔍 [COMPRA-SERVICE] Atualizando compra ID:', id, '(legacy)');
     
-    // Converter para o formato antigo se necessário
     const compraParaBackend = this.converterParaFormatoLegacy(compra);
     
     return this.http.put<any>(`${this.apiUrl}/entrada/${id}`, compraParaBackend, { 
@@ -102,10 +102,21 @@ export class ComprasService {
     return this.http.get<Compra[]>(`${this.apiUrl}/compras`, { 
       headers: this.getHeaders() 
     }).pipe(
+      tap(compras => {
+        console.log('📊 [DEBUG-COMPRAS-MULTIPLOS] Total recebido:', compras.length);
+        if (compras.length > 0) {
+          console.log('📊 [DEBUG] Primeira compra (multiplos):', {
+            id: compras[0].id,
+            idPedidoCompra: compras[0].idPedidoCompra,
+            data: compras[0].data,
+            dataEntrada: compras[0].dataEntrada,
+            itens: compras[0].itens?.length
+          });
+        }
+      }),
       catchError(error => {
         console.error('❌ [COMPRA-SERVICE] Erro no endpoint /compras:', error);
         
-        // Se for erro 401, verificar autenticação
         if (error.status === 401) {
           this.verificarAutenticacao();
           return throwError(() => error);
@@ -116,10 +127,77 @@ export class ComprasService {
     );
   }
 
-  // ✅ NOVO: Criar compra com múltiplos produtos
+  // ✅ NOVO: Buscar TODAS as compras (unificadas - sistema novo + antigo) COM DEBUG
+  getComprasUnificadas(): Observable<Compra[]> {
+    console.log('🔍 [COMPRA-SERVICE] Buscando compras UNIFICADAS...');
+    
+    return this.http.get<Compra[]>(`${this.apiUrl}/compras-unificadas`, { 
+      headers: this.getHeaders() 
+    }).pipe(
+      tap(compras => {
+        console.log('📊 [DEBUG-COMPRAS-UNIFICADAS] Total recebido:', compras.length);
+        if (compras.length > 0) {
+          console.log('📊 [DEBUG] Primeira compra (unificada):', {
+            id: compras[0].id,
+            idPedidoCompra: compras[0].idPedidoCompra,
+            sistemaAntigo: compras[0].sistemaAntigo,
+            data: compras[0].data,
+            dataEntrada: compras[0].dataEntrada,
+            itens: compras[0].itens?.length
+          });
+          
+          // Contar tipos de compras
+          const comprasNovas = compras.filter(c => !c.sistemaAntigo).length;
+          const comprasAntigas = compras.filter(c => c.sistemaAntigo).length;
+          console.log(`📊 [DEBUG] Estatísticas: ${comprasNovas} novas, ${comprasAntigas} antigas`);
+        }
+      }),
+      catchError(error => {
+        console.error('❌ [COMPRA-SERVICE] Erro no endpoint /compras-unificadas:', error);
+        
+        if (error.status === 401) {
+          this.verificarAutenticacao();
+          return throwError(() => error);
+        }
+        
+        // ✅ IMPORTANTE: Se falhar, tentar endpoint padrão como fallback
+        console.warn('⚠️ Endpoint unificado falhou, tentando endpoint padrão...');
+        return this.getComprasMultiplos();
+      })
+    );
+  }
+
+  // ✅ NOVO: Buscar TODAS as compras com fallback automático
+  getComprasComFallback(): Observable<Compra[]> {
+    console.log('🔍 [COMPRA-SERVICE] Buscando compras com fallback automático...');
+    
+    return this.getComprasUnificadas().pipe(
+      catchError(() => {
+        // Se unificado falhar, tenta múltiplos
+        return this.getComprasMultiplos().pipe(
+          catchError(() => {
+            // Se múltiplos falhar, tenta legacy como último recurso
+            console.warn('⚠️ Todos endpoints falharam, tentando legacy como último recurso...');
+            return this.getCompras().pipe(
+              tap(entradas => {
+                console.log('📊 [FALLBACK-LEGACY] Entradas recebidas:', entradas.length);
+              })
+            );
+          })
+        );
+      })
+    );
+  }
+
+  // ✅ NOVO: Criar compra com múltiplos produtos COM DEBUG DE DATA
   criarCompra(compra: Compra): Observable<Compra> {
     console.log('🔍 [COMPRA-SERVICE] Criando compra com MÚLTIPLOS produtos...');
     console.log('📤 [COMPRA-SERVICE] Compra recebida:', compra);
+    
+    // ✅ DEBUG DE DATA
+    console.log('📅 [DEBUG-DATA] Data entrada original:', compra.dataEntrada);
+    console.log('📅 [DEBUG-DATA] Data (campo alternativo):', compra.data);
+    console.log('📅 [DEBUG-DATA] Campos disponíveis:', Object.keys(compra));
     
     if (compra.itens.length === 0) {
       this.modalService.mostrarErro('Adicione pelo menos um produto à compra');
@@ -130,11 +208,17 @@ export class ComprasService {
     const compraDTO = this.prepararCompraParaBackend(compra);
     
     console.log('📤 [COMPRA-SERVICE] DTO preparado:', compraDTO);
+    console.log('📅 [DEBUG-DATA] Data no DTO:', compraDTO.data);
     console.log('📤 [COMPRA-SERVICE] JSON:', JSON.stringify(compraDTO, null, 2));
     
     return this.http.post<Compra>(`${this.apiUrl}/compra`, compraDTO, { 
       headers: this.getHeaders() 
     }).pipe(
+      tap(response => {
+        console.log('✅ [DEBUG] Compra criada com sucesso:', response);
+        console.log('📅 [DEBUG] Data na resposta:', response.data);
+        console.log('📅 [DEBUG] DataEntrada na resposta:', response.dataEntrada);
+      }),
       catchError(error => this.handleCompraError(error, compra.idPedidoCompra))
     );
   }
@@ -158,6 +242,16 @@ export class ComprasService {
     );
   }
 
+  // ✅ NOVO: Excluir compra múltipla
+  excluirCompraMultipla(id: number): Observable<void> {
+    console.log('🔍 [COMPRA-SERVICE] Excluindo compra múltipla ID:', id);
+    return this.http.delete<void>(`${this.apiUrl}/compra/${id}`, { 
+      headers: this.getHeaders() 
+    }).pipe(
+      catchError(error => this.handleError(error, 'Erro ao excluir compra'))
+    );
+  }
+
   // MÉTODOS AUXILIARES
 
   // ✅ Verificar autenticação
@@ -173,11 +267,9 @@ export class ComprasService {
       console.warn('⚠️ [COMPRA-SERVICE] Usuário não autenticado');
       this.modalService.mostrarErro('Sessão expirada. Redirecionando para login...');
       
-      // Limpar localStorage
       localStorage.removeItem('multivendas_token');
       localStorage.removeItem('multivendas_user');
       
-      // Redirecionar para login após 2 segundos
       setTimeout(() => {
         window.location.href = '/login';
       }, 2000);
@@ -200,18 +292,30 @@ export class ComprasService {
     );
   }
 
-  // ✅ NOVO: Converter compra para CreateCompraDTO
+  // ✅ NOVO: Converter compra para CreateCompraDTO COM DEBUG DE DATA
   private prepararCompraParaBackend(compra: Compra): CreateCompraDTO {
     console.log('🔄 [COMPRA-SERVICE] Preparando compra para backend...');
     
-    // Usar a função auxiliar do item-compra.ts
+    // ✅ DEBUG: Verificar todos os campos de data disponíveis
+    console.log('📅 [DEBUG-PREPARAR] Campos data disponíveis:', {
+      dataEntrada: compra.dataEntrada,
+      data: compra.data,
+      totalCompra: compra.totalCompra,
+      custoTotal: compra.custoTotal
+    });
+    
+    const dataFormatada = this.formatarDataParaBackend(compra.dataEntrada || compra.data || '');
+    console.log('📅 [DEBUG-FORMATACAO] Data entrada:', compra.dataEntrada);
+    console.log('📅 [DEBUG-FORMATACAO] Data (campo alternativo):', compra.data);
+    console.log('📅 [DEBUG-FORMATACAO] Data formatada para backend:', dataFormatada);
+    
     const compraDTO = criarCreateCompraDTO(
       compra.idPedidoCompra,
       compra.fornecedor,
-      compra.categoria,
+      compra.categoria || 'Produto',
       compra.itens,
-      compra.observacoes,
-      this.formatarDataParaBackend(compra.dataEntrada)
+      compra.observacoes || '',
+      dataFormatada
     );
     
     console.log('📤 [COMPRA-SERVICE] Itens preparados:', compraDTO.itens.length, 'itens');
@@ -227,11 +331,9 @@ export class ComprasService {
   private converterParaFormatoLegacy(compra: Compra): any {
     console.log('🔄 [COMPRA-SERVICE] Convertendo para formato legacy...');
     
-    // Se já tem itens, pegar o primeiro
     if (compra.itens && compra.itens.length > 0) {
       const primeiroItem = compra.itens[0];
       
-      // Calcular custoTotal se não existir
       const custoTotal = primeiroItem.custoTotal || 
                         (primeiroItem.custoUnitario * primeiroItem.quantidade);
       
@@ -247,7 +349,6 @@ export class ComprasService {
       };
     }
     
-    // Se não tem itens, retornar objeto vazio (não deve acontecer)
     console.warn('⚠️ [COMPRA-SERVICE] Compra sem itens sendo convertida para legacy');
     return {
       produtoId: 0,
@@ -261,21 +362,29 @@ export class ComprasService {
     };
   }
 
-  // ✅ Formatar data para o backend
+  // ✅ Formatar data para o backend COM TIMEZONE CORRETO
   private formatarDataParaBackend(dataString: string): string {
-    if (!dataString) {
+    console.log('🔄 [FORMATAR-DATA] Input:', dataString);
+    
+    if (!dataString || dataString.trim() === '') {
       const hoje = new Date().toISOString().split('T')[0];
-      return `${hoje}T00:00:00`;
+      console.log('⚠️ [FORMATAR-DATA] Sem data, usando hoje:', hoje);
+      return `${hoje}T00:00:00-03:00`; // ✅ ADICIONAR OFFSET BRASIL
     }
     
     try {
-      // Input date envia "YYYY-MM-DD"
-      // Output: "YYYY-MM-DDT00:00:00"
-      return `${dataString}T00:00:00`;
+      // Remover timezone se existir
+      let dataLimpa = dataString.split('T')[0]; // Pega apenas "YYYY-MM-DD"
+      
+      // ✅ SOLUÇÃO: Adicionar offset do Brasil (-03:00) para evitar conversão
+      const resultado = `${dataLimpa}T00:00:00-03:00`;
+      console.log('✅ [FORMATAR-DATA] Formatado com offset Brasil:', resultado);
+      return resultado;
+      
     } catch (e) {
-      console.warn('Erro ao formatar data:', e);
+      console.warn('❌ [FORMATAR-DATA] Erro ao formatar data:', e, 'Input:', dataString);
       const hoje = new Date().toISOString().split('T')[0];
-      return `${hoje}T00:00:00`;
+      return `${hoje}T00:00:00-03:00`; // ✅ ADICIONAR OFFSET BRASIL
     }
   }
 
@@ -304,7 +413,6 @@ export class ComprasService {
   private handleError(error: HttpErrorResponse, contexto: string): Observable<never> {
     console.error(`❌ [COMPRA-SERVICE] ${contexto}:`, error);
     
-    // Se for erro 401, verificar autenticação
     if (error.status === 401) {
       this.verificarAutenticacao();
     }
@@ -377,7 +485,6 @@ export class ComprasService {
       return 'Sessão expirada. Faça login novamente.';
     }
 
-    // Mensagem genérica para outros casos
     if (errorMessage.length > 100) {
       return 'Ocorreu um erro inesperado. Tente novamente.';
     }

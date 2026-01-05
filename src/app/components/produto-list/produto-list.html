@@ -6,6 +6,11 @@
     </button>
   </div>
 
+  <!-- INDICADOR DE CARREGAMENTO -->
+  <div class="carregando" *ngIf="produtos.length === 0">
+      <div class="spinner"></div>
+  </div>
+
   <div class="produtos-grid">
     <!-- CARDS DINÂMICOS -->
     <div class="produto-card" *ngFor="let produto of produtos">
@@ -60,12 +65,7 @@
         <button class="btn-editar" (click)="editarProduto(produto)">Editar</button>
         <button class="btn-excluir" (click)="excluirProduto(produto)">Excluir</button>
       </div>
-    </div>
-
-    <!-- MENSAGEM QUANDO NÃO HÁ PRODUTOS -->
-    <div class="sem-produtos" *ngIf="produtos.length === 0">
-      Nenhum produto cadastrado.
-    </div>
+    </div>   
   </div>
 
   <!-- MODAL DE PRODUTO -->

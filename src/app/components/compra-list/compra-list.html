@@ -4,7 +4,12 @@
     <button class="btn-nova-compra" (click)="novaCompra()">Nova Compra</button>
   </div>
 
-  <div class="compras-grid">
+  <!-- INDICADOR DE CARREGAMENTO -->
+  <div class="carregando" *ngIf="carregando">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="compras-grid" *ngIf="!carregando">
     <!-- CARDS DINÂMICOS -->
     <div class="compra-card" *ngFor="let compra of compras">
       
