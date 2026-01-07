@@ -189,15 +189,21 @@ export class ComprasService {
     );
   }
 
-  // ✅ NOVO: Criar compra com múltiplos produtos COM DEBUG DE DATA
+  // ✅ NOVO: Criar compra com múltiplos produtos COM DEBUG DE DATA DETALHADO
   criarCompra(compra: Compra): Observable<Compra> {
     console.log('🔍 [COMPRA-SERVICE] Criando compra com MÚLTIPLOS produtos...');
-    console.log('📤 [COMPRA-SERVICE] Compra recebida:', compra);
+    console.log('📤 [COMPRA-SERVICE] Compra recebida do componente:', JSON.stringify(compra, null, 2));
     
-    // ✅ DEBUG DE DATA
-    console.log('📅 [DEBUG-DATA] Data entrada original:', compra.dataEntrada);
-    console.log('📅 [DEBUG-DATA] Data (campo alternativo):', compra.data);
-    console.log('📅 [DEBUG-DATA] Campos disponíveis:', Object.keys(compra));
+    // ✅ DEBUG DETALHADO DE DATA
+    console.log('📅 [DEBUG-DATA-INICIAL] Campos data disponíveis na compra:', {
+      dataEntrada: compra.dataEntrada,
+      data: compra.data,
+      dataCompra: (compra as any).dataCompra,
+      totalCompra: compra.totalCompra,
+      custoTotal: compra.custoTotal
+    });
+    console.log('📅 [DEBUG-DATA-INICIAL] Tipo de dataEntrada:', typeof compra.dataEntrada);
+    console.log('📅 [DEBUG-DATA-INICIAL] Tipo de data:', typeof compra.data);
     
     if (compra.itens.length === 0) {
       this.modalService.mostrarErro('Adicione pelo menos um produto à compra');
@@ -207,9 +213,9 @@ export class ComprasService {
     // Preparar DTO para o backend
     const compraDTO = this.prepararCompraParaBackend(compra);
     
-    console.log('📤 [COMPRA-SERVICE] DTO preparado:', compraDTO);
-    console.log('📅 [DEBUG-DATA] Data no DTO:', compraDTO.data);
-    console.log('📤 [COMPRA-SERVICE] JSON:', JSON.stringify(compraDTO, null, 2));
+    console.log('📤 [COMPRA-SERVICE] DTO preparado para backend:', JSON.stringify(compraDTO, null, 2));
+    console.log('📅 [DEBUG-DATA-FINAL] Data no DTO:', compraDTO.data);
+    console.log('📤 [COMPRA-SERVICE] Enviando para:', `${this.apiUrl}/compra`);
     
     return this.http.post<Compra>(`${this.apiUrl}/compra`, compraDTO, { 
       headers: this.getHeaders() 
@@ -218,6 +224,7 @@ export class ComprasService {
         console.log('✅ [DEBUG] Compra criada com sucesso:', response);
         console.log('📅 [DEBUG] Data na resposta:', response.data);
         console.log('📅 [DEBUG] DataEntrada na resposta:', response.dataEntrada);
+        console.log('📅 [DEBUG] DataCompra na resposta:', (response as any).dataCompra);
       }),
       catchError(error => this.handleCompraError(error, compra.idPedidoCompra))
     );
@@ -250,6 +257,49 @@ export class ComprasService {
     }).pipe(
       catchError(error => this.handleError(error, 'Erro ao excluir compra'))
     );
+  }
+
+  // ✅ NOVO: Método para formatar data recebida do backend (PÚBLICO para uso nos componentes)
+  formatarDataParaExibicao(dataUTC: string | Date | undefined): string {
+    console.log('📅 [FORMATAR-EXIBICAO] Recebido:', dataUTC);
+    
+    if (!dataUTC) return 'Data não informada';
+    
+    try {
+      // Converter para string se for Date
+      let dataString = typeof dataUTC === 'string' ? dataUTC : dataUTC.toISOString();
+      
+      console.log('📅 [FORMATAR-EXIBICAO] String para processar:', dataString);
+      
+      // Se for string sem timezone, adicionar Z para indicar UTC
+      if (typeof dataUTC === 'string' && !dataUTC.endsWith('Z') && !dataUTC.includes('+') && !dataUTC.includes('-')) {
+        dataString += 'Z';
+        console.log('📅 [FORMATAR-EXIBICAO] Adicionado Z:', dataString);
+      }
+      
+      // Converter para data
+      const data = new Date(dataString);
+      
+      console.log('📅 [FORMATAR-EXIBICAO] Date objeto criado:', data);
+      console.log('📅 [FORMATAR-EXIBICAO] Timestamp:', data.getTime());
+      console.log('📅 [FORMATAR-EXIBICAO] UTC:', data.toUTCString());
+      console.log('📅 [FORMATAR-EXIBICAO] Local:', data.toLocaleString());
+      
+      // Verificar se a data é válida
+      if (isNaN(data.getTime())) {
+        console.warn('📅 [FORMATAR-EXIBICAO] Data inválida:', dataUTC);
+        return String(dataUTC).split('T')[0]; // Retornar apenas YYYY-MM-DD
+      }
+      
+      // Formatar para exibição brasileira
+      const dataFormatada = data.toLocaleDateString('pt-BR');
+      console.log('📅 [FORMATAR-EXIBICAO] Resultado:', dataFormatada);
+      
+      return dataFormatada;
+    } catch (error) {
+      console.error('❌ [FORMATAR-EXIBICAO] Erro:', error, 'Data:', dataUTC);
+      return String(dataUTC).split('T')[0] || 'Data inválida';
+    }
   }
 
   // MÉTODOS AUXILIARES
@@ -292,22 +342,31 @@ export class ComprasService {
     );
   }
 
-  // ✅ NOVO: Converter compra para CreateCompraDTO COM DEBUG DE DATA
+  // ✅ NOVO: Converter compra para CreateCompraDTO COM DEBUG DE DATA DETALHADO
   private prepararCompraParaBackend(compra: Compra): CreateCompraDTO {
     console.log('🔄 [COMPRA-SERVICE] Preparando compra para backend...');
-    
-    // ✅ DEBUG: Verificar todos os campos de data disponíveis
-    console.log('📅 [DEBUG-PREPARAR] Campos data disponíveis:', {
+    console.log('📅 [DEBUG-PREPARAR] Compra recebida:', {
+      idPedidoCompra: compra.idPedidoCompra,
       dataEntrada: compra.dataEntrada,
       data: compra.data,
-      totalCompra: compra.totalCompra,
-      custoTotal: compra.custoTotal
+      dataCompra: (compra as any).dataCompra
     });
     
-    const dataFormatada = this.formatarDataParaBackend(compra.dataEntrada || compra.data || '');
-    console.log('📅 [DEBUG-FORMATACAO] Data entrada:', compra.dataEntrada);
+    // ✅ DEBUG: Verificar qual campo de data usar
+    const dataParaFormatar = compra.dataEntrada || compra.data || '';
+    console.log('📅 [DEBUG-PREPARAR] Campo escolhido para formatar:', {
+      valor: dataParaFormatar,
+      tipo: typeof dataParaFormatar,
+      vazio: dataParaFormatar === '',
+      nulo: dataParaFormatar === null,
+      indefinido: dataParaFormatar === undefined
+    });
+    
+    const dataFormatada = this.formatarDataParaBackend(dataParaFormatar);
+    console.log('📅 [DEBUG-FORMATACAO] Data entrada original:', compra.dataEntrada);
     console.log('📅 [DEBUG-FORMATACAO] Data (campo alternativo):', compra.data);
     console.log('📅 [DEBUG-FORMATACAO] Data formatada para backend:', dataFormatada);
+    console.log('📅 [DEBUG-FORMATACAO] Tamanho da string:', dataFormatada.length);
     
     const compraDTO = criarCreateCompraDTO(
       compra.idPedidoCompra,
@@ -318,6 +377,7 @@ export class ComprasService {
       dataFormatada
     );
     
+    console.log('📤 [COMPRA-SERVICE] DTO criado com campos:', Object.keys(compraDTO));
     console.log('📤 [COMPRA-SERVICE] Itens preparados:', compraDTO.itens.length, 'itens');
     
     if (compraDTO.itens.length > 0) {
@@ -362,29 +422,47 @@ export class ComprasService {
     };
   }
 
-  // ✅ Formatar data para o backend COM TIMEZONE CORRETO
+  // ✅ CORREÇÃO CRÍTICA: Formatar data para o backend EM UTC
   private formatarDataParaBackend(dataString: string): string {
-    console.log('🔄 [FORMATAR-DATA] Input:', dataString);
+    console.log('🔄 [FORMATAR-DATA] Input recebido:', {
+      valor: dataString,
+      tipo: typeof dataString,
+      vazio: dataString === '',
+      nulo: dataString === null,
+      indefinido: dataString === undefined
+    });
     
     if (!dataString || dataString.trim() === '') {
-      const hoje = new Date().toISOString().split('T')[0];
-      console.log('⚠️ [FORMATAR-DATA] Sem data, usando hoje:', hoje);
-      return `${hoje}T00:00:00-03:00`; // ✅ ADICIONAR OFFSET BRASIL
+      // Usar data atual em UTC
+      const hojeUTC = new Date().toISOString().split('T')[0];
+      console.log('⚠️ [FORMATAR-DATA] Sem data, usando hoje UTC:', hojeUTC);
+      return `${hojeUTC}T00:00:00Z`; // ✅ ENVIAR EM UTC COM 'Z'
     }
     
     try {
-      // Remover timezone se existir
-      let dataLimpa = dataString.split('T')[0]; // Pega apenas "YYYY-MM-DD"
+      // Garantir que temos apenas a parte da data (YYYY-MM-DD)
+      let dataLimpa = dataString.split('T')[0];
+      console.log('🔄 [FORMATAR-DATA] Após split T[0]:', dataLimpa);
       
-      // ✅ SOLUÇÃO: Adicionar offset do Brasil (-03:00) para evitar conversão
-      const resultado = `${dataLimpa}T00:00:00-03:00`;
-      console.log('✅ [FORMATAR-DATA] Formatado com offset Brasil:', resultado);
+      // Validar formato YYYY-MM-DD
+      const regexData = /^\d{4}-\d{2}-\d{2}$/;
+      console.log('🔄 [FORMATAR-DATA] Regex test:', regexData.test(dataLimpa), 'para:', dataLimpa);
+      
+      if (!regexData.test(dataLimpa)) {
+        console.warn('❌ [FORMATAR-DATA] Formato inválido, usando data atual:', dataLimpa);
+        const hojeUTC = new Date().toISOString().split('T')[0];
+        return `${hojeUTC}T00:00:00Z`;
+      }
+      
+      // ✅ SOLUÇÃO: Enviar em UTC com 'Z' no final
+      const resultado = `${dataLimpa}T00:00:00Z`;
+      console.log('✅ [FORMATAR-DATA] Formatado em UTC:', resultado);
       return resultado;
       
     } catch (e) {
       console.warn('❌ [FORMATAR-DATA] Erro ao formatar data:', e, 'Input:', dataString);
-      const hoje = new Date().toISOString().split('T')[0];
-      return `${hoje}T00:00:00-03:00`; // ✅ ADICIONAR OFFSET BRASIL
+      const hojeUTC = new Date().toISOString().split('T')[0];
+      return `${hojeUTC}T00:00:00Z`; // ✅ ENVIAR EM UTC
     }
   }
 

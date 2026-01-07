@@ -72,6 +72,8 @@ export class ComprasComponent implements OnInit {
         id: compraNormalizada.id,
         sistemaAntigo: compraNormalizada.sistemaAntigo,
         idPedidoCompra: compraNormalizada.idPedidoCompra,
+        data: compraNormalizada.data, // ✅ DEBUG: Verificar campo data
+        dataEntrada: compraNormalizada.dataEntrada,
         itensCount: compraNormalizada.itens?.length
       });
       
@@ -89,10 +91,20 @@ export class ComprasComponent implements OnInit {
     
     console.log('✅ [COMPRA-LIST] Compras carregadas:', this.compras.length);
     
-    // ✅ DEBUG: Verificar estatísticas
+    // ✅ DEBUG: Verificar estatísticas e datas
     const comprasNovas = this.compras.filter(c => !c.sistemaAntigo).length;
     const comprasAntigas = this.compras.filter(c => c.sistemaAntigo).length;
     console.log(`📊 [COMPRA-LIST] Estatísticas: ${comprasNovas} novas, ${comprasAntigas} antigas`);
+    
+    // ✅ DEBUG DAS DATAS
+    this.compras.slice(0, 3).forEach((compra, i) => {
+      console.log(`📅 [DEBUG-DATA] Compra ${i + 1}:`, {
+        idPedidoCompra: compra.idPedidoCompra,
+        dataOriginal: compra.data,
+        dataEntradaOriginal: compra.dataEntrada,
+        dataFormatada: this.getDataCompra(compra)
+      });
+    });
   }
 
   private tentarFallbackMultiplos(): void {
@@ -192,8 +204,8 @@ export class ComprasComponent implements OnInit {
 
   private ordenarCompras(): void {
     this.compras.sort((a, b) => {
-      const dataA = a.dataEntrada ? new Date(a.dataEntrada).getTime() : 0;
-      const dataB = b.dataEntrada ? new Date(b.dataEntrada).getTime() : 0;
+      const dataA = a.data ? new Date(a.data).getTime() : 0;
+      const dataB = b.data ? new Date(b.data).getTime() : 0;
       return dataB - dataA; // Mais recentes primeiro
     });
   }
@@ -219,6 +231,12 @@ export class ComprasComponent implements OnInit {
     });
     
     this.compras = Array.from(comprasAgrupadas.values());
+  }
+
+  // ✅ CORREÇÃO CRÍTICA: Método para formatar data
+  getDataCompra(compra: CompraComUI): string {
+    // ✅ USAR O SERVIÇO QUE CRIAMOS (já corrige timezone)
+    return this.compraService.formatarDataParaExibicao(compra.data);
   }
 
   // MÉTODO PARA OBTER mostrarProdutos COM TIPAGEM SEGURA
@@ -337,19 +355,6 @@ export class ComprasComponent implements OnInit {
   onCompraSalva(): void {
     this.carregarCompras();
     this.fecharModal(); 
-  }
-
-  getDataCompra(compra: CompraComUI): string {
-    if (!compra.dataEntrada) return 'Data não informada';
-    
-    try {
-      const dataParte = compra.dataEntrada.split('T')[0];
-      const dataObj = new Date(dataParte);
-      return dataObj.toLocaleDateString('pt-BR');
-    } catch (e) {
-      console.warn('Erro ao formatar data:', compra.dataEntrada, e);
-      return 'Data inválida';
-    }
   }
 
   // Método para obter custo total formatado
