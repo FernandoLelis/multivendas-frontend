@@ -32,7 +32,6 @@
             
             <div class="form-group half-width">
               <label for="data">Data da Venda *</label>
-              <!-- ✅ ATUALIZADO: type="date" e já vem preenchido -->
               <input type="date" id="data" name="data" 
                      [(ngModel)]="vendaEdit.data" 
                      required
@@ -153,15 +152,17 @@
                     </div>
                   </div>
                   
-                  <!-- ✅ ATUALIZADO: Campos bloqueados para edição -->
+                  <!-- ✅✅✅ CORREÇÃO v46.6: Campos editáveis em modo edição -->
                   <div class="carrinho-col quantidade">
                     <input type="number" 
                            [(ngModel)]="item.quantidade"
                            [ngModelOptions]="{standalone: true}"
                            min="1" 
-                           readonly
-                           (click)="atualizarQuantidade(item, item.quantidade)"
-                           class="campo-bloqueado">
+                           [readonly]="!modoEdicao"
+                           (change)="atualizarQuantidade(item, item.quantidade)"
+                           [class.campo-bloqueado]="!modoEdicao"
+                           [class.campo-editavel]="modoEdicao"
+                           title="{{ modoEdicao ? 'Editar quantidade' : 'Remova e adicione novamente para editar' }}">
                   </div>
                   
                   <div class="carrinho-col preco">
@@ -169,9 +170,11 @@
                            [(ngModel)]="item.precoUnitarioVenda"
                            [ngModelOptions]="{standalone: true}"
                            step="0.01" min="0"
-                           readonly
-                           (click)="atualizarPrecoUnitario(item, item.precoUnitarioVenda || 0)"
-                           class="campo-bloqueado">
+                           [readonly]="!modoEdicao"
+                           (change)="atualizarPrecoUnitario(item, item.precoUnitarioVenda || 0)"
+                           [class.campo-bloqueado]="!modoEdicao"
+                           [class.campo-editavel]="modoEdicao"
+                           title="{{ modoEdicao ? 'Editar preço unitário' : 'Remova e adicione novamente para editar' }}">
                   </div>
                   
                   <div class="carrinho-col total">

@@ -8,6 +8,7 @@ import { VendaService } from '../../services/venda.service';
 import { ProdutoService } from '../../services/produto.service';
 import { ProdutoFormComponent } from '../produto-form/produto-form';
 import { BrazilianCurrencyPipe } from '../../pipes/brazilian-currency.pipe';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-venda-form',
@@ -28,7 +29,7 @@ export class VendaFormComponent implements OnInit {
   @Output() abrirCompraParaProduto = new EventEmitter<Produto>();
   
   // Dados da venda principal
-  vendaEdit: Venda = this.getVendaVazia(); // ✅ ALTERADO: Usar método que já preenche data
+  vendaEdit: Venda = this.getVendaVazia();
   
   // Produtos disponíveis para venda
   produtos: Produto[] = [];
@@ -58,24 +59,24 @@ export class VendaFormComponent implements OnInit {
 
   constructor(
     private vendaService: VendaService,
-    private produtoService: ProdutoService
+    private produtoService: ProdutoService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    console.log('🔍 [DEBUG] ngOnInit iniciado');
+    console.log('🔍 [DEBUG-v46.6] ngOnInit iniciado - Formulário de venda v46.6');
     console.log('🔍 [DEBUG] venda recebida no @Input:', this.venda);
-    console.log('🔍 [DEBUG] Data inicial:', this.vendaEdit.data); // ✅ DEBUG
+    console.log('🔍 [DEBUG] Data inicial:', this.vendaEdit.data);
     this.carregarProdutos();
   }
 
-  // ✅ NOVO: Método para criar venda vazia com data atual (igual aos outros formulários)
+  // ✅ NOVO: Método para criar venda vazia com data atual
   private getVendaVazia(): Venda {
     const now = new Date();
-    // ✅ Formato correto para type="date": YYYY-MM-DD
     const dataFormatada = now.toISOString().split('T')[0];
     
     return {
-      data: dataFormatada, // ✅ Já vem preenchida com data atual
+      data: dataFormatada,
       idPedido: '',
       plataforma: 'Mercado Livre',
       precoVenda: 0,
@@ -102,7 +103,7 @@ export class VendaFormComponent implements OnInit {
   }
 
   inicializarFormulario(): void {
-    console.log('🔍 [DEBUG] Inicializando formulário...');
+    console.log('🔍 [DEBUG-v46.6] Inicializando formulário v46.6...');
     console.log('🔍 [DEBUG] this.venda:', this.venda);
     
     if (this.venda && this.venda.id) {
@@ -110,22 +111,61 @@ export class VendaFormComponent implements OnInit {
       this.modoEdicao = true;
       this.vendaEdit = { ...this.venda };
       
+      // ✅✅✅ CORREÇÃO v46.6: Garantir que precoUnitarioVenda tem valor
+      if (this.vendaEdit.itens && this.vendaEdit.itens.length > 0) {
+        this.vendaEdit.itens = this.vendaEdit.itens.map(item => {
+          // Se precoUnitarioVenda não existe mas precoUnitario existe, copiar
+          const precoUnitarioVenda = item.precoUnitarioVenda || item.precoUnitario || 0;
+          
+          const itemMapeado = {
+            ...item,
+            precoUnitarioVenda: precoUnitarioVenda,
+            // Garantir que precoTotalItem existe e está correto
+            precoTotalItem: item.precoTotalItem || (precoUnitarioVenda * item.quantidade) || 0
+          };
+          
+          console.log('📦 [DEBUG-v46.6] Item mapeado:', {
+            id: item.id,
+            produtoId: item.produtoId,
+            quantidade: item.quantidade,
+            precoUnitarioBackend: item.precoUnitario,
+            precoUnitarioVenda: itemMapeado.precoUnitarioVenda,
+            precoTotalItem: itemMapeado.precoTotalItem
+          });
+          
+          return itemMapeado;
+        });
+      }
+      
       // ✅ CORREÇÃO: Garantir formato de data correto para type="date"
       if (this.vendaEdit.data && this.vendaEdit.data.includes('T')) {
-        // Se data veio com datetime, converter para date only
         this.vendaEdit.data = this.vendaEdit.data.split('T')[0];
       }
       
-      // Garantir que itens existem (para compatibilidade)
+      // Garantir que itens existem
       if (!this.vendaEdit.itens) {
         this.vendaEdit.itens = [];
       }
       
-      console.log('🔍 [DEBUG] Modo EDIÇÃO, itens:', this.vendaEdit.itens.length);
+      console.log('🔍 [DEBUG-v46.6] Modo EDIÇÃO ativado, itens:', this.vendaEdit.itens.length);
+      console.log('🔍 [DEBUG-v46.6] Primeiro item carregado:', this.vendaEdit.itens[0]);
+      console.log('🔍 [DEBUG-v46.6] Itens podem ser editados:', this.modoEdicao);
+      
+      // ✅ NOVO: Carregar dados adicionais da venda original
+      if (this.vendaEdit.id) {
+        this.vendaService.getVenda(this.vendaEdit.id).subscribe({
+          next: (vendaCompleta) => {
+            console.log('🔍 [DEBUG-v46.6] Venda completa carregada:', vendaCompleta);
+          },
+          error: (error) => {
+            console.error('❌ Erro ao carregar venda completa:', error);
+          }
+        });
+      }
     } else {
-      // MODO NOVA VENDA: Já iniciou com data preenchida no getVendaVazia()
+      // MODO NOVA VENDA
       this.modoEdicao = false;
-      console.log('🔍 [DEBUG] Modo NOVA VENDA, data:', this.vendaEdit.data);
+      console.log('🔍 [DEBUG-v46.6] Modo NOVA VENDA ativado, data:', this.vendaEdit.data);
     }
   }
 
@@ -191,7 +231,6 @@ export class VendaFormComponent implements OnInit {
     console.log('🔍 [DEBUG] Produto alterado:', this.produtoSelecionado?.nome);
     
     if (this.produtoSelecionado) {
-      // Verificar estoque quando um produto é selecionado
       this.verificarEstoque();
     } else {
       this.estoqueInsuficiente = false;
@@ -203,7 +242,6 @@ export class VendaFormComponent implements OnInit {
   onQuantidadeChange(): void {
     console.log('🔍 [DEBUG] Quantidade alterada:', this.quantidadeSelecionada);
     
-    // Verificar estoque
     if (this.produtoSelecionado) {
       this.verificarEstoque();
     }
@@ -226,7 +264,7 @@ export class VendaFormComponent implements OnInit {
       const produtoSelecionado = this.produtos.find(p => p.id === Number(produtoId));
       if (produtoSelecionado) {
         this.produtoSelecionado = produtoSelecionado;
-        this.onProdutoChange(); // Chamar verificação de estoque
+        this.onProdutoChange();
       } else {
         this.produtoSelecionado = null;
         this.estoqueInsuficiente = false;
@@ -342,7 +380,7 @@ export class VendaFormComponent implements OnInit {
     // Limpar seleção
     this.limparSelecaoProduto();
     
-    console.log('🛒 [DEBUG] Produto adicionado ao carrinho');
+    console.log('🛒 [DEBUG-v46.6] Produto adicionado ao carrinho');
     console.log('🛒 [DEBUG] Itens no carrinho:', this.vendaEdit.itens);
   }
 
@@ -366,7 +404,7 @@ export class VendaFormComponent implements OnInit {
     if (confirm('Remover este produto do carrinho?')) {
       this.vendaEdit.itens.splice(index, 1);
       this.atualizarPrecoTotalVenda();
-      console.log('🛒 [DEBUG] Item removido do carrinho');
+      console.log('🛒 [DEBUG-v46.6] Item removido do carrinho');
     }
   }
 
@@ -375,17 +413,63 @@ export class VendaFormComponent implements OnInit {
     return this.vendaEdit.itens.some(item => item.produtoId === produtoId);
   }
 
-  // ✅ ATUALIZADO: Carrinho bloqueado para edição
-  atualizarQuantidade(item: ItemVenda, novaQuantidade: number): void {
-    // ✅ BLOQUEADO: Não permite editar quantidade no carrinho
-    alert('Para alterar a quantidade, remova o produto do carrinho e adicione novamente com a nova quantidade na seção "Adicionar Produto".');
-    return;
+  // ✅✅✅ CORREÇÃO v46.6: Permite editar quantidade em modo edição
+  atualizarQuantidade(item: ItemVenda, novaQuantidade: string | number): void {
+    const quantidade = typeof novaQuantidade === 'string' ? parseInt(novaQuantidade) : novaQuantidade;
+    
+    if (quantidade && quantidade > 0) {
+      // ✅ Validação de estoque apenas em modo edição (para novas quantidades maiores)
+      if (this.modoEdicao) {
+        // Verificar estoque se for aumento
+        this.verificarEstoqueItem(item, quantidade);
+      }
+      
+      item.quantidade = quantidade;
+      item.precoTotalItem = calcularPrecoTotalItem(item);
+      this.atualizarPrecoTotalVenda();
+      console.log('📝 [DEBUG-v46.6] Quantidade atualizada:', item.quantidade);
+    }
   }
 
-  atualizarPrecoUnitario(item: ItemVenda, novoPreco: number): void {
-    // ✅ BLOQUEADO: Não permite editar preço no carrinho
-    alert('Para alterar o preço, remova o produto do carrinho e adicione novamente com o novo preço na seção "Adicionar Produto".');
-    return;
+  // ✅✅✅ CORREÇÃO v46.6: Permite editar preço em modo edição
+  atualizarPrecoUnitario(item: ItemVenda, novoPreco: string | number): void {
+    const preco = typeof novoPreco === 'string' ? parseFloat(novoPreco) : novoPreco;
+    
+    if (preco && preco >= 0) {
+      item.precoUnitarioVenda = preco;
+      item.precoTotalItem = calcularPrecoTotalItem(item);
+      this.atualizarPrecoTotalVenda();
+      console.log('📝 [DEBUG-v46.6] Preço unitário atualizado:', item.precoUnitarioVenda);
+    }
+  }
+
+  // ✅ NOVO: Validação de estoque para item específico durante edição
+  verificarEstoqueItem(item: ItemVenda, novaQuantidade: number): void {
+    if (!item.produtoId) return;
+    
+    this.produtoService.getProduto(item.produtoId).subscribe({
+      next: (produtoAtualizado) => {
+        const estoqueAtual = produtoAtualizado.quantidadeEstoqueTotal || 0;
+        
+        // Verificar se a nova quantidade excede o estoque
+        if (novaQuantidade > estoqueAtual) {
+          this.erroEstoque[item.produtoId] = 
+            `Estoque insuficiente! Disponível: ${estoqueAtual} unidades, Solicitado: ${novaQuantidade}`;
+          
+          // Mostrar alerta apenas se for aumento significativo
+          if (novaQuantidade > item.quantidade) {
+            alert(`Estoque insuficiente para ${produtoAtualizado.nome}!\n` +
+                  `Disponível: ${estoqueAtual} unidades\n` +
+                  `Solicitado: ${novaQuantidade} unidades`);
+          }
+        } else {
+          delete this.erroEstoque[item.produtoId];
+        }
+      },
+      error: () => {
+        console.error('Erro ao verificar estoque do item');
+      }
+    });
   }
 
   atualizarPrecoTotalVenda(): void {
@@ -442,8 +526,6 @@ export class VendaFormComponent implements OnInit {
 
   // ✅ ATUALIZADO: Validação de data já vem preenchida
   validarData(): void {
-    // Data já vem preenchida automaticamente no getVendaVazia()
-    // Este método mantém compatibilidade
     if (!this.vendaEdit.data) {
       const now = new Date();
       const dataFormatada = now.toISOString().split('T')[0];
@@ -455,8 +537,33 @@ export class VendaFormComponent implements OnInit {
     this.fecharModal.emit();
   }
 
+  // ✅✅✅ NOVO: Método para preparar dados para envio (v46.6)
+  prepararDadosParaEnvio(): any {
+    const dadosVenda = {
+      idPedido: this.vendaEdit.idPedido,
+      plataforma: this.vendaEdit.plataforma,
+      data: this.vendaEdit.data,
+      precoVenda: this.calcularTotalCarrinho(),
+      fretePagoPeloCliente: this.vendaEdit.fretePagoPeloCliente || 0,
+      custoEnvio: this.vendaEdit.custoEnvio || 0,
+      tarifaPlataforma: this.vendaEdit.tarifaPlataforma || 0,
+      // ✅ ENVIAR ITENS MODIFICADOS (CRÍTICO para v46.6)
+      itens: this.vendaEdit.itens.map(item => ({
+        produtoId: item.produtoId,
+        quantidade: item.quantidade,
+        precoUnitarioVenda: item.precoUnitarioVenda || 0
+      }))
+    };
+    
+    console.log('📤 [DEBUG-v46.6] Dados preparados para backend:', dadosVenda);
+    console.log('📤 [DEBUG-v46.6] Número de itens:', dadosVenda.itens.length);
+    console.log('📤 [DEBUG-v46.6] Modo edição:', this.modoEdicao);
+    
+    return dadosVenda;
+  }
+
   salvarVenda(): void {
-    console.log('💾 [DEBUG] Salvando venda...');
+    console.log('💾 [DEBUG-v46.6] Salvando venda v46.6...');
     console.log('💾 [DEBUG] Modo:', this.modoEdicao ? 'EDIÇÃO' : 'NOVA VENDA');
     console.log('💾 [DEBUG] Venda completa:', this.vendaEdit);
     console.log('💾 [DEBUG] Número de itens:', this.vendaEdit.itens.length);
@@ -476,20 +583,27 @@ export class VendaFormComponent implements OnInit {
       if (!confirmar) return;
     }
     
+    const dadosParaEnviar = this.prepararDadosParaEnvio();
+    
     if (this.modoEdicao && this.vendaEdit.id) {
-      this.vendaService.atualizarVenda(this.vendaEdit.id, this.vendaEdit).subscribe({
+      // ✅ CORREÇÃO v46.6: Envia dados completos com itens para backend
+      this.vendaService.atualizarVenda(this.vendaEdit.id, dadosParaEnviar).subscribe({
         next: (vendaAtualizada) => {
-          console.log('✅ Venda atualizada:', vendaAtualizada);
+          console.log('✅ [DEBUG-v46.6] Venda atualizada com sucesso:', vendaAtualizada);
           this.vendaSalva.emit();
           this.fechar();
+          alert('Venda atualizada com sucesso!');
         },
         error: (error) => {
-          console.error('❌ Erro ao atualizar:', error);
-          alert('Erro ao atualizar venda! Verifique o console.');
+          console.error('❌ [DEBUG-v46.6] Erro ao atualizar:', error);
+          console.error('❌ [DEBUG-v46.6] Status:', error.status);
+          console.error('❌ [DEBUG-v46.6] Mensagem:', error.error);
+          alert('Erro ao atualizar venda: ' + (error.error || error.message));
         }
       });
     } else {
-      this.vendaService.criarVenda(this.vendaEdit).subscribe({
+      // Modo criação (mantido como estava)
+      this.vendaService.criarVenda(dadosParaEnviar).subscribe({
         next: (vendaSalva) => {
           console.log('✅ Venda criada:', vendaSalva);
           this.vendaSalva.emit();

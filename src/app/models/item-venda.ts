@@ -14,13 +14,14 @@ export interface ItemVenda {
   produtoSku?: string;      // SKU do produto (para exibição)
   produto?: Produto;        // Produto completo (opcional, para uso no carrinho)
   
-  // Informações calculadas pelo backend (PEPS)
+  // ✅✅✅ CORREÇÃO v46.6: Campos do backend que não existiam no frontend
+  precoUnitario?: number;   // Preço unitário enviado pelo BACKEND (Java usa este nome)
   custoUnitario?: number;   // Custo unitário calculado pelo PEPS no momento da venda
   custoTotal?: number;      // Custo total = quantidade × custoUnitario
   loteId?: number;          // ID do lote específico usado (rastreamento PEPS)
   
   // Campos para uso interno no frontend (carrinho)
-  precoUnitarioVenda?: number; // Preço de venda unitário (para cálculo do total)
+  precoUnitarioVenda?: number; // Preço de venda unitário (para cálculo do total - FRONTEND)
   precoTotalItem?: number;     // Preço total do item = quantidade × precoUnitarioVenda
 }
 
@@ -28,6 +29,7 @@ export interface ItemVenda {
 export interface CreateItemVendaDTO {
   produtoId: number;
   quantidade: number;
+  precoUnitarioVenda?: number;
 }
 
 // Interface para criar venda completa
@@ -59,7 +61,8 @@ export function criarItemVendaDeProduto(produto: Produto, quantidade: number = 1
 export function criarCreateItemVendaDTO(item: ItemVenda): CreateItemVendaDTO {
   return {
     produtoId: item.produtoId,
-    quantidade: item.quantidade
+    quantidade: item.quantidade,
+    precoUnitarioVenda: item.precoUnitarioVenda
   };
 }
 
@@ -89,7 +92,7 @@ export function criarCreateVendaDTO(
 // Função para calcular o preço total de um item
 export function calcularPrecoTotalItem(item: ItemVenda): number {
   const quantidade = item.quantidade || 0;
-  const precoUnitario = item.precoUnitarioVenda || 0;
+  const precoUnitario = item.precoUnitarioVenda || item.precoUnitario || 0;
   return quantidade * precoUnitario;
 }
 
@@ -98,7 +101,7 @@ export function itemVendaValido(item: ItemVenda): boolean {
   return !!item.produtoId && 
          !!item.quantidade && 
          item.quantidade > 0 &&
-         (item.precoUnitarioVenda || 0) >= 0;
+         ((item.precoUnitarioVenda || item.precoUnitario || 0) >= 0);
 }
 
 // Função para calcular custo total de uma lista de itens
@@ -111,7 +114,7 @@ export function calcularCustoTotalItens(itens: ItemVenda[]): number {
 // Função para calcular preço total de uma lista de itens
 export function calcularPrecoTotalItens(itens: ItemVenda[]): number {
   return itens.reduce((total, item) => {
-    return total + (item.precoTotalItem || 0);
+    return total + (item.precoTotalItem || calcularPrecoTotalItem(item) || 0);
   }, 0);
 }
 
