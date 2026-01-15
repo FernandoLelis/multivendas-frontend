@@ -9,6 +9,7 @@ import { ProdutoService } from '../../services/produto.service';
 import { ProdutoFormComponent } from '../produto-form/produto-form';
 import { BrazilianCurrencyPipe } from '../../pipes/brazilian-currency.pipe';
 import { Router } from '@angular/router';
+import { ModalService } from '../../services/modal.service'; // ✅ NOVO IMPORT
 
 @Component({
   selector: 'app-venda-form',
@@ -60,6 +61,7 @@ export class VendaFormComponent implements OnInit {
   constructor(
     private vendaService: VendaService,
     private produtoService: ProdutoService,
+    private modalService: ModalService, // ✅ NOVO
     private router: Router
   ) {}
 
@@ -280,7 +282,8 @@ export class VendaFormComponent implements OnInit {
     if (this.produtoSelecionado) {
       this.abrirCompraParaProduto.emit(this.produtoSelecionado);
     } else {
-      alert('Por favor, selecione um produto primeiro.');
+      // ✅ SUBSTITUÍDO POR MODAL
+      this.modalService.mostrarErro('Por favor, selecione um produto primeiro.');
     }
   }
 
@@ -309,34 +312,34 @@ export class VendaFormComponent implements OnInit {
     }
   }
 
-  // ✅ ATUALIZADO: Validação melhorada
+  // ✅ ATUALIZADO: Validação melhorada com modais
   adicionarAoCarrinho(): void {
     if (!this.produtoSelecionado) {
-      alert('Por favor, selecione um produto primeiro.');
+      this.modalService.mostrarErro('Por favor, selecione um produto primeiro.');
       return;
     }
     
     if (this.quantidadeSelecionada <= 0) {
-      alert('A quantidade deve ser maior que zero.');
+      this.modalService.mostrarErro('A quantidade deve ser maior que zero.');
       return;
     }
     
     if (this.precoTotalSelecionado <= 0) {
-      alert('O preço total deve ser maior que zero.');
+      this.modalService.mostrarErro('O preço total deve ser maior que zero.');
       return;
     }
     
-    // ✅ ATUALIZADO: Se sem estoque, não bloqueia - apenas alerta
+    // ✅ CORREÇÃO: Se sem estoque, NÃO PERMITE adicionar ao carrinho
     if (this.estoqueInsuficiente) {
-      const confirmar = confirm(`Estoque insuficiente!\n\n` +
+      // Mostrar modal explicativo
+      this.modalService.mostrarErro(
+        `Estoque insuficiente!\n\n` +
         `Disponível: ${this.estoqueDisponivel} unidades\n` +
         `Já no carrinho: ${this.quantidadeNoCarrinho} unidades\n` +
         `Solicitado: ${this.quantidadeSolicitada} unidades\n\n` +
-        `Deseja continuar mesmo assim?`);
-      
-      if (!confirmar) {
-        return;
-      }
+        `Clique em "Comprar Mais Estoque" para adicionar estoque.`
+      );
+      return; // NÃO PERMITE ADICIONAR AO CARRINHO
     }
     
     const produtoId = this.produtoSelecionado.id!;
@@ -351,9 +354,11 @@ export class VendaFormComponent implements OnInit {
       const novaQuantidadeTotal = itemExistente.quantidade + this.quantidadeSelecionada;
       
       if (novaQuantidadeTotal > this.estoqueDisponivel && !this.estoqueInsuficiente) {
-        alert(`Estoque insuficiente! Você já tem ${itemExistente.quantidade} unidades no carrinho. 
-        Disponível: ${this.estoqueDisponivel} unidades.
-        Não é possível adicionar mais ${this.quantidadeSelecionada} unidades.`);
+        this.modalService.mostrarErro(
+          `Estoque insuficiente! Você já tem ${itemExistente.quantidade} unidades no carrinho. 
+          Disponível: ${this.estoqueDisponivel} unidades.
+          Não é possível adicionar mais ${this.quantidadeSelecionada} unidades.`
+        );
         return;
       }
       
@@ -401,11 +406,15 @@ export class VendaFormComponent implements OnInit {
   }
 
   removerDoCarrinho(index: number): void {
-    if (confirm('Remover este produto do carrinho?')) {
-      this.vendaEdit.itens.splice(index, 1);
-      this.atualizarPrecoTotalVenda();
-      console.log('🛒 [DEBUG-v46.6] Item removido do carrinho');
-    }
+    // ✅ SUBSTITUÍDO POR MODAL
+    this.modalService.confirmarExclusao(
+      'Remover este produto do carrinho?',
+      () => {
+        this.vendaEdit.itens.splice(index, 1);
+        this.atualizarPrecoTotalVenda();
+        console.log('🛒 [DEBUG-v46.6] Item removido do carrinho');
+      }
+    );
   }
 
   // ✅ NOVO: Método para verificar se produto já está no carrinho
@@ -569,20 +578,33 @@ export class VendaFormComponent implements OnInit {
     console.log('💾 [DEBUG] Número de itens:', this.vendaEdit.itens.length);
     
     if (this.vendaEdit.itens.length === 0) {
-      alert('Adicione pelo menos um produto ao carrinho.');
+      // ✅ SUBSTITUÍDO POR MODAL
+      this.modalService.mostrarErro('Adicione pelo menos um produto ao carrinho.');
       return;
     }
     
     if (!this.vendaEdit.idPedido.trim()) {
-      alert('ID do Pedido é obrigatório.');
+      // ✅ SUBSTITUÍDO POR MODAL
+      this.modalService.mostrarErro('ID do Pedido é obrigatório.');
       return;
     }
     
     if (this.temErroEstoque()) {
-      const confirmar = confirm('Alguns produtos têm estoque insuficiente. Deseja continuar mesmo assim?');
-      if (!confirmar) return;
+      // ✅ SUBSTITUÍDO POR MODAL
+      this.modalService.confirmarExclusao(
+        'Alguns produtos têm estoque insuficiente. Deseja continuar mesmo assim?',
+        () => {
+          this.continuarSalvamento();
+        }
+      );
+      return;
     }
     
+    this.continuarSalvamento();
+  }
+
+  // ✅ NOVO: Método separado para continuar o salvamento após confirmações
+  private continuarSalvamento(): void {
     const dadosParaEnviar = this.prepararDadosParaEnvio();
     
     if (this.modoEdicao && this.vendaEdit.id) {
@@ -592,28 +614,47 @@ export class VendaFormComponent implements OnInit {
           console.log('✅ [DEBUG-v46.6] Venda atualizada com sucesso:', vendaAtualizada);
           this.vendaSalva.emit();
           this.fechar();
-          alert('Venda atualizada com sucesso!');
+          // ✅ SUBSTITUÍDO POR MODAL
+          this.modalService.mostrarSucesso('Venda atualizada com sucesso!');
         },
         error: (error) => {
           console.error('❌ [DEBUG-v46.6] Erro ao atualizar:', error);
           console.error('❌ [DEBUG-v46.6] Status:', error.status);
           console.error('❌ [DEBUG-v46.6] Mensagem:', error.error);
-          alert('Erro ao atualizar venda: ' + (error.error || error.message));
+          
+          // ✅ TRATAMENTO DE ERRO DE ID DUPLICADO
+          if (error.error && (error.error.includes('ID do pedido já existe') || 
+                             error.error.includes('Já existe outra venda'))) {
+            // Extrair ID do pedido da mensagem de erro
+            this.modalService.mostrarErroIdDuplicado(this.vendaEdit.idPedido);
+          } else {
+            // Erro genérico
+            this.modalService.mostrarErro('Erro ao atualizar venda: ' + (error.error || error.message));
+          }
         }
       });
     } else {
-      // Modo criação (mantido como estava)
+      // Modo criação
       this.vendaService.criarVenda(dadosParaEnviar).subscribe({
         next: (vendaSalva) => {
           console.log('✅ Venda criada:', vendaSalva);
           this.vendaSalva.emit();
           this.fechar();
+          // ✅ SUBSTITUÍDO POR MODAL
+          this.modalService.mostrarSucesso('Venda criada com sucesso!');
         },
         error: (error) => {
           console.error('❌ Erro ao criar venda:', error);
           console.error('❌ Status:', error.status);
           console.error('❌ Mensagem:', error.message);
-          alert('Erro ao salvar venda! Verifique o console.');
+          
+          // ✅ TRATAMENTO DE ERRO DE ID DUPLICADO
+          if (error.error && error.error.includes('Já existe uma venda com este ID do pedido')) {
+            this.modalService.mostrarErroIdDuplicado(this.vendaEdit.idPedido);
+          } else {
+            // Erro genérico
+            this.modalService.mostrarErro('Erro ao criar venda: ' + (error.error || error.message));
+          }
         }
       });
     }
