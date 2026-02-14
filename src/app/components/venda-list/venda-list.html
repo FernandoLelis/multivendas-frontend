@@ -4,30 +4,18 @@
     <button class="btn-nova-venda" (click)="novaVenda()">Nova Venda</button>
   </div>
 
-  <!-- INDICADOR DE CARREGAMENTO -->
-      <div class="carregando" *ngIf="vendas.length === 0">
-        <div class="spinner"></div>
-      </div>
-
   <div class="vendas-grid">
     <div *ngFor="let venda of vendas" class="venda-card">
-      <!-- HEADER COM RESUMO DOS PRODUTOS E PLATAFORMA -->
+      
       <div class="venda-header">
-        <!-- ✅ CORREÇÃO: Resumo dos produtos (primeiro produto + contagem) -->
         <h3>{{ getResumoProdutos(venda) }}</h3>
-        <!-- <span class="plataforma-tag {{ getPlataformaClass(venda.plataforma) }}">
+        <span class="plataforma-tag" [ngClass]="getPlataformaClass(venda.plataforma)">
           {{ venda.plataforma }}
-        </span> -->
+        </span>
       </div>
       
-      <!-- CONTEÚDO PRINCIPAL -->
       <div class="venda-content">
-        <!-- INFORMAÇÕES ALINHADAS À ESQUERDA -->
         <div class="venda-info">
-          <div class="info-row">
-            <span class="label">Plataforma:</span>
-            <span class="value">{{ venda.plataforma }}</span>
-          </div>
           <div class="info-row">
             <span class="label">ID do Pedido:</span>
             <span class="value">{{ venda.idPedido }}</span>
@@ -36,26 +24,9 @@
             <span class="label">Data:</span>
             <span class="value">{{ venda.data | date:'dd/MM/yyyy' }}</span>
           </div>
-          
-          <!-- ✅ CORREÇÃO: Quantidade total de TODOS os itens -->
-          <div class="info-row">
-            <span class="label">Quantidade Total:</span>
-            <span class="value">{{ getQuantidadeTotal(venda) }} unidades</span>
-          </div>
-          
-          <!-- ✅ NOVO: Número de produtos diferentes -->
-          <div class="info-row">
-            <span class="label">Produtos:</span>
-            <span class="value">{{ getNumeroProdutos(venda) }} itens</span>
-          </div>
-          
           <div class="info-row">
             <span class="label">Valor Total:</span>
             <span class="value highlight">{{ venda.precoVenda | brlCurrency }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Custo Produto:</span>
-            <span class="value">{{ venda.custoProdutoVendido | brlCurrency }}</span>
           </div>
           <div class="info-row">
             <span class="label">Custo Efetivo:</span>
@@ -64,61 +35,59 @@
           <div class="info-row">
             <span class="label">Lucro Líquido:</span>
             <span class="value lucro-liquido" 
-                   [class.positive]="venda.lucroLiquido > 0"
-                   [class.negative]="venda.lucroLiquido < 0">
+                  [class.positive]="venda.lucroLiquido > 0"
+                  [class.negative]="venda.lucroLiquido < 0">
               {{ venda.lucroLiquido | brlCurrency }}
             </span>
           </div>
           <div class="info-row">
             <span class="label">ROI:</span>
             <span class="value roi" 
-                   [class.positive]="venda.roi > 0"
-                   [class.negative]="venda.roi < 0">
+                  [class.positive]="venda.roi > 0"
+                  [class.negative]="venda.roi < 0">
               {{ formatarROI(venda.roi) }}
             </span>
           </div>
         </div>
-      </div>
 
-      <!-- ✅ NOVO: LISTA RÁPIDA DOS PRODUTOS (expandível) -->
-      <div class="produtos-resumo" *ngIf="venda.itens && venda.itens.length > 0">
-        <div class="produtos-header" (click)="toggleProdutos(venda)">
-          <span class="toggle-icon">{{ venda.mostrarProdutos ? '▼' : '▶' }}</span>
-          <span class="produtos-label">Ver produtos ({{ venda.itens.length }})</span>
-        </div>
-        
-        <div class="produtos-lista" *ngIf="venda.mostrarProdutos">
-          <div *ngFor="let item of venda.itens" class="produto-item">
-            <span class="produto-nome">{{ item.produtoNome || 'Produto' }}</span>
-            <span class="produto-quantidade">{{ item.quantidade }}x</span>
-            <span class="produto-preco">{{ item.custoUnitario | brlCurrency }} un.</span>
+        <div class="produtos-resumo">
+          <div class="produtos-header" (click)="toggleProdutos(venda)">
+            <span class="toggle-icon">{{ venda.mostrarProdutos ? '▼' : '▶' }}</span>
+            <span class="produtos-label">
+              {{ venda.mostrarProdutos ? 'Ocultar detalhes' : 'Ver produtos' }} ({{ getNumeroProdutos(venda) }})
+            </span>
+          </div>
+          
+          <div class="produtos-lista" *ngIf="venda.mostrarProdutos">
+            <div *ngFor="let item of getItensAgrupados(venda)" class="produto-item">
+              <span class="produto-nome">{{ item.nome }}</span>
+              <span class="produto-quantidade">{{ item.quantidade }}x</span>
+              <span class="produto-preco">{{ item.custoMedio | brlCurrency }} (médio)</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- BOTÕES ALINHADOS À ESQUERDA -->
       <div class="venda-actions">
         <button class="btn-detalhes" (click)="detalhesVenda(venda)">Detalhes</button>
         <button class="btn-editar" (click)="editarVenda(venda)">Editar</button>
         <button class="btn-excluir" (click)="excluirVenda(venda)">Excluir</button>
       </div>
     </div>
-
+  </div>
 </div>
 
-<!-- MODAL DE VENDA -->
 <app-venda-form 
-  *ngIf="mostrarFormVenda"
-  [venda]="vendaSelecionada"
-  (fecharModal)="fecharFormVenda()"
-  (vendaSalva)="carregarVendas()"
+  *ngIf="mostrarFormVenda" 
+  [venda]="vendaSelecionada" 
+  (fecharModal)="fecharFormVenda()" 
+  (vendaSalva)="carregarVendas()" 
   (abrirCompraParaProduto)="abrirCompraParaProduto($event)">
 </app-venda-form>
 
-<!-- MODAL DE COMPRA -->
 <app-compra-form 
-  *ngIf="mostrarFormCompra"
-  [compra]="null"
-  (fecharModal)="fecharFormCompra()"
+  *ngIf="mostrarFormCompra" 
+  [compra]="produtoParaCompra" 
+  (fecharModal)="fecharFormCompra()" 
   (compraSalva)="onCompraSalva()">
 </app-compra-form>

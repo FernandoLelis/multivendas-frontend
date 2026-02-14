@@ -348,7 +348,8 @@ export class ComprasService {
     console.error('❌ [COMPRA-SERVICE] Erro na compra:', error);
 
     if (this.isIdDuplicadoError(error)) {
-      this.modalService.mostrarErroIdDuplicado(idPedidoCompra);
+      // ✅✅✅ CORREÇÃO: Usando mostrarErroIdDuplicadoCompra() em vez de mostrarErroIdDuplicado()
+      this.modalService.mostrarErroIdDuplicadoCompra(idPedidoCompra);
     } else if (this.isLoteConsumidoError(error)) {
       this.modalService.mostrarAlertaPeps(
         error.error?.saldoAtual || 0,

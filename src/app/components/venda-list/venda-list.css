@@ -1,6 +1,9 @@
 /* IMPORT DA FONTE ROBOTO - PADRÃO DA PLATAFORMA */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
+/* ==========================================================================
+   LAYOUT GERAL
+   ========================================================================== */
 .venda-list {
   padding: 20px;
   max-width: 1200px;
@@ -22,6 +25,9 @@
   font-size: 28px;
 }
 
+/* ==========================================================================
+   BOTÕES (DESIGN SYSTEM PADRÃO)
+   ========================================================================== */
 .btn-nova-venda {
   background-color: #7df525;
   color: #01182d;
@@ -41,40 +47,68 @@
   transform: translateY(-2px);
 }
 
-/* INDICADOR DE CARREGAMENTO */
-.carregando {
+.venda-actions {
+  background: #01182d;
+  padding: 15px 20px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  grid-column: 1 / -1;
+  gap: 10px;
+  justify-content: flex-start;
+  border-top: 1px solid #1a3a5f;
 }
 
-.carregando .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-top: 4px solid #7df525;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+.btn-detalhes {
+  background-color: transparent;
+  color: #06A8F4;
+  border: 2px solid #06A8F4;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.btn-editar {
+  background-color: #06A8F4;
+  color: white;
+  border: 2px solid #06A8F4;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-/* GRID DE VENDAS */
+.btn-excluir {
+  background-color: #E53935;
+  color: white;
+  border: 2px solid #E53935;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-detalhes:hover, .btn-editar:hover, .btn-excluir:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* ==========================================================================
+   CARD DE VENDA
+   ========================================================================== */
 .vendas-grid {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* ESTILO IDÊNTICO AO METRIC-CARD */
 .venda-card {
   background: #01182d;
   border-radius: 8px;
@@ -86,7 +120,6 @@
   overflow: hidden;
 }
 
-/* HEADER DO CARD COM PLATAFORMA À DIREITA */
 .venda-header {
   background: #01182d;
   padding: 20px 20px 15px 20px;
@@ -99,7 +132,6 @@
 .venda-header h3 {
   color: white;
   margin: 0;
-  font-family: 'Roboto', sans-serif;
   font-size: 18px;
   font-weight: 500;
   flex: 1;
@@ -117,24 +149,14 @@
   background: #1a3a5f;
 }
 
-.plataforma-tag.amazon {
-  background: #ff9900;
-}
+.plataforma-tag.amazon { background: #ff9900; }
+.plataforma-tag.mercado-livre { background: #ffe600; color: #01182d; }
+.plataforma-tag.shopee { background: #ee4d2d; }
+.plataforma-tag.outro { background: #06A8F4; }
 
-.plataforma-tag.mercado-livre {
-  background: #ffe600;
-  color: #01182d;
-}
-
-.plataforma-tag.shopee {
-  background: #ee4d2d;
-}
-
-.plataforma-tag.outro {
-  background: #06A8F4;
-}
-
-/* CONTEÚDO PRINCIPAL DO CARD */
+/* ==========================================================================
+   CONTEÚDO E INFORMAÇÕES
+   ========================================================================== */
 .venda-content {
   padding: 0 20px 20px 20px;
   display: flex;
@@ -142,7 +164,6 @@
   gap: 15px;
 }
 
-/* INFORMAÇÕES ALINHADAS À ESQUERDA - MESMO ESTILO DO PRODUTO-LIST */
 .venda-info {
   display: flex;
   flex-direction: column;
@@ -173,14 +194,27 @@
   flex: 1;
 }
 
-/* VALOR TOTAL EM DESTAQUE */
 .value.highlight {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-  font-weight: 400;
+  font-weight: 600;
+  color: #ffffff;
 }
 
-/* ✅ NOVO: ESTILOS PARA LISTA DE PRODUTOS */
+/* ==========================================================================
+   CÁLCULOS E METRICAS (DINÂMICOS)
+   ========================================================================== */
+.lucro-liquido.positive, .roi.positive {
+  color: #7df525 !important;
+  font-weight: 600;
+}
+
+.lucro-liquido.negative, .roi.negative {
+  color: #E53935 !important;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   SEÇÃO DE PRODUTOS (NOVO CAMPOS)
+   ========================================================================== */
 .produtos-resumo {
   margin: 15px 0;
   border-top: 1px solid #1a3a5f;
@@ -199,18 +233,10 @@
   transition: all 0.3s ease;
 }
 
-.produtos-header:hover {
-  color: #0590d6;
-}
-
 .toggle-icon {
   margin-right: 10px;
   font-size: 12px;
   transition: transform 0.3s ease;
-}
-
-.produtos-header.expanded .toggle-icon {
-  transform: rotate(90deg);
 }
 
 .produtos-label {
@@ -220,47 +246,30 @@
 
 .produtos-lista {
   margin-top: 10px;
-  max-height: 200px;
+  max-height: 300px;
   overflow-y: auto;
   padding-right: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Estilizar scrollbar */
-.produtos-lista::-webkit-scrollbar {
-  width: 6px;
-}
-
-.produtos-lista::-webkit-scrollbar-track {
-  background: #1a3a5f;
-  border-radius: 3px;
-}
-
-.produtos-lista::-webkit-scrollbar-thumb {
-  background: #06A8F4;
-  border-radius: 3px;
-}
-
+/* ESTILO DO ITEM DE PRODUTO AGRUPADO */
 .produto-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  border-bottom: 1px solid rgba(26, 58, 95, 0.5);
   background: rgba(1, 24, 45, 0.5);
-  border-radius: 4px;
-  margin-bottom: 5px;
-}
-
-.produto-item:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
+  border-radius: 6px;
+  border-left: 3px solid #06A8F4; /* Destaque lateral azul */
 }
 
 .produto-nome {
   flex: 2;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.9);
-  font-weight: 400;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -279,333 +288,66 @@
 }
 
 .produto-preco {
-  flex: 0 0 80px;
+  flex: 1;
   text-align: right;
   font-size: 12px;
   color: #06A8F4;
   font-weight: 500;
 }
 
-/* BOX DE CÁLCULOS COM FUNDO #1A3A5F */
-.calculos-section {
-  background: #1A3A5F;
-  border-radius: 8px;
-  padding: 15px;
-  margin: 15px 0 0 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  width: 100%;
-}
-
-.calculos-section .info-row {
-  margin-bottom: 8px;
-}
-
-.calculos-section .label {
-  color: white;
-  font-size: 0.9rem;
-  min-width: 120px;
-}
-
-.calculos-section .value {
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-/* CORES DINÂMICAS PARA LUCRO LÍQUIDO E ROI */
-.lucro-liquido.positive,
-.roi.positive {
-  color: #7df525 !important;
-}
-
-.lucro-liquido.negative,
-.roi.negative {
-  color: #E53935 !important;
-}
-
-/* GARANTIR QUE AS CORES SOBREESCREVAM OUTROS ESTILOS */
-.calculos-section .lucro-liquido.positive,
-.calculos-section .roi.positive {
-  color: #7df525 !important;
-}
-
-.calculos-section .lucro-liquido.negative,
-.calculos-section .roi.negative {
-  color: #E53935 !important;
-}
-
-/* BOTÕES ALINHADOS À ESQUERDA */
-.venda-actions {
-  background: #01182d;
-  padding: 15px 20px;
+/* ==========================================================================
+   INDICADORES E ANIMAÇÕES
+   ========================================================================== */
+.carregando {
   display: flex;
-  gap: 10px;
-  justify-content: flex-start;
-  border-top: 1px solid #1a3a5f;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
 }
 
-/* BOTÃO DETALHES COM FUNDO TRANSPARENTE E BORDA AZUL */
-.btn-detalhes {
-  background-color: transparent;
-  color: #06A8F4;
-  border: 2px solid #06A8F4;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid #7df525;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
 }
 
-/* BOTÃO EDITAR COM FUNDO AZUL */
-.btn-editar {
-  background-color: #06A8F4;
-  color: white;
-  border: 2px solid #06A8F4;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* BOTÃO EXCLUIR COM FUNDO VERMELHO */
-.btn-excluir {
-  background-color: #E53935;
-  color: white;
-  border: 2px solid #E53935;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-/* HOVER DOS BOTÕES */
-.btn-detalhes:hover {
-  background-color: rgba(6, 168, 244, 0.1);
-  transform: translateY(-2px);
-}
-
-.btn-editar:hover {
-  background-color: #0590d6;
-  border-color: #0590d6;
-  transform: translateY(-2px);
-}
-
-.btn-excluir:hover {
-  background-color: #c62828;
-  border-color: #c62828;
-  transform: translateY(-2px);
-}
-
-/* MENSAGEM SEM VENDAS */
-.sem-vendas {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-style: italic;
-  padding: 40px;
-  font-family: 'Roboto', sans-serif;
-  background: #01182d;
-  border-radius: 8px;
-}
-
-/* RESPONSIVIDADE */
-@media (max-width: 768px) {
-  .venda-list {
-    padding: 15px;
-  }
-
-  .venda-card {
-    border: 2px solid #1a3a5f;
-  }
-
-  .venda-header {
-    padding: 20px 20px 15px 15px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .venda-header h3 {
-    font-size: 16px;
-  }
-  
-  .plataforma-tag {
-    margin-left: 0;
-    align-self: flex-start;
-  }
-  
-  .header-actions {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-  
-  .venda-list h2 {
-    font-size: 24px;
-  }
-  
-  .venda-content {
-    padding: 0 15px 15px 15px;
-  }
-  
-  .venda-info {
-    gap: 6px;
-  }
-  
-  .label {
-    min-width: 100px;
-    font-size: 0.85rem;
-  }
-  
-  .value {
-    font-size: 0.85rem;
-  }
-  
-  /* ✅ AJUSTES PARA LISTA DE PRODUTOS EM MOBILE */
-  .produto-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-    padding: 8px;
-  }
-  
-  .produto-nome {
-    width: 100%;
-    white-space: normal;
-    margin-bottom: 5px;
-  }
-  
-  .produto-quantidade {
-    align-self: flex-start;
-    margin: 0;
-  }
-  
-  .produto-preco {
-    align-self: flex-start;
-    text-align: left;
-  }
-  
-  .produtos-lista {
-    max-height: 150px;
-  }
-  
-  /* BOTÕES EM MOBILE */
-  .venda-actions {
-    flex-direction: column;
-    padding: 15px;
-    gap: 8px;
-  }
-  
-  .btn-detalhes, .btn-editar, .btn-excluir {
-    width: 100%;
-    text-align: center;
-  }
-  
-  .btn-nova-venda {
-    width: 100%;
-  }
-  
-  /* AJUSTES PARA CÁLCULOS SECTION EM MOBILE */
-  .calculos-section {
-    padding: 12px;
-    margin: 10px 0 0 0;
-  }
-  
-  .calculos-section .label {
-    min-width: 100px;
-    font-size: 0.85rem;
-  }
-  
-  .calculos-section .value {
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  /* AJUSTES PARA TELAS MUITO PEQUENAS */
-  .info-row {
-    gap: 6px;
-  }
-  
-  .label {
-    min-width: 90px;
-    font-size: 0.8rem;
-  }
-  
-  .value {
-    font-size: 0.8rem;
-  }
-  
-  .calculos-section .label {
-    min-width: 90px;
-    font-size: 0.8rem;
-  }
-  
-  .calculos-section .value {
-    font-size: 0.8rem;
-  }
-  
-  /* ✅ AJUSTES PARA PRODUTOS EM TELAS PEQUENAS */
-  .produtos-resumo {
-    margin: 10px 0;
-    padding: 10px 0;
-  }
-  
-  .produtos-label {
-    font-size: 13px;
-  }
-  
-  .produto-item {
-    padding: 6px;
-    margin-bottom: 4px;
-  }
-  
-  .produto-nome {
-    font-size: 12px;
-  }
-  
-  .produto-quantidade {
-    font-size: 12px;
-    padding: 1px 4px;
-  }
-  
-  .produto-preco {
-    font-size: 11px;
-  }
-  
-  .venda-header {
-    padding: 15px 15px 10px 15px;
-  }
-  
-  .venda-header h3 {
-    font-size: 15px;
-  }
-  
-  .plataforma-tag {
-    font-size: 0.7rem;
-    padding: 4px 8px;
-  }
-}
-
-/* ✅ ANIMAÇÃO PARA EXPANSÃO DOS PRODUTOS */
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    max-height: 0;
-  }
-  to {
-    opacity: 1;
-    max-height: 200px;
-  }
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .produtos-lista {
   animation: slideDown 0.3s ease-out;
 }
+
+/* ==========================================================================
+   RESPONSIVIDADE
+   ========================================================================== */
+@media (max-width: 768px) {
+  .header-actions { flex-direction: column; gap: 15px; align-items: flex-start; }
+  .venda-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .plataforma-tag { margin-left: 0; }
+  .venda-actions { flex-direction: column; }
+  .btn-detalhes, .btn-editar, .btn-excluir, .btn-nova-venda { width: 100%; text-align: center; }
+  
+  .produto-item {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .produto-nome { width: 100%; flex: none; }
+}
+
+/* Custom Scrollbar */
+.produtos-lista::-webkit-scrollbar { width: 6px; }
+.produtos-lista::-webkit-scrollbar-track { background: #1a3a5f; border-radius: 3px; }
+.produtos-lista::-webkit-scrollbar-thumb { background: #06A8F4; border-radius: 3px; }

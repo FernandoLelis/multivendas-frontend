@@ -14,32 +14,37 @@ export class VendaService {
 
   constructor(private http: HttpClient) { }
 
-  // ✅ CORRIGIDO: Agora usa CreateVendaDTO para criar
   getVendas(): Observable<Venda[]> {
     return this.http.get<Venda[]>(this.apiUrl).pipe(
       tap(vendas => {
         console.log('🔍 [DEBUG GET VENDAS] Vendas recebidas:', vendas.length);
+        
+        // ✅ CORREÇÃO: Analisar lotes PEPS em vez de verificar duplicados
         vendas.forEach((venda, index) => {
           console.log(`🔍 [DEBUG GET VENDAS] Venda ${index} - ID: ${venda.id}, Pedido: ${venda.idPedido}`);
-          console.log(`🔍 [DEBUG GET VENDAS] Itens: ${venda.itens?.length || 0}`);
           
           if (venda.itens && venda.itens.length > 0) {
-            console.log('🔍 [DEBUG GET VENDAS] IDs dos itens:', venda.itens.map(item => item.id));
-            console.log('🔍 [DEBUG GET VENDAS] Produto IDs:', venda.itens.map(item => item.produtoId));
-            console.log('🔍 [DEBUG GET VENDAS] Quantidades:', venda.itens.map(item => item.quantidade));
+            console.log(`🔍 [DEBUG GET VENDAS] Total de itens (lotes): ${venda.itens.length}`);
             
-            // Verificar duplicatas
-            const produtoIds = venda.itens.map(item => item.produtoId);
-            const idsUnicos = [...new Set(produtoIds)];
-            const temDuplicatas = idsUnicos.length !== produtoIds.length;
+            // Agrupar itens por produto para entender o PEPS
+            const itensPorProduto = new Map<number, any[]>();
             
-            if (temDuplicatas) {
-              console.warn('⚠️ [DEBUG GET VENDAS] VENDA COM ITENS DUPLICADOS:', venda.idPedido);
-              console.warn('⚠️ [DEBUG GET VENDAS] IDs duplicados:', 
-                produtoIds.filter((id, index) => produtoIds.indexOf(id) !== index));
-            } else {
-              console.log('✅ [DEBUG GET VENDAS] Venda sem duplicatas');
-            }
+            venda.itens.forEach((item: any) => {
+              if (!itensPorProduto.has(item.produtoId)) {
+                itensPorProduto.set(item.produtoId, []);
+              }
+              itensPorProduto.get(item.produtoId)!.push(item);
+            });
+            
+            // Mostrar análise por produto
+            itensPorProduto.forEach((itens, produtoId) => {
+              if (itens.length > 1) {
+                console.log(`📦 [DEBUG GET VENDAS] Produto ${produtoId}: ${itens.length} lotes PEPS`);
+                itens.forEach((item, loteIndex) => {
+                  console.log(`   Lote ${loteIndex + 1}: ${item.quantidade} un. - Custo: R$${item.custoUnitario || 'N/A'}`);
+                });
+              }
+            });
           }
         });
       }),
@@ -55,18 +60,33 @@ export class VendaService {
       tap(venda => {
         console.log('🔍 [DEBUG GET VENDA INDIVIDUAL] Venda ID:', id);
         console.log('🔍 [DEBUG GET VENDA INDIVIDUAL] Pedido:', venda.idPedido);
-        console.log('🔍 [DEBUG GET VENDA INDIVIDUAL] Itens:', venda.itens?.length || 0);
+        console.log('🔍 [DEBUG GET VENDA INDIVIDUAL] Itens totais (lotes):', venda.itens?.length || 0);
         
-        if (venda.itens) {
-          venda.itens.forEach((item, index) => {
-            console.log(`🔍 [DEBUG GET VENDA INDIVIDUAL] Item ${index}:`, {
-              id: item.id,
-              produtoId: item.produtoId,
-              produtoNome: item.produtoNome,
-              quantidade: item.quantidade,
-              custoUnitario: item.custoUnitario,
-              loteId: item.loteId
-            });
+        if (venda.itens && venda.itens.length > 0) {
+          // ✅ CORREÇÃO: Agrupar por produto para mostrar análise PEPS
+          const itensPorProduto = new Map<number, any[]>();
+          
+          venda.itens.forEach((item: any) => {
+            if (!itensPorProduto.has(item.produtoId)) {
+              itensPorProduto.set(item.produtoId, []);
+            }
+            itensPorProduto.get(item.produtoId)!.push(item);
+          });
+          
+          console.log('📊 [DEBUG GET VENDA INDIVIDUAL] Análise PEPS por produto:');
+          itensPorProduto.forEach((itens, produtoId) => {
+            const produtoNome = itens[0].produtoNome || `Produto ${produtoId}`;
+            const quantidadeTotal = itens.reduce((sum, item) => sum + item.quantidade, 0);
+            const custoTotal = itens.reduce((sum, item) => sum + (item.custoUnitario * item.quantidade), 0);
+            
+            console.log(`   ${produtoNome}: ${quantidadeTotal} unidades em ${itens.length} lote(s)`);
+            
+            if (itens.length > 1) {
+              console.log('   Detalhes dos lotes:');
+              itens.forEach((item, index) => {
+                console.log(`     Lote ${index + 1}: ${item.quantidade} un. - Custo: R$${item.custoUnitario}`);
+              });
+            }
           });
         }
       }),
@@ -81,90 +101,113 @@ export class VendaService {
     return this.http.get<any>(`${this.apiUrl}/${vendaId}/calculos`);
   }
 
-  // ✅ CORRIGIDO: Agora usa CreateVendaDTO
   criarVenda(venda: Venda): Observable<Venda> {
     console.log('📤 [DEBUG] Iniciando criação de venda...');
-    console.log('📤 [DEBUG] Venda recebida no service:', venda);
-    console.log('📤 [DEBUG] Tipo de venda.itens:', typeof venda.itens);
-    console.log('📤 [DEBUG] venda.itens é Array?', Array.isArray(venda.itens));
+    console.log('📤 [DEBUG] Venda recebida no service:', {
+      idPedido: venda.idPedido,
+      plataforma: venda.plataforma,
+      totalItens: venda.itens?.length || 0
+    });
     
     if (venda.itens) {
-      console.log('📤 [DEBUG] Itens recebidos:', venda.itens.length);
-      venda.itens.forEach((item, index) => {
-        console.log(`📤 [DEBUG] Item ${index}:`, {
-          produtoId: item.produtoId,
-          quantidade: item.quantidade,
-          produtoNome: item.produtoNome,
-          precoUnitarioVenda: item.precoUnitarioVenda,
-          precoTotalItem: item.precoTotalItem
-        });
+      console.log('📤 [DEBUG] Itens recebidos no frontend:', venda.itens.length);
+      
+      // ✅ CORREÇÃO: Mostrar análise dos itens recebidos
+      const itensPorProduto = new Map<number, any[]>();
+      
+      venda.itens.forEach(item => {
+        if (!itensPorProduto.has(item.produtoId)) {
+          itensPorProduto.set(item.produtoId, []);
+        }
+        itensPorProduto.get(item.produtoId)!.push(item);
+      });
+      
+      console.log('📊 [DEBUG] Análise dos itens enviados:');
+      itensPorProduto.forEach((itens, produtoId) => {
+        const quantidadeTotal = itens.reduce((sum, item) => sum + item.quantidade, 0);
+        console.log(`   Produto ${produtoId}: ${quantidadeTotal} unidades (${itens.length} ${itens.length === 1 ? 'item' : 'itens'})`);
       });
     }
     
-    // ✅ 1. Calcular precoVenda automaticamente (se não foi definido)
+    // ✅ 1. Calcular precoVenda automaticamente
     if (!venda.precoVenda || venda.precoVenda === 0) {
       venda.precoVenda = calcularPrecoTotalVenda(venda.itens);
       console.log('📤 [DEBUG] precoVenda calculado:', venda.precoVenda);
     }
     
-    // ✅ 2. Preparar dados para o backend usando CreateVendaDTO
+    // ✅ 2. Preparar dados para o backend
     const vendaParaBackend = this.prepararVendaParaBackend(venda);
     
-    console.log('📤 [DEBUG] Dados preparados para backend:', vendaParaBackend);
-    console.log('📤 [DEBUG] JSON stringify:', JSON.stringify(vendaParaBackend, null, 2));
+    console.log('📤 [DEBUG] Dados preparados para backend:', {
+      idPedido: vendaParaBackend.idPedido,
+      totalItensEnviados: vendaParaBackend.itens.length
+    });
     
     return this.http.post<Venda>(this.apiUrl, vendaParaBackend).pipe(
       tap(response => {
-        console.log('✅ [DEBUG] Resposta do backend recebida!');
-        console.log('✅ [DEBUG] Venda criada com ID:', response.id);
+        console.log('✅ [DEBUG] ✅✅✅ VENDA CRIADA COM SUCESSO! ✅✅✅');
+        console.log('✅ [DEBUG] Venda ID:', response.id);
         console.log('✅ [DEBUG] Pedido:', response.idPedido);
-        console.log('✅ [DEBUG] Itens retornados:', response.itens?.length || 0, 'itens');
+        console.log('✅ [DEBUG] Total de itens (lotes) retornados:', response.itens?.length || 0);
         
         if (response.itens && response.itens.length > 0) {
-          console.log('🔍 [DEBUG DETALHADO] Detalhes dos itens:');
-          response.itens.forEach((item: any, index: number) => {
-            console.log(`   Item ${index}:`, {
-              id: item.id,
-              produtoId: item.produtoId,
-              produtoNome: item.produtoNome,
-              quantidade: item.quantidade,
-              custoUnitario: item.custoUnitario,
-              loteId: item.loteId,
-              custoTotal: item.custoTotal
-            });
+          // ✅✅✅ CORREÇÃO CRÍTICA: Análise correta do PEPS
+          console.log('📊 [DEBUG] 🎯 ANÁLISE DO PEPS APLICADO:');
+          
+          const itensPorProduto = new Map<number, any[]>();
+          
+          response.itens.forEach((item: any) => {
+            if (!itensPorProduto.has(item.produtoId)) {
+              itensPorProduto.set(item.produtoId, []);
+            }
+            itensPorProduto.get(item.produtoId)!.push(item);
           });
           
-          // Verificar duplicatas
-          const produtoIds = response.itens.map((item: any) => item.produtoId);
-          const idsUnicos = [...new Set(produtoIds)];
-          const temDuplicatas = idsUnicos.length !== produtoIds.length;
+          // Análise detalhada por produto
+          itensPorProduto.forEach((itens, produtoId) => {
+            const produtoNome = itens[0].produtoNome || `Produto ${produtoId}`;
+            const quantidadeTotal = itens.reduce((sum, item) => sum + item.quantidade, 0);
+            const custoTotal = itens.reduce((sum, item) => sum + (item.custoUnitario * item.quantidade), 0);
+            
+            console.log(`📦 [DEBUG] ${produtoNome}:`);
+            console.log(`   Quantidade total: ${quantidadeTotal} unidades`);
+            console.log(`   Custo total: R$${custoTotal.toFixed(2)}`);
+            console.log(`   Lotes consumidos: ${itens.length}`);
+            
+            if (itens.length > 1) {
+              console.log('   Detalhamento dos lotes (PEPS):');
+              itens.forEach((item, index) => {
+                const custoLote = item.custoUnitario * item.quantidade;
+                console.log(`     Lote ${index + 1}: ${item.quantidade} un. x R$${item.custoUnitario} = R$${custoLote.toFixed(2)}`);
+              });
+            }
+          });
           
-          if (temDuplicatas) {
-            console.error('❌ [DEBUG] VENDA CRIADA COM ITENS DUPLICADOS!');
-            console.error('❌ [DEBUG] IDs duplicados:', 
-              produtoIds.filter((id, index) => produtoIds.indexOf(id) !== index));
-          } else {
-            console.log('✅ [DEBUG] Venda criada SEM duplicatas!');
-          }
+          console.log('✅ [DEBUG] ✅✅✅ PEPS APLICADO CORRETAMENTE! ✅✅✅');
+          console.log('✅ [DEBUG] O sistema consumiu múltiplos lotes conforme necessário.');
         }
         
-        // Verificar campos calculados
-        console.log('🔍 [DEBUG] Campos calculados:', {
+        // Campos calculados
+        console.log('💰 [DEBUG] Campos calculados:', {
           custoProdutoVendido: response.custoProdutoVendido,
           faturamento: response.faturamento,
           custoEfetivoTotal: response.custoEfetivoTotal,
           lucroBruto: response.lucroBruto,
           lucroLiquido: response.lucroLiquido,
-          roi: response.roi
+          roi: response.roi ? `${response.roi.toFixed(2)}%` : 'N/A'
         });
       }),
       catchError(error => {
         console.error('❌ [ERRO] Erro na requisição:', error);
         console.error('❌ [ERRO] Status:', error.status);
-        console.error('❌ [ERRO] Mensagem:', error.message);
         
         if (error.error) {
           console.error('❌ [ERRO] Detalhes do erro:', error.error);
+          
+          // Tratamento específico para erro de ID duplicado
+          if (error.error.includes && error.error.includes('Já existe uma venda com este ID do pedido')) {
+            console.error('❌ [ERRO] ID do pedido já existe no sistema!');
+          }
         }
         
         return throwError(() => error);
@@ -172,11 +215,10 @@ export class VendaService {
     );
   }
 
-  // ✅ CORRIGIDO: Agora também usa CreateVendaDTO
   atualizarVenda(id: number, venda: Venda): Observable<Venda> {
     console.log('📤 [DEBUG] Atualizando venda:', id);
     
-    // Calcular precoVenda automaticamente (se não foi definido)
+    // Calcular precoVenda automaticamente
     if (!venda.precoVenda || venda.precoVenda === 0) {
       venda.precoVenda = calcularPrecoTotalVenda(venda.itens);
       console.log('📤 [DEBUG] precoVenda calculado para atualização:', venda.precoVenda);
@@ -184,20 +226,32 @@ export class VendaService {
     
     const vendaParaBackend = this.prepararVendaParaBackend(venda);
     
-    console.log('📤 [DEBUG] Dados para atualização:', vendaParaBackend);
+    console.log('📤 [DEBUG] Dados para atualização:', {
+      idVenda: id,
+      totalItens: vendaParaBackend.itens.length
+    });
     
     return this.http.put<Venda>(`${this.apiUrl}/${id}`, vendaParaBackend).pipe(
       tap(response => {
-        console.log('✅ [DEBUG] Venda atualizada:', response.id);
-        console.log('✅ [DEBUG] Itens na resposta:', response.itens?.length || 0, 'itens');
+        console.log('✅ [DEBUG] Venda atualizada com sucesso!');
+        console.log('✅ [DEBUG] Venda ID:', response.id);
+        console.log('✅ [DEBUG] Total de itens (lotes) após atualização:', response.itens?.length || 0);
         
         if (response.itens) {
-          response.itens.forEach((item: any, index: number) => {
-            console.log(`   Item ${index}:`, {
-              id: item.id,
-              produtoId: item.produtoId,
-              quantidade: item.quantidade
-            });
+          console.log('📊 [DEBUG] Análise PEPS pós-atualização:');
+          
+          const itensPorProduto = new Map<number, any[]>();
+          response.itens.forEach((item: any) => {
+            if (!itensPorProduto.has(item.produtoId)) {
+              itensPorProduto.set(item.produtoId, []);
+            }
+            itensPorProduto.get(item.produtoId)!.push(item);
+          });
+          
+          itensPorProduto.forEach((itens, produtoId) => {
+            if (itens.length > 1) {
+              console.log(`   Produto ${produtoId}: ${itens.length} lotes PEPS`);
+            }
           });
         }
       }),
@@ -240,11 +294,9 @@ export class VendaService {
     );
   }
 
-  // ✅ CORRIGIDO: Método atualizado para usar CreateVendaDTO
   private prepararVendaParaBackend(venda: Venda): CreateVendaDTO {
     console.log('🔄 Preparando venda para backend...');
     
-    // Usar a função auxiliar do item-venda.ts
     const vendaParaBackend = criarCreateVendaDTO(
       venda.idPedido,
       venda.plataforma,
@@ -256,25 +308,26 @@ export class VendaService {
       venda.data
     );
     
-    console.log('📤 [DEBUG] Itens preparados:', vendaParaBackend.itens.length, 'itens');
+    console.log('📤 [DEBUG] Itens preparados para backend:', vendaParaBackend.itens.length);
     
-    if (vendaParaBackend.itens.length > 0) {
-      console.log('📤 [DEBUG] Primeiro item preparado:', vendaParaBackend.itens[0]);
-      console.log('📤 [DEBUG] Último item preparado:', vendaParaBackend.itens[vendaParaBackend.itens.length - 1]);
-      
-      // Verificar se há itens com mesmo produtoId
-      const produtoIds = vendaParaBackend.itens.map(item => item.produtoId);
-      const temDuplicatas = new Set(produtoIds).size !== produtoIds.length;
-      
-      if (temDuplicatas) {
-        console.warn('⚠️ [DEBUG] ATENÇÃO: Itens com mesmo produtoId no carrinho!');
+    // ✅ CORREÇÃO: Mostrar análise dos itens preparados
+    const itensPorProduto = new Map<number, any[]>();
+    vendaParaBackend.itens.forEach(item => {
+      if (!itensPorProduto.has(item.produtoId)) {
+        itensPorProduto.set(item.produtoId, []);
       }
-    }
+      itensPorProduto.get(item.produtoId)!.push(item);
+    });
+    
+    console.log('📊 [DEBUG] Resumo dos itens enviados:');
+    itensPorProduto.forEach((itens, produtoId) => {
+      const quantidadeTotal = itens.reduce((sum, item) => sum + item.quantidade, 0);
+      console.log(`   Produto ${produtoId}: ${quantidadeTotal} unidades (${itens.length} ${itens.length === 1 ? 'item' : 'itens'} no carrinho)`);
+    });
     
     return vendaParaBackend;
   }
 
-  // ✅ NOVO: Método para validar estoque antes de enviar
   validarEstoqueVenda(venda: Venda): Observable<any> {
     const vendaParaBackend = this.prepararVendaParaBackend(venda);
     
@@ -291,7 +344,6 @@ export class VendaService {
     );
   }
 
-  // ✅ NOVO: Método para teste rápido
   testarConexao(): Observable<any> {
     return this.http.get(`${this.apiUrl}/teste`).pipe(
       tap(response => {
@@ -304,7 +356,6 @@ export class VendaService {
     );
   }
 
-  // ✅ NOVO: Método para buscar venda pelo ID do pedido
   buscarVendaPorIdPedido(idPedido: string): Observable<Venda[]> {
     return this.http.get<Venda[]>(`${this.apiUrl}/pedido/${idPedido}`).pipe(
       tap(vendas => {

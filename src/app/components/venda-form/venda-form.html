@@ -64,7 +64,6 @@
                 <label for="quantidadeSelecionada">Quantidade</label>
                 <input type="number" id="quantidadeSelecionada" 
                        [(ngModel)]="quantidadeSelecionada"
-                       [ngModelOptions]="{standalone: true}"
                        name="quantidadeSelecionada" min="1" value="1"
                        (input)="onQuantidadeChange()"
                        (change)="calcularPrecoTotal()">
@@ -74,7 +73,6 @@
                 <label for="precoUnitarioSelecionado">Preço Unitário (R$)</label>
                 <input type="number" id="precoUnitarioSelecionado" 
                        [(ngModel)]="precoUnitarioSelecionado"
-                       [ngModelOptions]="{standalone: true}"
                        name="precoUnitarioSelecionado" step="0.01" min="0" placeholder="0.00"
                        (input)="calcularPrecoTotal()">
               </div>
@@ -83,7 +81,6 @@
                 <label for="precoTotalSelecionado">Preço Total (R$)</label>
                 <input type="number" id="precoTotalSelecionado" 
                        [(ngModel)]="precoTotalSelecionado"
-                       [ngModelOptions]="{standalone: true}"
                        name="precoTotalSelecionado" step="0.01" min="0" placeholder="0.00"
                        (input)="calcularPrecoUnitario()">
               </div>
@@ -143,42 +140,45 @@
               </div>
               
               <div class="carrinho-body">
-                <div class="carrinho-row" *ngFor="let item of vendaEdit.itens; let i = index">
+                <!-- ✅✅✅ CORREÇÃO v46.9.2: Usa itensExibicao -->
+                <div class="carrinho-row" *ngFor="let itemExibicao of itensExibicao; let i = index">
                   <div class="carrinho-col produto">
-                    <strong>{{ item.produtoNome || 'Produto ' + item.produtoId }}</strong>
-                    <small *ngIf="item.produtoSku">SKU: {{ item.produtoSku }}</small>
-                    <div *ngIf="erroEstoque[item.produtoId]" class="erro-estoque-item">
-                      ⚠️ {{ erroEstoque[item.produtoId] }}
+                    <strong>{{ itemExibicao.produtoNome }}</strong>
+                    <small *ngIf="itemExibicao.produtoSku">SKU: {{ itemExibicao.produtoSku }}</small>
+                    <div *ngIf="itemExibicao.quantidadeLotes > 1" class="info-multiplos-lotes">
+                      ⓘ {{ itemExibicao.quantidadeLotes }} lotes PEPS
+                    </div>
+                    <div *ngIf="erroEstoque[itemExibicao.produtoId]" class="erro-estoque-item">
+                      ⚠️ {{ erroEstoque[itemExibicao.produtoId] }}
                     </div>
                   </div>
                   
-                  <!-- ✅✅✅ CORREÇÃO v46.6: Campos editáveis em modo edição -->
+                  <!-- ✅✅✅ CORREÇÃO v46.9.2: Campo separado para quantidade TOTAL -->
                   <div class="carrinho-col quantidade">
                     <input type="number" 
-                           [(ngModel)]="item.quantidade"
-                           [ngModelOptions]="{standalone: true}"
+                           [value]="itemExibicao.quantidadeTotal"
                            min="1" 
                            [readonly]="!modoEdicao"
-                           (change)="atualizarQuantidade(item, item.quantidade)"
+                           (change)="atualizarQuantidadeTotal(itemExibicao, converterParaNumero($event))"
                            [class.campo-bloqueado]="!modoEdicao"
                            [class.campo-editavel]="modoEdicao"
-                           title="{{ modoEdicao ? 'Editar quantidade' : 'Remova e adicione novamente para editar' }}">
+                           title="{{ modoEdicao ? 'Editar quantidade total' : 'Remova e adicione novamente para editar' }}">
                   </div>
                   
+                  <!-- ✅✅✅ CORREÇÃO v46.9.2: Campo separado para preço unitário MÉDIO -->
                   <div class="carrinho-col preco">
                     <input type="number" 
-                           [(ngModel)]="item.precoUnitarioVenda"
-                           [ngModelOptions]="{standalone: true}"
+                           [value]="itemExibicao.precoUnitarioVenda"
                            step="0.01" min="0"
                            [readonly]="!modoEdicao"
-                           (change)="atualizarPrecoUnitario(item, item.precoUnitarioVenda || 0)"
+                           (change)="atualizarPrecoUnitarioTotal(itemExibicao, converterParaNumero($event))"
                            [class.campo-bloqueado]="!modoEdicao"
                            [class.campo-editavel]="modoEdicao"
                            title="{{ modoEdicao ? 'Editar preço unitário' : 'Remova e adicione novamente para editar' }}">
                   </div>
                   
                   <div class="carrinho-col total">
-                    {{ (item.precoTotalItem || 0) | brlCurrency }}
+                    {{ itemExibicao.precoTotalItem | brlCurrency }}
                   </div>
                   
                   <div class="carrinho-col acoes">

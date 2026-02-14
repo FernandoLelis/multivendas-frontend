@@ -58,7 +58,7 @@ export class ModalService {
     });
   }
 
-  // ✅ NOVO MÉTODO: ALERTA EXCLUSÃO PRODUTO
+  // ✅ MÉTODO: ALERTA EXCLUSÃO PRODUTO
   mostrarAlertaProdutoExclusao(): void {
     this.abrirModal({
       titulo: 'Exclusão Bloqueada',
@@ -69,21 +69,35 @@ export class ModalService {
     });
   }
 
-  // ✅ NOVO MÉTODO: ERRO ID DUPLICADO (COMPRAS)
-  mostrarErroIdDuplicado(idPedido: string): void {
+  // ✅✅✅ MÉTODO PARA ERRO ID DUPLICADO DE VENDA
+  mostrarErroIdDuplicadoVenda(idPedido: string): void {
     this.abrirModal({
-      titulo: '🛑 ID do Pedido Já Existe',
+      titulo: '🛑 ID da Venda Já Existe',
       mensagem: '',
       tipo: 'erro',
       textoBotaoPrimario: 'Entendi',
       dadosEspecificos: {
         idPedido: idPedido
       },
-      template: 'erro-id-duplicado'
+      template: 'erro-id-duplicado-venda'
     });
   }
 
-  // ✅ NOVO MÉTODO: ERRO GENÉRICO DE COMPRA
+  // ✅✅✅ MÉTODO PARA ERRO ID DUPLICADO DE COMPRA
+  mostrarErroIdDuplicadoCompra(idPedido: string): void {
+    this.abrirModal({
+      titulo: '🛑 ID da Compra Já Existe',
+      mensagem: '',
+      tipo: 'erro',
+      textoBotaoPrimario: 'Entendi',
+      dadosEspecificos: {
+        idPedido: idPedido
+      },
+      template: 'erro-id-duplicado-compra'
+    });
+  }
+
+  // ✅ MÉTODO: ERRO GENÉRICO DE COMPRA
   mostrarErroCompra(mensagem: string): void {
     this.abrirModal({
       titulo: '❌ Erro ao Salvar Compra',
@@ -103,11 +117,10 @@ export class ModalService {
     });
   }
 
-  // ✅ CORREÇÃO COMPLETA: MÉTODO PARA DETALHES DE VENDA COM CÁLCULOS CONSISTENTES
+  // ✅ MÉTODO PARA DETALHES DE VENDA COM CÁLCULOS CONSISTENTES
   mostrarDetalhesVenda(venda: any): void {
     const titulo = 'Detalhes da Venda';
     
-    // ✅ CÁLCULOS CORRETOS BASEADOS NA SUA DEFINIÇÃO
     const precoVenda = venda.precoVenda || 0;
     const fretePago = venda.fretePagoPeloCliente || 0;
     const custoProduto = venda.custoProdutoVendido || 0;
@@ -115,11 +128,10 @@ export class ModalService {
     const tarifa = venda.tarifaPlataforma || 0;
     const despesasOperacionais = venda.despesasOperacionais || 0;
 
-    // ✅ FÓRMULAS CORRETAS:
-    const faturamento = precoVenda + fretePago; // ✅ Preço Venda + Frete
-    const custoEfetivoTotal = custoProduto + custoEnvio + tarifa; // ✅ Custo PEPS + Custo Envio + Tarifa
-    const lucroBruto = faturamento - custoEfetivoTotal; // ✅ Faturamento - Custo Efetivo
-    const lucroLiquido = lucroBruto - despesasOperacionais; // ✅ Lucro Bruto - Despesas Operacionais
+    const faturamento = precoVenda + fretePago;
+    const custoEfetivoTotal = custoProduto + custoEnvio + tarifa;
+    const lucroBruto = faturamento - custoEfetivoTotal;
+    const lucroLiquido = lucroBruto - despesasOperacionais;
     const roi = custoEfetivoTotal > 0 ? (lucroLiquido / custoEfetivoTotal) * 100 : 0;
     const margemLiquida = precoVenda > 0 ? (lucroLiquido / precoVenda) * 100 : 0;
 
@@ -157,20 +169,6 @@ export class ModalService {
         roi: '(Lucro Líquido / Custo Efetivo Total) × 100'
       }
     };
-
-    console.log('🔍 DEBUG - Cálculos CORRETOS da venda:', {
-      precoVenda,
-      fretePago,
-      custoProduto,
-      custoEnvio,
-      tarifa,
-      despesasOperacionais,
-      faturamento,
-      custoEfetivoTotal,
-      lucroBruto,
-      lucroLiquido,
-      roi
-    });
 
     this.abrirModal({
       titulo,

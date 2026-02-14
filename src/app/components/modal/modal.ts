@@ -5,12 +5,12 @@ import { BrazilianCurrencyPipe } from '../../pipes/brazilian-currency.pipe';
 
 @Component({
   selector: 'app-modal',
-  standalone: true,
+  standalone: true,  // ✅ IMPORTANTE: standalone deve ser true
   imports: [CommonModule, BrazilianCurrencyPipe],
   templateUrl: './modal.html',
   styleUrls: ['./modal.css']
 })
-export class ModalComponent {
+export class ModalComponent {  // ✅ EXPORTAÇÃO PÚBLICA
   config: ModalConfig | null = null;
 
   constructor(private modalService: ModalService) {

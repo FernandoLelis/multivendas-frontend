@@ -7,7 +7,7 @@
     </div>
     
     <div class="modal-body">
-      @if (getClasseIcone() && config.template !== 'detalhes-venda' && config.template !== 'alerta-peps' && config.template !== 'alerta-peps-exclusao' && config.template !== 'alerta-produto-exclusao' && config.template !== 'erro-id-duplicado') {
+      @if (getClasseIcone() && config.template !== 'detalhes-venda' && config.template !== 'alerta-peps' && config.template !== 'alerta-peps-exclusao' && config.template !== 'alerta-produto-exclusao' && config.template !== 'erro-id-duplicado-venda' && config.template !== 'erro-id-duplicado-compra') {
         <div [class]="getClasseIcone()">
           {{ getIcone() }}
         </div>
@@ -132,7 +132,7 @@
         </div>
       }
 
-      <!-- ✅ NOVO TEMPLATE PARA ALERTA EXCLUSÃO PRODUTO -->
+      <!-- TEMPLATE PARA ALERTA EXCLUSÃO PRODUTO -->
       @if (config.template === 'alerta-produto-exclusao') {
         <div class="alerta-peps">
           <div class="texto-principal">Este produto não pode ser excluído porque possui vendas associadas</div>
@@ -149,16 +149,44 @@
         </div>
       }
 
-      <!-- ✅ NOVO TEMPLATE PARA ERRO ID DUPLICADO -->
-      @if (config.template === 'erro-id-duplicado') {
+      <!-- ✅✅✅ TEMPLATE SEPARADO: ERRO ID DUPLICADO DE VENDA -->
+      @if (config.template === 'erro-id-duplicado-venda') {
         <div class="alerta-peps">
           <div class="texto-principal">
-            O ID do pedido <strong>"{{ config.dadosEspecificos?.idPedido }}"</strong> já está em uso no seu sistema.
+            O ID da Venda <strong>"{{ config.dadosEspecificos?.idPedido }}"</strong> 
+            já está em uso no seu sistema.
           </div>
           
           <div class="secao">
             <div class="titulo-secao">💡 Por que isso acontece?</div>
-            <div class="texto-detalhes">Cada ID de pedido deve ser único para manter o rastreamento correto das suas compras.</div>
+            <div class="texto-detalhes">
+              Cada ID de venda deve ser único para manter o rastreamento correto das suas vendas.
+            </div>
+          </div>
+
+          <div class="secao">
+            <div class="titulo-secao">🔄 Sugestões para resolver:</div>
+            <div class="texto-detalhes">• Use um ID diferente para esta venda</div>
+            <div class="texto-detalhes">• Verifique suas vendas anteriores</div>
+            <div class="texto-detalhes">• Adicione um sufixo como "-1", "-2", etc.</div>
+            <div class="texto-detalhes">• Exemplo: <strong>{{ config.dadosEspecificos?.idPedido }}-1</strong></div>
+          </div>
+        </div>
+      }
+
+      <!-- ✅✅✅ TEMPLATE SEPARADO: ERRO ID DUPLICADO DE COMPRA -->
+      @if (config.template === 'erro-id-duplicado-compra') {
+        <div class="alerta-peps">
+          <div class="texto-principal">
+            O ID da Compra <strong>"{{ config.dadosEspecificos?.idPedido }}"</strong> 
+            já está em uso no seu sistema.
+          </div>
+          
+          <div class="secao">
+            <div class="titulo-secao">💡 Por que isso acontece?</div>
+            <div class="texto-detalhes">
+              Cada ID de compra deve ser único para manter o rastreamento correto das suas compras.
+            </div>
           </div>
 
           <div class="secao">

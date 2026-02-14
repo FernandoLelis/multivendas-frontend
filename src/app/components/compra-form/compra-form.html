@@ -33,16 +33,6 @@
                      [(ngModel)]="compraEdit.dataEntrada" required>
             </div>
           </div>
-
-          <!-- ✅ CATEGORIA FIXA - APENAS PRODUTOS (não editável) -->
-          <!-- <div class="form-group full-width">
-            <label for="categoria">Categoria</label>
-            <input type="text" id="categoria" name="categoria" 
-                   [(ngModel)]="compraEdit.categoria" 
-                   value="Produto" 
-                   readonly
-                   class="campo-bloqueado">
-          </div> -->
         </div>
 
         <!-- === SEÇÃO 2: ADICIONAR PRODUTO AO CARRINHO === -->
@@ -142,15 +132,17 @@
                     <small *ngIf="item.produtoSku">SKU: {{ item.produtoSku }}</small>
                   </div>
                   
-                  <!-- ✅ CAMPOS BLOQUEADOS NO CARRINHO -->
+                  <!-- ✅✅✅ CORREÇÃO v46.6: Campos editáveis em modo edição -->
                   <div class="carrinho-col quantidade">
                     <input type="number" 
                            [(ngModel)]="item.quantidade"
                            [ngModelOptions]="{standalone: true}"
                            min="1" 
-                           readonly
-                           (click)="atualizarQuantidade(item, item.quantidade)"
-                           class="campo-bloqueado">
+                           [readonly]="!modoEdicao"
+                           (change)="atualizarQuantidade(item, item.quantidade)"
+                           [class.campo-bloqueado]="!modoEdicao"
+                           [class.campo-editavel]="modoEdicao"
+                           title="{{ modoEdicao ? 'Editar quantidade' : 'Remova e adicione novamente para editar' }}">
                   </div>
                   
                   <div class="carrinho-col preco">
@@ -158,9 +150,11 @@
                            [(ngModel)]="item.custoUnitario"
                            [ngModelOptions]="{standalone: true}"
                            step="0.01" min="0"
-                           readonly
-                           (click)="atualizarCustoUnitario(item, item.custoUnitario || 0)"
-                           class="campo-bloqueado">
+                           [readonly]="!modoEdicao"
+                           (change)="atualizarCustoUnitario(item, item.custoUnitario || 0)"
+                           [class.campo-bloqueado]="!modoEdicao"
+                           [class.campo-editavel]="modoEdicao"
+                           title="{{ modoEdicao ? 'Editar custo unitário' : 'Remova e adicione novamente para editar' }}">
                   </div>
                   
                   <div class="carrinho-col total">
