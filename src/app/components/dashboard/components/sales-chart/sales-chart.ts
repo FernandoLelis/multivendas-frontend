@@ -8,7 +8,7 @@ import {
 } from '../../../../services/dashboard.service';
 import { ChartConfiguration, Chart, registerables } from 'chart.js';
 
-// ✅ PLUGIN CUSTOMIZADO: Bolinhas condicionais com tamanhos diferentes e valores dentro
+// ✅ PLUGIN CUSTOMIZADO: Bolinhas coloridas (verde/vermelho) com sombra suave e texto branco
 const conditionalPointsPlugin = {
   id: 'conditionalPoints',
   afterDatasetsDraw(chart: any) {
@@ -38,27 +38,42 @@ const conditionalPointsPlugin = {
         const point = metaAtual.data[i];
         const valorAnterior = (datasetAnterior.data[i] !== null && datasetAnterior.data[i] !== undefined) ? datasetAnterior.data[i] : 0;
 
-        // Lógica de cores e tamanhos
+        // Lógica de tamanhos e cores
         const isLast = (i === lastIndex);
         const isPositive = valorAtual >= valorAnterior;
         
-        const corFundo = isPositive ? '#7df525' : '#E53935'; 
-        const corTexto = isPositive ? '#00305C' : '#ffffff'; // Preto no verde claro para não sumir, branco no vermelho
-        const raio = isLast ? 12 : 10;
-        const fontSize = isLast ? 10 : 9;
-
-        // 1. Desenha a bolinha
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, raio, 0, 2 * Math.PI); 
-        ctx.fillStyle = corFundo; 
-        ctx.fill();
+        // Volta a cor da bolinha para verde/vermelho
+        const corFundoBolinha = isPositive ? '#7df525' : '#E53935'; 
+        const corTexto = '#00305C'; // Texto sempre branco para contraste
         
+        const raio = isLast ? 12 : 10;
+        const fontSize = isLast ? 11 : 10;
+
         // Bordinha branca ao redor
         ctx.strokeStyle = '#00305C';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 2. Escreve o texto centralizado
+        // 1. Configura a Sombra Suave (Box-Shadow no Canvas)
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'; // Cor da sombra (preto translúcido)
+        ctx.shadowBlur = 6;       // O quão "esfumaçada" é a sombra
+        ctx.shadowOffsetX = 0;    // Deslocamento horizontal
+        ctx.shadowOffsetY = 3;    // Deslocamento vertical (para baixo)
+
+        // 2. Desenha a bolinha preenchida
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, raio, 0, 2 * Math.PI); 
+        ctx.fillStyle = corFundoBolinha; 
+        ctx.fill();
+        
+        // --- IMPORTANTE: Limpa a sombra para não afetar o texto a seguir ---
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        // ------------------------------------------------------------------
+
+        // 3. Escreve o texto centralizado (branco)
         ctx.fillStyle = corTexto; 
         ctx.font = `600 ${fontSize}px sans-serif`; 
         ctx.textAlign = 'center'; 
@@ -222,27 +237,15 @@ export class SalesChartComponent implements AfterViewInit {
         {
           data: dataMesAtual,
           label: this.mesAtualLabel || 'Mês atual',
-          // ✅ TRUQUE EXTRA: A linha do gráfico muda de cor dependendo da comparação!
-          segment: {
-            borderColor: (ctx: any) => {
-              if (ctx.p1DataIndex === undefined) return 'rgba(255,255,255,0)';
-              const valAtual = ctx.chart.data.datasets[0].data[ctx.p1DataIndex];
-              const valAnterior = ctx.chart.data.datasets[1].data[ctx.p1DataIndex];
-              
-              if (valAtual === null || valAtual === undefined) return 'rgba(255,255,255,0)';
-              
-              const anteriorSeguro = valAnterior ? valAnterior : 0;
-              return valAtual >= anteriorSeguro ? '#7df525' : '#E53935';
-            }
-          },
-          backgroundColor: 'rgba(59, 130, 246, 0.05)', // Mantive o fundo azul sutil
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
           fill: true,
           tension: 0.5,
           cubicInterpolationMode: 'monotone',
           borderWidth: 2.5,
-          pointRadius: 0, // Desligado, o nosso plugin é quem desenha as bolinhas agora
+          pointRadius: 0,
           pointHoverRadius: 6,
-          pointBackgroundColor: '#ffffff',
+          pointBackgroundColor: '#3b82f6',
           pointBorderColor: '#ffffff',
           pointBorderWidth: 1
         },

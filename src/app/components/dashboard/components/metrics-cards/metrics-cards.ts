@@ -28,6 +28,9 @@ export class MetricsCardsComponent implements OnInit {
 
     this.dashboardService.getCardsMetrics().subscribe({
       next: (data: CardMetrics) => {
+        // ✅ CORREÇÃO 2: Aplica a proporção MTD (Month-To-Date) antes de salvar no state
+        this.recalcularCrescimentos(data);
+
         this.metricsData = data;
         this.isLoading = false;
         
@@ -49,15 +52,61 @@ export class MetricsCardsComponent implements OnInit {
     });
   }
 
-  // ✅ CORREÇÃO: Sempre mostrar valor completo em reais
+  /**
+   * ✅ NOVA LÓGICA: Calcula o crescimento comparando apenas os dias transcorridos do mês
+   */
+  private recalcularCrescimentos(data: any): void {
+    const hoje = new Date();
+    const diaAtual = Math.max(1, hoje.getDate()); // O dia de hoje (ex: 15)
+    // Quantidade total de dias que o mês passado teve (ex: 30 ou 31)
+    const diasMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0).getDate() || 30; 
+
+    const ajustarProporcao = (metric: any) => {
+      if (!metric || metric.atual === undefined || metric.growth === undefined) return;
+      
+      const atual = metric.atual;
+      const originalGrowth = metric.growth;
+
+      // Se for 0 ou se o crescimento já veio -100%, ignora a matemática para não dividir por zero
+      if (atual === 0 || originalGrowth <= -100) return;
+      
+      // 1. Engenharia reversa: descobre qual foi o valor cheio do mês passado usando o growth original
+      const anteriorCompleto = atual / ((originalGrowth / 100) + 1);
+      if (anteriorCompleto === 0 || isNaN(anteriorCompleto)) return;
+
+      // 2. Descobre quanto o mês passado tinha feito ATÉ esse mesmo dia do mês
+      const valorProporcionalAnterior = (anteriorCompleto / diasMesAnterior) * diaAtual;
+      
+      if (valorProporcionalAnterior === 0) {
+        metric.growth = originalGrowth > 0 ? 100 : 0;
+        return;
+      }
+
+      // 3. Substitui o growth antigo pelo crescimento justo (proporcional)
+      metric.growth = ((atual / valorProporcionalAnterior) - 1) * 100;
+    };
+
+    // Aplica a regra em todos os cards
+    ajustarProporcao(data.quantidadeVendas);
+    ajustarProporcao(data.faturamento);
+    ajustarProporcao(data.custoEfetivo);
+    ajustarProporcao(data.lucroBruto);
+    ajustarProporcao(data.despesasOperacionais);
+    ajustarProporcao(data.lucroLiquido);
+    ajustarProporcao(data.roi);
+  }
+
+  // ✅ CORREÇÃO 1: Valores >= 1000 perdem as casas decimais para não quebrar layout
   formatCurrency(value: number): string {
+    const absValue = Math.abs(value);
+    const decimais = absValue >= 1000 ? 0 : 2; // Se passar de 1000, esconde os centavos
+
     return `R$ ${value.toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: decimais,
+      maximumFractionDigits: decimais
     })}`;
   }
 
-  // ✅ CORREÇÃO: Usar formatação consistente para ambos
   formatFaturamento(atual: number, total: number): { atual: string, total: string } {
     const atualFormatado = this.formatCurrency(atual);
     const totalFormatado = this.formatCurrency(total);
@@ -69,7 +118,6 @@ export class MetricsCardsComponent implements OnInit {
     return `${formatted}%`;
   }
 
-  // MÉTODO: Formatar crescimento com sinal e cor
   formatGrowth(growth: number): { value: string, isPositive: boolean } {
     const signal = growth >= 0 ? '+' : '';
     const value = `${signal}${growth.toFixed(1)}%`;
