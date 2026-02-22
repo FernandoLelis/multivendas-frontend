@@ -185,6 +185,6 @@ canvas {
   }
   
   .platform-content {
-      min-height: auto; 
+      min-height: 250px; 
   }
 }

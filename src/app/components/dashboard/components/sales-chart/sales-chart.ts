@@ -40,12 +40,12 @@ const lastPointLabelPlugin = {
         
         // Bordinha branca ao redor da bolinha maior para dar destaque
         ctx.strokeStyle = '#ffffff ';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         ctx.stroke();
 
         // 2. Escreve o texto centralizado dentro da bolinha
         ctx.fillStyle = '#ffffff'; // Cor do texto (Branco)
-        ctx.font = 'bold 12px sans-serif'; // Fonte um pouco menor para caber bem
+        ctx.font = '600 12px sans-serif'; // Fonte um pouco menor para caber bem
         ctx.textAlign = 'center'; // Alinhamento horizontal no centro
         ctx.textBaseline = 'middle'; // Alinhamento vertical no centro
         
