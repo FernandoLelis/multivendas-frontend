@@ -1,23 +1,36 @@
 <div class="chart-container platform-chart">
   <div class="chart-header">
     <h3>LUCRO POR PLATAFORMA</h3>
-  </div>
-  
-  <div class="platform-content">
-    <!-- Gráfico MAIOR -->
-    <div class="pie-chart" *ngIf="!loading && platformData.length > 0">
-      <div class="pie">68%</div>
+    <div class="period-selector">
+      <button [class.active]="selectedPeriod === 'month'" (click)="setPeriod('month')">Mês</button>
+      <button [class.active]="selectedPeriod === 'year'" (click)="setPeriod('year')">Ano</button>
     </div>
+  </div>
 
-    <!-- Plataformas com VALOR NA MESMA LINHA -->
-    <div class="platforms-row">
-      <div class="platform-complete" *ngFor="let platform of platformData">
-        <div class="platform-line">
-          <div class="platform-color" [style.background-color]="platform.color"></div>
-          <span class="platform-name">{{ platform.name }}</span>
-          <span class="platform-value">R$ {{ platform.value | number:'1.0-0' }}</span>
+  <div class="platform-content">
+    <div *ngIf="loading" class="loading">Carregando dados...</div>
+
+    <div class="chart-main-layout" *ngIf="!loading && platformData.length > 0">
+      <div class="pie-chart-wrapper">
+        <canvas #pieChartCanvas></canvas>
+      </div>
+
+      <div class="platforms-legend">
+        <div class="platform-item" *ngFor="let platform of platformData">
+          <div class="platform-indicator">
+            <div class="platform-color" [style.background-color]="platform.color"></div>
+            <span class="platform-name">{{ platform.name }}</span>
+          </div>
+          <div class="platform-values">
+            <span class="platform-value">R$ {{ platform.value | number:'1.0-0' }}</span>
+            <span class="platform-percent">{{ platform.percentage }}%</span>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && platformData.length === 0">
+      Nenhum dado neste período.
     </div>
   </div>
 </div>

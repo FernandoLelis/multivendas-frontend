@@ -23,6 +23,7 @@ export class VendaListComponent implements OnInit {
   vendas: any[] = [];
   mostrarFormVenda: boolean = false;
   mostrarFormCompra: boolean = false;
+  carregando: boolean = true;
   vendaSelecionada: any = null;
   produtoParaCompra: any = null; // Alterado para any para evitar conflitos de tipo se o componente compra esperar algo específico
 

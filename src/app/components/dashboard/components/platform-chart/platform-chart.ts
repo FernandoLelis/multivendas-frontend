@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService, PlatformData } from '../../../../services/dashboard.service';
+import Chart from 'chart.js/auto';
 
 @Component({
   selector: 'app-platform-chart',
@@ -9,9 +10,23 @@ import { DashboardService, PlatformData } from '../../../../services/dashboard.s
   templateUrl: './platform-chart.html',
   styleUrl: './platform-chart.css'
 })
-export class PlatformChartComponent implements OnInit {
-  platformData: PlatformData[] = [];
+export class PlatformChartComponent implements OnInit, OnDestroy {
+  @ViewChild('pieChartCanvas') private pieChartCanvas!: ElementRef<HTMLCanvasElement>;
+  
+  chart: Chart | null = null;
   loading: boolean = true;
+  platformData: PlatformData[] = [];
+  
+  selectedPeriod: 'month' | 'year' = 'month'; 
+
+  private colorMap: { [key: string]: string } = {
+    'amazon': '#FF9900',
+    'mercado livre': '#FFE600',
+    'shopee': '#EE4D2D',
+    'magalu': '#0086FF',
+    'b2w': '#E60014',
+    'outros': '#9E9E9E'
+  };
 
   constructor(private dashboardService: DashboardService) {}
 
@@ -19,96 +34,132 @@ export class PlatformChartComponent implements OnInit {
     this.loadPlatformData();
   }
 
+  ngOnDestroy(): void {
+    if (this.chart) this.chart.destroy();
+  }
+
+  setPeriod(period: 'month' | 'year'): void {
+    if (this.selectedPeriod !== period) {
+      this.selectedPeriod = period;
+      this.loadPlatformData();
+    }
+  }
+
   loadPlatformData(): void {
-    this.dashboardService.getPlatformData().subscribe({
+    this.loading = true;
+    
+    this.dashboardService.getPlatformData(this.selectedPeriod).subscribe({
       next: (data: PlatformData[]) => {
-        this.platformData = data;
+        this.processChartData(data);
         this.loading = false;
-        console.log('Dados das plataformas carregados:', data);
       },
       error: (error: any) => {
-        console.error('Erro ao carregar dados das plataformas:', error);
+        console.error('Erro ao carregar dados:', error);
         this.loading = false;
-        // Fallback para dados mock em caso de erro
-        this.platformData = [
-          { name: 'Amazon', value: 1300, color: '#ff9800', percentage: 54.2 },
-          { name: 'Mercado Livre', value: 860, color: '#2196f3', percentage: 35.8 },
-          { name: 'Shopee', value: 240, color: '#b388ff', percentage: 10.0 }
-        ];
       }
     });
   }
 
-  // Método para calcular o stroke-dasharray do SVG
-  calculateDashArray(percentage: number): string {
-    const circumference = 377; // 2 * π * 60 (raio)
-    const dash = (percentage / 100) * circumference;
-    const gap = circumference - dash;
-    return `${dash} ${gap}`;
-  }
+  private processChartData(rawData: PlatformData[]): void {
+    const agrupado = new Map<string, number>();
 
-  // Método para calcular a rotação de cada fatia
-  calculateRotation(index: number): number {
-    if (this.platformData.length === 0) return -90;
-    
-    let rotation = -90; // Começa no topo (-90 graus)
-    for (let i = 0; i < index; i++) {
-      rotation += (this.platformData[i]?.percentage || 0) * 3.6; // 3.6 = 360/100
-    }
-    return rotation;
-  }
-
-  // Método para retornar a porcentagem total (sempre 100%)
-  getTotalPercentage(): number {
-    return 100;
-  }
-
-  // Método para calcular o caminho SVG de cada fatia da pizza
-  calculateSlicePath(percentage: number, index: number): string {
-    const centerX = 70;
-    const centerY = 70;
-    const radius = 60;
-    
-    // Calcular ângulos
-    let startAngle = -90; // Começa no topo
-    for (let i = 0; i < index; i++) {
-      startAngle += (this.platformData[i]?.percentage || 0) * 3.6;
-    }
-    const endAngle = startAngle + (percentage * 3.6);
-    
-    // Converter para radianos
-    const startRad = (startAngle * Math.PI) / 180;
-    const endRad = (endAngle * Math.PI) / 180;
-    
-    // Calcular pontos
-    const x1 = centerX + radius * Math.cos(startRad);
-    const y1 = centerY + radius * Math.sin(startRad);
-    const x2 = centerX + radius * Math.cos(endRad);
-    const y2 = centerY + radius * Math.sin(endRad);
-    
-    // Criar comando de arco
-    const largeArcFlag = percentage > 50 ? 1 : 0;
-    
-    return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-  }
-
-  // Método para criar o gráfico de pizza com conic-gradient
-  getPieChartBackground(): string {
-    console.log('Método getPieChartBackground chamado!', this.platformData);
-    if (this.platformData.length === 0) return '';
-    
-    let gradient = 'conic-gradient(';
-    let currentAngle = 0;
-    
-    this.platformData.forEach((platform, index) => {
-      const percentage = platform.percentage;
-      if (index > 0) gradient += ', ';
-      gradient += `${platform.color} ${currentAngle}deg ${currentAngle + percentage}deg`;
-      currentAngle += percentage;
+    rawData.forEach(item => {
+      if (item.value > 0.01) {
+        const chave = item.name.trim().toLowerCase();
+        const valorAtual = agrupado.get(chave) || 0;
+        agrupado.set(chave, valorAtual + item.value);
+      }
     });
-    
-    gradient += ')';
-    console.log('Gradient gerado:', gradient);
-    return gradient;
+
+    const labels: string[] = [];
+    const values: number[] = [];
+    const bgColors: string[] = [];
+    let totalGeral = 0;
+
+    agrupado.forEach((valor, chave) => {
+        totalGeral += valor;
+        const nomeDisplay = rawData.find(r => r.name.toLowerCase() === chave)?.name || chave.toUpperCase();
+        
+        labels.push(nomeDisplay);
+        values.push(valor);
+        bgColors.push(this.colorMap[chave] || this.gerarCorAleatoria(chave));
+    });
+
+    this.platformData = labels.map((label, i) => ({
+        name: label,
+        value: values[i],
+        percentage: totalGeral > 0 ? parseFloat(((values[i] / totalGeral) * 100).toFixed(1)) : 0,
+        color: bgColors[i]
+    })).sort((a, b) => b.value - a.value);
+
+    this.createChart(labels, values, bgColors);
+  }
+
+  private createChart(labels: string[], values: number[], colors: string[]): void {
+    if (this.chart) this.chart.destroy();
+
+    setTimeout(() => {
+        if (!this.pieChartCanvas) return;
+        const ctx = this.pieChartCanvas.nativeElement.getContext('2d');
+        if (ctx) {
+            this.chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    // Aqui são os nomes das fatias (legenda interna)
+                    labels: labels, 
+                    datasets: [{
+                        // Valores numéricos do gráfico
+                        data: values, 
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 4,
+                        
+                        // Força a desativação diretamente na fatia (Plano B)
+                        datalabels: {
+                            display: false,
+                            color: 'transparent'
+                        }
+                    } as any]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        
+                        // 👇 DESTRUIÇÃO DO TEXTO: Retorna vazio e zera opacidade 👇
+                        datalabels: {
+                            display: false,
+                            opacity: 0,
+                            formatter: () => { return ''; } // Obriga a escrever NADA
+                        },
+                        labels: {
+                            display: false,
+                            render: () => { return ''; } // Equivalente para o plugin 'labels'
+                        },
+                        // 👆 -------------------------------------------------- 👆
+
+                        tooltip: {
+                            callbacks: {
+                                label: (context: any) => {
+                                    const val = context.raw as number;
+                                    return ` R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                                }
+                            }
+                        }
+                    } as any
+                }
+            });
+        }
+    }, 100);
+  }
+
+  private gerarCorAleatoria(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+    return '#' + '00000'.substring(0, 6 - c.length) + c;
   }
 }

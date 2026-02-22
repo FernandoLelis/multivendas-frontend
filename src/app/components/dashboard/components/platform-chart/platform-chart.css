@@ -1,101 +1,190 @@
 .chart-container {
   background-color: #00305c;
-  border-radius: 12px;
-  padding: 20px;
-  width: 100%; /* Largura 100% do container */
-  height: 280px;
-  margin-bottom: 32px;
+  border-radius: 8px;
+  padding: 24px;
+  width: 100%;
+  height: auto; 
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
-  box-sizing: border-box; /* Inclui padding na largura */
+  box-sizing: border-box;
 }
 
 .chart-header {
-  margin-bottom: 10px;
-  flex-shrink: 0;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .chart-header h3 {
   color: #ffffff;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   margin: 0;
   text-transform: uppercase;
   font-size: 16px;
 }
 
 .platform-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  min-height: 254px;
+}
+
+.chart-main-layout {
+  display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
-  flex: 1;
   justify-content: space-between;
-}
-
-/* GRÁFICO UM POUCO MENOR */
-.pie-chart {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-}
-
-.pie {
-  width: 140px; /* Reduzido */
-  height: 140px; /* Reduzido */
-  border-radius: 50%;
-  background: conic-gradient(#1E88E5 0deg 245deg, #43A047 245deg 360deg);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #ffffff;
-  font-family: 'Poppins', sans-serif;
-  font-size: 28px; /* Reduzido */
-  font-weight: 700;
-}
-
-/* PLATAFORMAS ALINHADAS EMBAIXO */
-.platforms-row {
-  display: flex;
-  gap: 40px;
-  justify-content: center;
   width: 100%;
-  flex-shrink: 0;
-  margin-top: auto;
+  gap: 10px;
 }
 
-.platform-line {
+/* Wrapper do gráfico */
+.pie-chart-wrapper {
+  flex: 0 0 180px;
+  height: 180px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Legenda */
+.platforms-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px; 
+  min-width: 0;
+}
+
+.platforms-legend::-webkit-scrollbar {
+    width: 4px;
+}
+.platforms-legend::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+.platforms-legend::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.platform-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.platform-indicator {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex: 1;
 }
 
 .platform-color {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .platform-name {
   color: #ffffff;
-  font-family: 'Poppins', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 13px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.platform-values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 8px;
+  flex-shrink: 0;
 }
 
 .platform-value {
   color: #64b5f6;
-  font-family: 'Poppins', sans-serif;
   font-size: 12px;
-  font-weight: 400;
-  white-space: nowrap;
+  font-weight: 600;
+  line-height: 1;
 }
 
-.loading {
+.platform-percent {
+  color: #b0bec5;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+/* Seletor de Período */
+.period-selector {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.period-selector button {
+  background: none;
+  border: none;
+  color: #c5b0b5;
+  padding: 2px 8px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.period-selector button:hover {
+    color: white;
+}
+
+.period-selector button.active {
+  background-color: #0086FF;
   color: white;
+  border-radius: 3px;
+}
+
+.loading, .empty-state {
+  color: #b0bec5;
   text-align: center;
-  font-family: 'Poppins', sans-serif;
   font-size: 12px;
+  width: 100%;
+  padding: 20px 0;
+}
+
+/* ========== RESPONSIVIDADE INTERNA DO CARD (MOBILE) ========== */
+@media (max-width: 768px) {
+  .chart-main-layout {
+    flex-direction: column; 
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .pie-chart-wrapper {
+    flex: 0 0 150px; 
+    height: 150px;
+  }
+
+  .platforms-legend {
+    width: 100%;
+    align-items: stretch;
+  }
+  
+  .platform-content {
+      min-height: auto; 
+  }
 }
