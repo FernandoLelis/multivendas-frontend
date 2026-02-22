@@ -6,61 +6,74 @@ import {
   VendasPorDia, 
   DadosComparacaoMensal
 } from '../../../../services/dashboard.service';
-import { ChartConfiguration, Chart, registerables, Plugin } from 'chart.js';
+import { ChartConfiguration, Chart, registerables } from 'chart.js';
 
-// ✅ PLUGIN CUSTOMIZADO: Desenha o valor dentro de uma bolinha maior no último dia
-const lastPointLabelPlugin = {
-  id: 'lastPointLabel',
+// ✅ PLUGIN CUSTOMIZADO: Bolinhas condicionais com tamanhos diferentes e valores dentro
+const conditionalPointsPlugin = {
+  id: 'conditionalPoints',
   afterDatasetsDraw(chart: any) {
-    // Só executa se for gráfico de linha
     if (chart.config.type !== 'line') return; 
 
     const ctx = chart.ctx;
-    const dataset = chart.data.datasets[0]; // Índice 0 é a linha azul (Mês atual)
-    const meta = chart.getDatasetMeta(0);
+    const datasetAtual = chart.data.datasets[0];    // Mês atual
+    const datasetAnterior = chart.data.datasets[1]; // Mês anterior
+    const metaAtual = chart.getDatasetMeta(0);
 
-    if (!meta.hidden && dataset.data.length > 0) {
-      // Encontrar o último índice que tenha valor (ignora os nulls do futuro)
-      let lastIndex = dataset.data.length - 1;
-      while (lastIndex >= 0 && dataset.data[lastIndex] === null) {
+    if (!metaAtual.hidden && datasetAtual.data.length > 0) {
+      
+      // Descobre qual é o índice do último dia com dados
+      let lastIndex = datasetAtual.data.length - 1;
+      while (lastIndex >= 0 && (datasetAtual.data[lastIndex] === null || datasetAtual.data[lastIndex] === undefined)) {
         lastIndex--;
       }
 
-      if (lastIndex >= 0) {
-        const point = meta.data[lastIndex];
-        const value = dataset.data[lastIndex];
+      ctx.save();
 
-        ctx.save();
+      for (let i = 0; i < datasetAtual.data.length; i++) {
+        const valorAtual = datasetAtual.data[i];
         
-        // 1. Desenha uma bolinha maior para caber o número
+        // Ignora dias futuros vazios
+        if (valorAtual === null || valorAtual === undefined) continue;
+
+        const point = metaAtual.data[i];
+        const valorAnterior = (datasetAnterior.data[i] !== null && datasetAnterior.data[i] !== undefined) ? datasetAnterior.data[i] : 0;
+
+        // Lógica de cores e tamanhos
+        const isLast = (i === lastIndex);
+        const isPositive = valorAtual >= valorAnterior;
+        
+        const corFundo = isPositive ? '#7df525' : '#E53935'; 
+        const corTexto = isPositive ? '#00305C' : '#ffffff'; // Preto no verde claro para não sumir, branco no vermelho
+        const raio = isLast ? 12 : 10;
+        const fontSize = isLast ? 10 : 9;
+
+        // 1. Desenha a bolinha
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 11, 0, 2 * Math.PI); // Raio 14 (aumente se os números forem gigantes)
-        ctx.fillStyle = '#3b82f6'; // Fundo azul combinando com a linha
+        ctx.arc(point.x, point.y, raio, 0, 2 * Math.PI); 
+        ctx.fillStyle = corFundo; 
         ctx.fill();
         
-        // Bordinha branca ao redor da bolinha maior para dar destaque
-        ctx.strokeStyle = '#ffffff ';
+        // Bordinha branca ao redor
+        ctx.strokeStyle = '#00305C';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 2. Escreve o texto centralizado dentro da bolinha
-        ctx.fillStyle = '#ffffff'; // Cor do texto (Branco)
-        ctx.font = '600 12px sans-serif'; // Fonte um pouco menor para caber bem
-        ctx.textAlign = 'center'; // Alinhamento horizontal no centro
-        ctx.textBaseline = 'middle'; // Alinhamento vertical no centro
+        // 2. Escreve o texto centralizado
+        ctx.fillStyle = corTexto; 
+        ctx.font = `600 ${fontSize}px sans-serif`; 
+        ctx.textAlign = 'center'; 
+        ctx.textBaseline = 'middle'; 
         
-        // Desenha o número exatamente no centro do eixo X e Y do ponto
-        // O "+ 1" no point.y é um truquezinho visual para centralizar a fonte verticalmente
-        ctx.fillText(`${value}`, point.x, point.y + 1); 
-        
-        ctx.restore();
+        ctx.fillText(`${valorAtual}`, point.x, point.y + 1); 
       }
+      
+      ctx.restore();
     }
   }
 };
 
 // ✅ REGISTRAR TODOS OS COMPONENTES E O PLUGIN CUSTOMIZADO
-Chart.register(...registerables, lastPointLabelPlugin);
+Chart.register(...registerables, conditionalPointsPlugin);
 
 @Component({
   selector: 'app-sales-chart',
@@ -79,39 +92,7 @@ export class SalesChartComponent implements AfterViewInit {
 
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'Mês atual',
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-        tension: 0.5,
-        cubicInterpolationMode: 'monotone',
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 1
-      },
-      {
-        data: [],
-        label: 'Mês anterior',
-        borderColor: '#6b7280',
-        backgroundColor: 'rgba(107, 114, 128, 0.05)',
-        fill: false,
-        tension: 0.5,
-        cubicInterpolationMode: 'monotone',
-        borderWidth: 1.5,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        pointBackgroundColor: '#6b7280',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 1,
-        borderDash: [5, 5]
-      }
-    ]
+    datasets: []
   };
 
   public lineChartOptions: ChartConfiguration<'line'>['options'] = {
@@ -139,7 +120,7 @@ export class SalesChartComponent implements AfterViewInit {
       y: {
         beginAtZero: true,
         border: {
-          display: false // ✅ Correção: moveu do grid para o border
+          display: false
         },
         grid: {
           display: false
@@ -159,7 +140,7 @@ export class SalesChartComponent implements AfterViewInit {
       },
       x: {
         border: {
-          display: false // ✅ Correção: moveu do grid para o border
+          display: false
         },
         grid: {
           color: 'rgba(255, 255, 255, 0.05)'
@@ -241,15 +222,27 @@ export class SalesChartComponent implements AfterViewInit {
         {
           data: dataMesAtual,
           label: this.mesAtualLabel || 'Mês atual',
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          // ✅ TRUQUE EXTRA: A linha do gráfico muda de cor dependendo da comparação!
+          segment: {
+            borderColor: (ctx: any) => {
+              if (ctx.p1DataIndex === undefined) return 'rgba(255,255,255,0)';
+              const valAtual = ctx.chart.data.datasets[0].data[ctx.p1DataIndex];
+              const valAnterior = ctx.chart.data.datasets[1].data[ctx.p1DataIndex];
+              
+              if (valAtual === null || valAtual === undefined) return 'rgba(255,255,255,0)';
+              
+              const anteriorSeguro = valAnterior ? valAnterior : 0;
+              return valAtual >= anteriorSeguro ? '#7df525' : '#E53935';
+            }
+          },
+          backgroundColor: 'rgba(59, 130, 246, 0.05)', // Mantive o fundo azul sutil
           fill: true,
           tension: 0.5,
           cubicInterpolationMode: 'monotone',
           borderWidth: 2.5,
-          pointRadius: 3,
+          pointRadius: 0, // Desligado, o nosso plugin é quem desenha as bolinhas agora
           pointHoverRadius: 6,
-          pointBackgroundColor: '#3b82f6',
+          pointBackgroundColor: '#ffffff',
           pointBorderColor: '#ffffff',
           pointBorderWidth: 1
         },
