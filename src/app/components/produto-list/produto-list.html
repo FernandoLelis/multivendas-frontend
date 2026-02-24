@@ -6,69 +6,109 @@
     </button>
   </div>
 
-  <!-- INDICADOR DE CARREGAMENTO -->
   <div class="carregando" *ngIf="produtos.length === 0">
       <div class="spinner"></div>
   </div>
 
   <div class="produtos-grid">
-    <!-- CARDS DINÂMICOS -->
     <div class="produto-card" *ngFor="let produto of produtos">
-      <!-- HEADER APENAS COM NOME -->
-      <div class="produto-header">
-        <h3>{{ produto.nome }}</h3>
-      </div>
       
-      <!-- CONTEÚDO PRINCIPAL -->
-      <div class="produto-content">
-        <div class="produto-info">
-          <!-- SKU -->
-          <div class="info-row">
-            <span class="label">SKU:</span>
-            <span class="value">{{ produto.sku }}</span>
+      <div class="produto-grid-container">
+        
+        <div class="col-imagem">
+          <div class="img-placeholder">
+            <span class="icon-img">📷</span>
+            <span class="text-img">Sem Imagem</span>
           </div>
+        </div>
+
+        <div class="col-identificacao">
+          <h3>{{ produto.nome }}</h3>
+          <div class="tags-identificacao">
+            <span class="tag">SKU: {{ produto.sku }}</span>
+            <span class="tag" *ngIf="produto.asin">ASIN: {{ produto.asin }}</span>
+          </div>
+          <p class="desc-truncada" *ngIf="produto.descricao">{{ produto.descricao }}</p>
+          <span class="data-criacao">Adicionado em: {{ formatarData(produto.dataCriacao) }}</span>
           
-          <!-- ASIN -->
-          <div class="info-row" *ngIf="produto.asin">
-            <span class="label">ASIN:</span>
-            <span class="value">{{ produto.asin }}</span>
+          <a class="link-expandir" (click)="toggleMedidas(produto.id!)">
+            {{ medidasExpandidas.has(produto.id!) ? 'Ocultar' : 'Ver' }} Pesos e Medidas 
+            <span class="seta">{{ medidasExpandidas.has(produto.id!) ? '▲' : '▼' }}</span>
+          </a>
+        </div>
+
+        <div class="col-estoque">
+          <div class="info-bloco destaque">
+            <span class="info-label">Estoque Atual</span>
+            <span class="info-valor" [class.alerta-vermelho]="isEstoqueBaixo(produto)">
+              {{ produto.quantidadeEstoqueTotal || 0 }} un.
+            </span>
           </div>
-          
-          <!-- DATA DE CRIAÇÃO -->
-          <div class="info-row">
-            <span class="label">Data de Criação:</span>
-            <span class="value">{{ formatarData(produto.dataCriacao) }}</span>
+          <div class="info-bloco">
+            <span class="info-label">Estoque Mínimo</span>
+            <span class="info-valor secundario">{{ produto.estoqueMinimo || 0 }} un.</span>
           </div>
-          
-          <!-- ESTOQUE ATUAL -->
-          <div class="info-row">
-            <span class="label">Estoque:</span>
-            <span class="value">{{ produto.quantidadeEstoqueTotal }} unidades</span>
+        </div>
+
+        <div class="col-financeiro">
+          <div class="financeiro-linha">
+            <span class="fin-label">Qtd Vendida:</span>
+            <span class="fin-valor">{{ produto.quantidadeVendida || 0 }}</span>
           </div>
-          
-          <!-- ESTOQUE MÍNIMO -->
-          <div class="info-row">
-            <span class="label">Estoque Mínimo:</span>
-            <span class="value">{{ produto.estoqueMinimo }} unidades</span>
+          <div class="financeiro-linha">
+            <span class="fin-label">Custo Méd.:</span>
+            <span class="fin-valor">{{ formatarMoeda(produto.custoMedio) }}</span>
           </div>
-          
-          <!-- DESCRIÇÃO (ÚLTIMA) -->
-          <div class="info-row" *ngIf="produto.descricao">
-            <span class="label">Descrição:</span>
-            <span class="value">{{ produto.descricao }}</span>
+          <div class="financeiro-linha">
+            <span class="fin-label">Preço Méd.:</span>
+            <span class="fin-valor">{{ formatarMoeda(produto.precoMedioVenda) }}</span>
           </div>
+          <div class="financeiro-linha">
+            <span class="fin-label">Lucro/un:</span>
+            <span class="fin-valor" 
+                  [ngClass]="{
+                    'lucro-positivo': calcularLucroMedio(produto) > 0, 
+                    'lucro-negativo': calcularLucroMedio(produto) < 0
+                  }">
+              {{ formatarMoeda(calcularLucroMedio(produto)) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="col-acoes">
+          <button class="btn-editar" (click)="editarProduto(produto)">Editar</button>
+          <button class="btn-excluir" (click)="excluirProduto(produto)">Excluir</button>
+        </div>
+
+      </div>
+
+      <div class="area-medidas-expandida" *ngIf="medidasExpandidas.has(produto.id!)">
+        <div class="medidas-container">
+          <div class="medida-item">
+            <span class="medida-label">Peso:</span>
+            <span class="medida-valor placeholder">-- kg</span>
+          </div>
+          <div class="medida-item">
+            <span class="medida-label">Comprimento:</span>
+            <span class="medida-valor placeholder">-- cm</span>
+          </div>
+          <div class="medida-item">
+            <span class="medida-label">Largura:</span>
+            <span class="medida-valor placeholder">-- cm</span>
+          </div>
+          <div class="medida-item">
+            <span class="medida-label">Altura:</span>
+            <span class="medida-valor placeholder">-- cm</span>
+          </div>
+        </div>
+        <div class="medidas-aviso">
+          <em>* Estes campos serão implementados na edição em breve para cálculo de frete.</em>
         </div>
       </div>
 
-      <!-- BOTÕES ALINHADOS À ESQUERDA -->
-      <div class="produto-actions">
-        <button class="btn-editar" (click)="editarProduto(produto)">Editar</button>
-        <button class="btn-excluir" (click)="excluirProduto(produto)">Excluir</button>
-      </div>
     </div>   
   </div>
 
-  <!-- MODAL DE PRODUTO -->
   <app-produto-form   
     *ngIf="mostrarModal"
     [produto]="produtoParaEditar"

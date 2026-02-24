@@ -17,6 +17,9 @@ export class ProdutoList implements OnInit {
   produtos: Produto[] = [];
   mostrarModal: boolean = false;
   produtoParaEditar: Produto | null = null;
+  
+  // ✅ NOVO: Controle de quais cards estão com a aba de medidas expandida
+  medidasExpandidas: Set<number> = new Set<number>();
 
   constructor(
     private produtoService: ProdutoService,
@@ -31,16 +34,8 @@ export class ProdutoList implements OnInit {
   carregarProdutos(): void {
     this.produtoService.getProdutos().subscribe({
       next: (produtos) => {
-        // ✅ ORDENAR POR DATA DE CRIAÇÃO - MAIS RECENTES PRIMEIRO
         this.produtos = produtos.sort((a, b) => {
           return new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime();
-        });
-        
-        console.log('🔍 DEBUG - Produtos ordenados:', this.produtos);
-        
-        // ✅ DEBUG ESPECÍFICO DO ESTOQUE
-        this.produtos.forEach(produto => {
-          console.log(`📦 ${produto.nome}: Estoque = ${produto.quantidadeEstoqueTotal}`);
         });
       },
       error: (error) => {
@@ -49,18 +44,35 @@ export class ProdutoList implements OnInit {
     });
   }
 
-  // ✅ CORREÇÃO: Usa quantidadeEstoque que vem do backend
-  calcularEstoqueTotal(produto: Produto): number {
+  // ✅ NOVO MÉTODO: Lógica de expansão das medidas no próprio card
+  toggleMedidas(produtoId: number): void {
+    if (this.medidasExpandidas.has(produtoId)) {
+      this.medidasExpandidas.delete(produtoId);
+    } else {
+      this.medidasExpandidas.add(produtoId);
+    }
+  }
+
+  // ✅ NOVO MÉTODO: Verifica se o estoque está abaixo do mínimo (para pintar de vermelho)
+  isEstoqueBaixo(produto: Produto): boolean {
     const estoque = produto.quantidadeEstoqueTotal || 0;
-    console.log(`🔍 DEBUG ESTOQUE - ${produto.nome}: ${estoque} unidades`);
-    return estoque;
+    const minimo = produto.estoqueMinimo || 0;
+    return estoque < minimo;
+  }
+
+  calcularLucroMedio(produto: Produto): number {
+    const preco = produto.precoMedioVenda || 0;
+    const custo = produto.custoMedio || 0;
+    return preco - custo;
+  }
+
+  formatarMoeda(valor: number | undefined): string {
+    const val = valor || 0;
+    return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
   excluirProduto(produto: Produto): void {
-    if (!produto.id) {
-      console.error('ID do produto não definido');
-      return;
-    }
+    if (!produto.id) { return; }
     
     this.modalService.confirmarExclusao(
       `Tem certeza que deseja excluir o produto "${produto.nome}"?`,
@@ -71,9 +83,6 @@ export class ProdutoList implements OnInit {
             this.carregarProdutos();
           },
           error: (error) => {
-            console.error('Erro ao excluir produto:', error);
-            
-            // ✅ DETECTAR SE É ERRO DE VENDAS ASSOCIADAS
             if (this.erroPossuiVendasAssociadas(error)) {
               this.modalService.mostrarAlertaProdutoExclusao();
             } else {
@@ -85,36 +94,12 @@ export class ProdutoList implements OnInit {
     );
   }
 
-  // ✅ NOVO MÉTODO: Detectar erro de vendas associadas
   private erroPossuiVendasAssociadas(error: any): boolean {
-    // Verificar diferentes padrões de erro que indicam vendas associadas
     const errorMessage = error?.error?.message || error?.message || '';
     const errorStatus = error?.status;
-    
-    console.log('🔍 DEBUG - Analisando erro de exclusão:', {
-      errorMessage,
-      errorStatus,
-      fullError: error
-    });
-
-    // Padrões que indicam que o produto tem vendas associadas
-    const indicadoresVendas = [
-      'vendas', 'Venda', 'venda', 'VENDAS',
-      'foreign key', 'chave estrangeira',
-      'constraint', 'restrição',
-      'referenced', 'referenciado',
-      'cannot delete', 'não pode excluir',
-      'associated', 'associado'
-    ];
-
-    const possuiIndicador = indicadoresVendas.some(indicador => 
-      errorMessage.toLowerCase().includes(indicador.toLowerCase())
-    );
-
-    // Status HTTP que podem indicar conflito (409) ou bad request com mensagem específica (400)
-    const statusRelevantes = [409, 400];
-
-    return possuiIndicador || statusRelevantes.includes(errorStatus);
+    const indicadoresVendas = ['vendas', 'Venda', 'foreign key', 'constraint', 'referenced'];
+    const possuiIndicador = indicadoresVendas.some(i => errorMessage.toLowerCase().includes(i.toLowerCase()));
+    return possuiIndicador || [409, 400].includes(errorStatus);
   }
 
   editarProduto(produto: Produto): void {
@@ -130,10 +115,6 @@ export class ProdutoList implements OnInit {
   fecharModal(): void {
     this.mostrarModal = false;
     this.produtoParaEditar = null;
-  }
-
-  navegarParaNovoProduto(): void {
-    this.router.navigate(['/produtos/novo']);
   }
 
   onProdutoSalvo(): void {

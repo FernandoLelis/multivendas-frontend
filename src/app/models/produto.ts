@@ -7,6 +7,12 @@ export interface Produto {
   estoqueMinimo: number;
   dataCriacao: string;
   quantidadeEstoqueTotal: number;
+  
+  // Novas métricas (opcionais para manter retrocompatibilidade)
+  quantidadeVendida?: number;
+  custoMedio?: number;
+  precoMedioVenda?: number;
+  lucro?: number;
 }
 
 // ✅ FUNÇÃO AUXILIAR com fallback
