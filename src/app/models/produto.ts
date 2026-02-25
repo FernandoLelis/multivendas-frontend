@@ -8,14 +8,20 @@ export interface Produto {
   dataCriacao: string;
   quantidadeEstoqueTotal: number;
   
-  // Novas métricas (opcionais para manter retrocompatibilidade)
+  // Métricas
   quantidadeVendida?: number;
   custoMedio?: number;
   precoMedioVenda?: number;
   lucro?: number;
+
+  // ✅ NOVOS CAMPOS FÍSICOS E IMAGEM (Opcionais)
+  peso?: number;
+  comprimento?: number;
+  largura?: number;
+  altura?: number;
+  imagemUrl?: string;
 }
 
-// ✅ FUNÇÃO AUXILIAR com fallback
 export function getQuantidadeEstoque(produto: Produto): number {
   return produto.quantidadeEstoqueTotal || 0;
 }

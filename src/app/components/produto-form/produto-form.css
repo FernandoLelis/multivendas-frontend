@@ -18,7 +18,7 @@
   color: white;
   font-family: 'Roboto', sans-serif;
   width: 90%;
-  max-width: 500px;
+  max-width: 600px; /* ✅ Aumentado de 500px para 600px para acomodar as 4 colunas de medidas */
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -122,6 +122,43 @@
   gap: 15px;
 }
 
+/* ✅ NOVO: Divisores elegantes para separar seções */
+.divisor-form {
+  display: flex;
+  align-items: center;
+  margin: 10px 0 0 0;
+}
+
+.divisor-form::before, .divisor-form::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.divisor-titulo {
+  color: #06A8F4;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ✅ NOVO: Grid de 4 colunas para medidas com ajuste de limite */
+.form-medidas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* O minmax(0, 1fr) força os campos a caberem sem vazar */
+  gap: 10px;
+  width: 100%;
+}
+
+/* Ajuste fino para os inputs de medidas caberem melhor */
+.form-medidas .form-group input {
+  padding: 10px 8px; /* Padding levemente menor */
+  font-size: 13px; /* Fonte um pouquinho menor para os números não espremerem */
+  min-width: 0; /* Essencial para o input não quebrar o grid */
+}
+
 .form-actions {
   display: flex;
   gap: 12px;
@@ -167,6 +204,11 @@
   .form-row {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+  
+  /* ✅ NOVO: No celular, as medidas ficam 2 em cima e 2 embaixo */
+  .form-medidas {
+    grid-template-columns: 1fr 1fr; 
   }
 }
 

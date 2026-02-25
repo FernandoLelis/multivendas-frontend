@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ProdutoService } from '../../services/produto.service';
 import { Produto } from '../../models/produto';
 import { Router } from '@angular/router';
@@ -9,16 +10,27 @@ import { ModalService } from '../../services/modal.service';
 @Component({
   selector: 'app-produto-list',
   standalone: true,
-  imports: [CommonModule, ProdutoFormComponent],
+  imports: [CommonModule, ProdutoFormComponent, FormsModule],
   templateUrl: './produto-list.html',
   styleUrls: ['./produto-list.css']
 })
 export class ProdutoList implements OnInit {
-  produtos: Produto[] = [];
+  produtosOriginais: Produto[] = [];
+  produtosFiltrados: Produto[] = [];
+  
+  // ✅ NOVAS VARIÁVEIS PARA PAGINAÇÃO
+  produtosPaginados: Produto[] = [];
+  paginaAtual: number = 1;
+  itensPorPagina: number = 10;
+  totalPaginas: number = 1;
+  paginasArray: number[] = [];
+
+  // Controles de Filtro
+  termoBusca: string = '';
+  ordenacao: string = 'mais_vendidos';
+  
   mostrarModal: boolean = false;
   produtoParaEditar: Produto | null = null;
-  
-  // ✅ NOVO: Controle de quais cards estão com a aba de medidas expandida
   medidasExpandidas: Set<number> = new Set<number>();
 
   constructor(
@@ -34,9 +46,8 @@ export class ProdutoList implements OnInit {
   carregarProdutos(): void {
     this.produtoService.getProdutos().subscribe({
       next: (produtos) => {
-        this.produtos = produtos.sort((a, b) => {
-          return new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime();
-        });
+        this.produtosOriginais = produtos;
+        this.aplicarFiltrosEOrdenacao();
       },
       error: (error) => {
         console.error('❌ Erro ao carregar produtos:', error);
@@ -44,7 +55,61 @@ export class ProdutoList implements OnInit {
     });
   }
 
-  // ✅ NOVO MÉTODO: Lógica de expansão das medidas no próprio card
+  aplicarFiltrosEOrdenacao(): void {
+    let filtrados = [...this.produtosOriginais];
+
+    if (this.termoBusca.trim() !== '') {
+      const termo = this.termoBusca.toLowerCase().trim();
+      filtrados = filtrados.filter(p => 
+        (p.nome && p.nome.toLowerCase().includes(termo)) ||
+        (p.sku && p.sku.toLowerCase().includes(termo)) ||
+        (p.asin && p.asin.toLowerCase().includes(termo)) ||
+        (p.descricao && p.descricao.toLowerCase().includes(termo))
+      );
+    }
+
+    filtrados.sort((a, b) => {
+      switch (this.ordenacao) {
+        case 'mais_vendidos': return (b.quantidadeVendida || 0) - (a.quantidadeVendida || 0);
+        case 'menos_vendidos': return (a.quantidadeVendida || 0) - (b.quantidadeVendida || 0);
+        case 'ultimos_criados': return new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime();
+        case 'criados_primeiro': return new Date(a.dataCriacao).getTime() - new Date(b.dataCriacao).getTime();
+        case 'titulo_az': return (a.nome || '').localeCompare(b.nome || '');
+        case 'maior_estoque': return (b.quantidadeEstoqueTotal || 0) - (a.quantidadeEstoqueTotal || 0);
+        case 'menor_estoque': return (a.quantidadeEstoqueTotal || 0) - (b.quantidadeEstoqueTotal || 0);
+        default: return 0;
+      }
+    });
+
+    this.produtosFiltrados = filtrados;
+    
+    // ✅ RECALCULA A PAGINAÇÃO SEMPRE QUE FILTRAR OU ORDENAR
+    this.paginaAtual = 1; 
+    this.atualizarPaginacao();
+  }
+
+  // ✅ NOVO MÉTODO: FATIA A LISTA PARA MOSTRAR APENAS 10
+  atualizarPaginacao(): void {
+    this.totalPaginas = Math.ceil(this.produtosFiltrados.length / this.itensPorPagina);
+    if (this.totalPaginas === 0) this.totalPaginas = 1;
+
+    this.paginasArray = Array.from({length: this.totalPaginas}, (_, i) => i + 1);
+
+    const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
+    const fim = inicio + this.itensPorPagina;
+    this.produtosPaginados = this.produtosFiltrados.slice(inicio, fim);
+  }
+
+  // ✅ NOVO MÉTODO: TROCA A PÁGINA CLICADA
+  mudarPagina(novaPagina: number): void {
+    if (novaPagina >= 1 && novaPagina <= this.totalPaginas) {
+      this.paginaAtual = novaPagina;
+      this.atualizarPaginacao();
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Sobe a tela ao trocar de página
+    }
+  }
+
+  // (Os outros métodos continuam iguaizinhos...)
   toggleMedidas(produtoId: number): void {
     if (this.medidasExpandidas.has(produtoId)) {
       this.medidasExpandidas.delete(produtoId);
@@ -53,7 +118,6 @@ export class ProdutoList implements OnInit {
     }
   }
 
-  // ✅ NOVO MÉTODO: Verifica se o estoque está abaixo do mínimo (para pintar de vermelho)
   isEstoqueBaixo(produto: Produto): boolean {
     const estoque = produto.quantidadeEstoqueTotal || 0;
     const minimo = produto.estoqueMinimo || 0;

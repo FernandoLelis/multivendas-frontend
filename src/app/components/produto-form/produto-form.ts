@@ -21,9 +21,6 @@ export class ProdutoFormComponent implements OnChanges {
   constructor(private produtoService: ProdutoService) {}
 
   ngOnChanges(): void {
-     console.log('🔍 DEBUG - Produto recebido para edição:', this.produto);
-     
-    // Quando o input produto muda, atualiza o produtoEdit
     if (this.produto) {
       this.produtoEdit = { ...this.produto };
     } else {
@@ -39,7 +36,13 @@ export class ProdutoFormComponent implements OnChanges {
       descricao: '',
       dataCriacao: new Date().toISOString(),
       estoqueMinimo: 5,
-      quantidadeEstoqueTotal: 0 // ✅ ADICIONADO: Campo obrigatório da interface
+      quantidadeEstoqueTotal: 0,
+      // ✅ INICIALIZANDO NOVOS CAMPOS COMO VAZIOS
+      imagemUrl: '',
+      peso: undefined,
+      comprimento: undefined,
+      largura: undefined,
+      altura: undefined
     };
   }
 
@@ -48,13 +51,9 @@ export class ProdutoFormComponent implements OnChanges {
   }
 
   salvarProduto(): void {
-    console.log('🔍 DEBUG - Objeto produto:', this.produtoEdit);
-    
     if (this.produtoEdit.id) {
-      // ATUALIZAR produto existente
       this.produtoService.atualizarProduto(this.produtoEdit.id, this.produtoEdit).subscribe({
-        next: (produtoSalvo) => {
-          console.log('Produto atualizado com sucesso:', produtoSalvo);
+        next: () => {
           this.produtoSalvo.emit();
           this.fechar();
         },
@@ -64,10 +63,8 @@ export class ProdutoFormComponent implements OnChanges {
         }
       });
     } else {
-      // CRIAR novo produto
       this.produtoService.criarProduto(this.produtoEdit).subscribe({
-        next: (produtoSalvo) => {
-          console.log('Produto salvo com sucesso:', produtoSalvo);
+        next: () => {
           this.produtoSalvo.emit();
           this.fechar();
         },

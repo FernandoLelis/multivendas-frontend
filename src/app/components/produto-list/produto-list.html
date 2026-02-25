@@ -1,22 +1,66 @@
 <div class="produto-list">
-  <div class="header-actions">
-    <h2>Produtos</h2>
+  
+  <div class="header-busca-container">
+    <div class="busca-input-group">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input 
+        type="text" 
+        placeholder="Título, código universal, SKU ou #"
+        [(ngModel)]="termoBusca"
+        (input)="aplicarFiltrosEOrdenacao()">
+    </div>
+    
+    <div class="divisor-vertical"></div>
+    
+    <div class="filtro-group">
+      <span class="filtro-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
+      </span>
+      <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
+        <option value="mais_vendidos">Mais vendidos</option>
+        <option value="menos_vendidos">Menos vendidos</option>
+        <option value="ultimos_criados">Últimos criados</option>
+        <option value="criados_primeiro">Criados primeiro</option>
+        <option value="titulo_az">Título (a-z)</option>
+        <option value="maior_estoque">Maior qtd. estoque</option>
+        <option value="menor_estoque">Menor qtd. estoque</option>
+      </select>
+    </div>
+
+    <div class="espacador"></div>
+
+    <div class="info-anuncios">
+      {{ produtosFiltrados.length }} produtos
+    </div>
+
+    <div class="divisor-vertical"></div>
+
     <button class="btn-novo-produto" (click)="abrirModal()">
       Novo Produto
     </button>
   </div>
 
-  <div class="carregando" *ngIf="produtos.length === 0">
+  <div class="carregando" *ngIf="produtosOriginais.length === 0">
       <div class="spinner"></div>
   </div>
 
+  <div class="sem-resultados" *ngIf="produtosOriginais.length > 0 && produtosFiltrados.length === 0">
+    <p>Nenhum produto encontrado para a sua busca.</p>
+  </div>
+
   <div class="produtos-grid">
-    <div class="produto-card" *ngFor="let produto of produtos">
+    <div class="produto-card" *ngFor="let produto of produtosPaginados">
       
       <div class="produto-grid-container">
-        
         <div class="col-imagem">
-          <div class="img-placeholder">
+          <img *ngIf="produto.imagemUrl" [src]="produto.imagemUrl" alt="Imagem do Produto" class="produto-img">
+          <div class="img-placeholder" *ngIf="!produto.imagemUrl">
             <span class="icon-img">📷</span>
             <span class="text-img">Sem Imagem</span>
           </div>
@@ -79,34 +123,49 @@
           <button class="btn-editar" (click)="editarProduto(produto)">Editar</button>
           <button class="btn-excluir" (click)="excluirProduto(produto)">Excluir</button>
         </div>
-
       </div>
 
       <div class="area-medidas-expandida" *ngIf="medidasExpandidas.has(produto.id!)">
         <div class="medidas-container">
           <div class="medida-item">
-            <span class="medida-label">Peso:</span>
-            <span class="medida-valor placeholder">-- kg</span>
-          </div>
-          <div class="medida-item">
-            <span class="medida-label">Comprimento:</span>
-            <span class="medida-valor placeholder">-- cm</span>
-          </div>
-          <div class="medida-item">
-            <span class="medida-label">Largura:</span>
-            <span class="medida-valor placeholder">-- cm</span>
-          </div>
-          <div class="medida-item">
             <span class="medida-label">Altura:</span>
-            <span class="medida-valor placeholder">-- cm</span>
+            <span class="medida-valor" [class.placeholder]="!produto.altura">{{ produto.altura ? produto.altura + ' cm' : '--' }}</span>
           </div>
-        </div>
-        <div class="medidas-aviso">
-          <em>* Estes campos serão implementados na edição em breve para cálculo de frete.</em>
+          <div class="medida-item">
+            <span class="medida-label">Larg.:</span>
+            <span class="medida-valor" [class.placeholder]="!produto.largura">{{ produto.largura ? produto.largura + ' cm' : '--' }}</span>
+          </div>
+          <div class="medida-item">
+            <span class="medida-label">Comp.:</span>
+            <span class="medida-valor" [class.placeholder]="!produto.comprimento">{{ produto.comprimento ? produto.comprimento + ' cm' : '--' }}</span>
+          </div>
+          <div class="medida-item">
+            <span class="medida-label">Peso:</span>
+            <span class="medida-valor" [class.placeholder]="!produto.peso">{{ produto.peso ? produto.peso + ' kg' : '--' }}</span>
+          </div>
         </div>
       </div>
 
     </div>   
+  </div>
+
+  <div class="paginacao-container" *ngIf="totalPaginas > 1">
+    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual - 1)" [disabled]="paginaAtual === 1">
+      &laquo; Anterior
+    </button>
+    
+    <div class="paginas-numeros">
+      <button class="btn-paginacao num" 
+              *ngFor="let pag of paginasArray" 
+              (click)="mudarPagina(pag)" 
+              [class.ativo]="paginaAtual === pag">
+        {{ pag }}
+      </button>
+    </div>
+
+    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual + 1)" [disabled]="paginaAtual === totalPaginas">
+      Próxima &raquo;
+    </button>
   </div>
 
   <app-produto-form   

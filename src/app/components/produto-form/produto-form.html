@@ -7,32 +7,67 @@
     
     <div class="form-container">
       <form class="produto-form" (ngSubmit)="salvarProduto()">
+        
         <div class="form-group">
           <label for="nome">Nome do Produto</label>
           <input type="text" id="nome" name="nome" [(ngModel)]="produtoEdit.nome" required>
         </div>
 
-        <div class="form-group">
-          <label for="sku">SKU</label>
-          <input type="text" id="sku" name="sku" [(ngModel)]="produtoEdit.sku" required>
-        </div>
-
-        <div class="form-group">
-          <label for="asin">ASIN</label>
-          <input type="text" id="asin" name="asin" [(ngModel)]="produtoEdit.asin" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sku">SKU</label>
+            <input type="text" id="sku" name="sku" [(ngModel)]="produtoEdit.sku" required>
+          </div>
+          <div class="form-group">
+            <label for="asin">ASIN</label>
+            <input type="text" id="asin" name="asin" [(ngModel)]="produtoEdit.asin" required>
+          </div>
         </div>
 
         <div class="form-group">
           <label for="descricao">Descrição</label>
-          <textarea id="descricao" name="descricao" rows="3" [(ngModel)]="produtoEdit.descricao"></textarea>
+          <textarea id="descricao" name="descricao" rows="2" [(ngModel)]="produtoEdit.descricao"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="imagemUrl">URL da Imagem de Capa (Opcional)</label>
+          <input type="text" id="imagemUrl" [(ngModel)]="produtoEdit.imagemUrl" name="imagemUrl" placeholder="https://exemplo.com/imagem.jpg">
+        </div>
+
+        <div class="divisor-form">
+          <span class="divisor-titulo">Pesos e Medidas (Opcional)</span>
+        </div>
+
+        <div class="form-medidas">
+          <div class="form-group">
+            <label for="altura">Altura (cm)</label>
+            <input type="number" id="altura" [(ngModel)]="produtoEdit.altura" name="altura" step="0.01" min="0">
+          </div>
+
+          <div class="form-group">
+            <label for="largura">Larg. (cm)</label>
+            <input type="number" id="largura" [(ngModel)]="produtoEdit.largura" name="largura" step="0.01" min="0">
+          </div>
+
+          <div class="form-group">
+            <label for="comprimento">Comp. (cm)</label>
+            <input type="number" id="comprimento" [(ngModel)]="produtoEdit.comprimento" name="comprimento" step="0.01" min="0">
+          </div>
+
+          <div class="form-group">
+            <label for="peso">Peso (kg)</label>
+            <input type="number" id="peso" [(ngModel)]="produtoEdit.peso" name="peso" step="0.001" min="0">
+          </div>
+        </div>
+
+        <div class="divisor-form">
+          <span class="divisor-titulo">Configurações de Estoque</span>
         </div>
 
         <div class="form-row">
-          <!-- REMOVIDO: Campo quantidadeEstoque -->
           <div class="form-group">
             <label for="estoqueMinimo">Estoque Mínimo (Alerta)</label>
-            <input type="number" id="estoqueMinimo" name="estoqueMinimo" 
-                   [(ngModel)]="produtoEdit.estoqueMinimo" min="0" required>
+            <input type="number" id="estoqueMinimo" name="estoqueMinimo" [(ngModel)]="produtoEdit.estoqueMinimo" min="0" required>
           </div>
         </div>
 

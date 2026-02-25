@@ -7,11 +7,164 @@
   font-family: 'Roboto', sans-serif;
 }
 
-.header-actions {
+/* ==============================================================
+   CABEÇALHO DARK COM BUSCA E BOTÃO NOVO PRODUTO
+   ============================================================== */
+.header-busca-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  background-color: #01182d; /* Cor original de fundo do card */
+  border: 3px solid #1a3a5f;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  color: white;
+}
+
+.busca-input-group {
+  display: flex;
+  align-items: center;
+  flex: 1; 
+  background-color: #0a2540; /* Fundo do input levemente mais claro */
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: 1px solid #3a5f8f;
+}
+
+.fa-solid.fa-magnifying-glass {
+  color: #06A8F4; 
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.busca-input-group input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 100%;
+  color: white;
+  background: transparent;
+}
+
+.busca-input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.divisor-vertical {
+  width: 1px;
+  height: 30px;
+  background-color: #1a3a5f;
+  margin: 0 20px;
+}
+
+.filtro-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+}
+
+.filtro-icon {
+  display: flex;
+  align-items: center;
+  color: #06A8F4;
+}
+
+.filtro-group select {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.filtro-group select option {
+  background-color: #01182d;
+  color: white;
+}
+
+.espacador {
+  flex-grow: 0.5;
+}
+
+.info-anuncios {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.btn-novo-produto {
+  background-color: transparent;
+  color: #7df525;
+  border: 1px solid #7df525;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn-novo-produto:hover {
+  background-color: #6cd420;
+  color: white;
+}
+
+/* .btn-novo-produto:hover {
+  background-color: #6cd420;
+  transform: translateY(-2px);
+} */
+
+/* ==============================================================
+   PAGINAÇÃO NO RODAPÉ
+   ============================================================== */
+.paginacao-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.paginas-numeros {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-paginacao {
+  background-color: #01182d;
+  color: white;
+  border: 1px solid #1a3a5f;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-paginacao:hover:not([disabled]) {
+  background-color: #1a3a5f;
+  border-color: #06A8F4;
+}
+
+.btn-paginacao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-paginacao.num {
+  padding: 8px 12px;
+}
+
+.btn-paginacao.ativo {
+  background-color: #06A8F4;
+  border-color: #06A8F4;
+  color: white;
+  font-weight: bold;
 }
 
 .produto-list h2 {
@@ -19,23 +172,6 @@
   font-weight: 500;
   margin: 0;
   font-size: 28px;
-}
-
-.btn-novo-produto {
-  background-color: #7df525;
-  color: #01182d;
-  border: 2px solid #7df525;
-  border-radius: 6px;
-  padding: 12px 24px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-novo-produto:hover {
-  background-color: #6cd420;
-  transform: translateY(-2px);
 }
 
 .produtos-grid {
@@ -75,6 +211,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* Estilo para a imagem real do produto no card */
+.produto-img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover; /* Faz a imagem preencher o quadrado sem distorcer */
+  border-radius: 8px;
+  border: 1px solid #3a5f8f;
+  background-color: white; /* Fundo branco caso a imagem tenha transparência */
 }
 
 .img-placeholder {
@@ -128,6 +274,7 @@
   /* Trunca na segunda linha */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2; /* ✅ ADICIONADO PARA CORRIGIR O ALERTA */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
