@@ -110,7 +110,7 @@
 
 .btn-novo-produto:hover {
   background-color: #6cd420;
-  color: white;
+  color: #01182d;
 }
 
 /* .btn-novo-produto:hover {
@@ -396,7 +396,7 @@
 
 .btn-editar:hover {
   background-color: #06A8F4;
-  color: white;
+  color: #01182d;
 }
 
 .btn-excluir {
@@ -407,7 +407,7 @@
 
 .btn-excluir:hover {
   background-color: #E53935;
-  color: white;
+  color: #01182d;
 }
 
 /* ==============================================================
@@ -480,4 +480,43 @@
   .col-imagem { align-items: flex-start; }
   .col-estoque, .col-financeiro { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-left: 0; padding-top: 15px; }
   .medidas-container { flex-direction: column; gap: 10px; }
+}
+
+/* ==============================================================
+   ✅ CORREÇÃO: RESPONSIVIDADE DO HEADER (MOBILE)
+   ============================================================== */
+@media (max-width: 768px) {
+  .header-busca-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .busca-input-group {
+    width: auto; /* Remove max-width travado */
+  }
+  
+  .divisor-vertical {
+    display: none; /* Esconde a barrinha vertical no mobile */
+  }
+  
+  .filtro-group {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .espacador {
+    display: none;
+  }
+
+  .info-anuncios {
+    text-align: center;
+    width: 100%;
+  }
+
+  .btn-novo-produto {
+    width: 100%;
+    margin-top: 5px;
+  }
 }
