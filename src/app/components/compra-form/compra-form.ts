@@ -22,7 +22,7 @@ import { ModalService } from '../../services/modal.service';
   templateUrl: './compra-form.html',
   styleUrls: ['./compra-form.css']
 })
-export class CompraFormComponent implements OnInit {
+export class  CompraFormComponent implements OnInit {
   @Input() compra: Compra | null = null;
   @Output() fecharModal = new EventEmitter<void>();
   @Output() compraSalva = new EventEmitter<void>();

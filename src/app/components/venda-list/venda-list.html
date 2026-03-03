@@ -2,47 +2,49 @@
   
   <div class="header-busca-container">
     <div class="busca-input-group">
-      <span class="lupa-icon">🔍</span>
+      <i class="fa-solid fa-magnifying-glass"></i>
       <input 
         type="text" 
-        placeholder="Buscar por ID do Pedido ou Plataforma..."
+        placeholder="Buscar por ID ou Plataforma..."
         [(ngModel)]="termoBusca"
         (input)="aplicarFiltrosEOrdenacao()">
     </div>
     
     <div class="divisor-vertical-header"></div>
     
-    <div class="filtro-group">
-      <span class="filtro-icon">📅</span>
-      <select [(ngModel)]="periodo" (change)="aplicarFiltrosEOrdenacao()">
-        <option value="todos">Todo o período</option>
-        <option value="hoje">Hoje</option>
-        <option value="7_dias">Últimos 7 dias</option>
-        <option value="30_dias">Últimos 30 dias</option>
-        <option value="este_mes">Este Mês</option>
-      </select>
-    </div>
-
-    <div class="divisor-vertical-header"></div>
-    
-    <div class="filtro-group">
-      <span class="filtro-icon">⇅</span>
-      <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
-        <option value="mais_recentes">Mais recentes</option>
-        <option value="mais_antigas">Mais antigas</option>
-        <option value="maior_lucro">Maior Lucro</option>
-        <option value="menor_lucro">Menor Lucro</option>
-        <option value="maior_valor">Maior Valor</option>
-      </select>
-    </div>
+    <button class="btn-filtrar-ordenar" (click)="mostrarModalFiltros = true">
+      <i class="fa-solid fa-sliders"></i> Filtros
+    </button>
 
     <div class="espacador"></div>
 
-    <div class="info-anuncios">
-      {{ vendasFiltradas.length }} vendas
+    <div class="resumo-mini-container" *ngIf="!carregando">
+      <div class="resumo-mini-item" title="Quantidade de Vendas">
+        <span class="lbl">Qtd:</span> 
+        <span class="val">{{ resumoVendas.quantidade }}</span>
+      </div>
+      <div class="divisor-mini"></div>
+      <div class="resumo-mini-item" title="Faturamento Bruto">
+        <span class="lbl">Fat:</span> 
+        <span class="val">{{ resumoVendas.faturamento | brlCurrency }}</span>
+      </div>
+      <div class="divisor-mini"></div>
+      <div class="resumo-mini-item" title="Lucro Líquido">
+        <span class="lbl">Lucro:</span> 
+        <span class="val txt-lucro" [class.negativo]="resumoVendas.lucroLiquido < 0">
+          {{ resumoVendas.lucroLiquido | brlCurrency }}
+        </span>
+      </div>
+      <div class="divisor-mini"></div>
+      <div class="resumo-mini-item" title="Retorno sobre Investimento">
+        <span class="lbl">ROI:</span> 
+        <span class="val txt-lucro" [class.negativo]="resumoVendas.roi < 0">
+          {{ resumoVendas.roi | number:'1.2-2' }}%
+        </span>
+      </div>
     </div>
 
-    <div class="divisor-vertical-header"></div>
+    <div class="espacador"></div>
 
     <button class="btn-nova-venda" (click)="novaVenda()">Nova Venda</button>
   </div>
@@ -52,178 +54,208 @@
   </div>
 
   <div class="sem-resultados" *ngIf="!carregando && vendasOriginais.length > 0 && vendasFiltradas.length === 0">
-    <p>Nenhuma venda encontrada para a sua busca ou período.</p>
+    <p>Nenhuma venda encontrada para a sua busca ou filtros.</p>
   </div>
 
   <div class="vendas-grid" *ngIf="!carregando">
     <div *ngFor="let venda of vendasPaginadas" class="venda-card-moderno">
       
       <div class="venda-card-header">
-        <span class="plataforma-tag" [ngClass]="getPlataformaClass(venda.plataforma)">{{ venda.plataforma }}</span>
-        <span class="pedido-id">#{{ venda.idPedido }}</span>
-        <span class="separador-header">|</span>
-        <span class="pedido-data">{{ venda.data | date:'dd/MM/yyyy HH:mm' }}</span>
+        <span class="plataforma-tag" [ngClass]="getPlataformaClass(venda.plataforma)">{{venda.plataforma}}</span>
+        <span class="separador-header">•</span>
+        <span class="pedido-id">{{venda.idPedido}}</span>
+        <span class="separador-header">•</span>
+        <span class="pedido-data">{{venda.data | date:'dd/MM/yyyy'}}</span>
       </div>
-
-      <div class="venda-card-body">
+      
+      <div class="linha-produto linha-clicavel" (click)="toggleProdutos(venda)">
         
-        <ng-container *ngIf="getNumeroProdutos(venda) === 1">
-          <div class="linha-produto" *ngFor="let item of getItensAgrupados(venda)">
-            
-            <div class="col-imagem">
-              <img *ngIf="item.imagem" [src]="item.imagem" class="img-quadrada" (error)="esconderImagemQuebrada($event, item)" alt="Produto">
-              <div class="img-placeholder-venda" *ngIf="!item.imagem">
-                <span class="icon-img">📷</span>
-                <span class="text-img">S/ Imagem</span>
-              </div>
-            </div>
+        <div class="col-imagem" *ngIf="getNumeroProdutos(venda) === 1">
+           <img *ngIf="getImagensPreview(venda)[0]" [src]="getImagensPreview(venda)[0]" class="img-quadrada" (error)="esconderImagemQuebrada($event)">
+           <div *ngIf="!getImagensPreview(venda)[0]" class="img-placeholder-venda">
+             <i class="fa-solid fa-box icon-img"></i>
+           </div>
+        </div>
+        
+        <div class="grupo-pacote" *ngIf="getNumeroProdutos(venda) > 1">
+           <div class="col-toggle">
+             <i class="fa-solid fa-chevron-right seta-icon" [class.aberta]="venda.mostrarProdutos"></i>
+           </div>
+           <div class="imagens-stack">
+             <img *ngFor="let img of getImagensPreview(venda)" [src]="img" class="img-redonda-sobreposta">
+           </div>
+        </div>
 
-            <div class="col-info">
-              <h3 class="produto-titulo">{{ item.nome }}</h3>
-              <div class="tags-group">
-                <div class="sku-tag" *ngIf="item.sku">SKU: {{ item.sku }}</div>
-              </div>
-            </div>
-
-            <div class="col-qtd-custo">
-              <div class="metrica-linha">
-                <span class="lbl">Qtd:</span>
-                <span class="val txt-white">{{ item.quantidade }} un.</span>
-              </div>
-              <div class="metrica-linha">
-                <span class="lbl">Custo Médio:</span>
-                <span class="val txt-white">{{ item.custoMedio | brlCurrency }}</span>
-              </div>
-            </div>
-
-            <div class="divisor-vertical"></div>
-
-            <div class="col-metricas-empilhadas">
-              <div class="metrica-linha">
-                <span class="lbl">Custo Efetivo:</span> 
-                <span class="val txt-white">{{ venda.custoEfetivoTotal | brlCurrency }}</span>
-              </div>
-              <div class="metrica-linha">
-                <span class="lbl">Preço Venda:</span> 
-                <span class="val txt-white">{{ venda.precoVenda | brlCurrency }}</span>
-              </div>
-              <div class="metrica-linha">
-                <span class="lbl">Lucro Líq.:</span> 
-                <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{ venda.lucroLiquido | brlCurrency }}</span>
-              </div>
-              <div class="metrica-linha">
-                <span class="lbl">ROI:</span> 
-                <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{ venda.roi | number:'1.2-2' }}%</span>
-              </div>
-            </div>
-
-            <div class="col-botoes">
-              <button class="btn-acao btn-detalhe" (click)="detalhesVenda(venda)">Ver Detalhe</button>
-              <button class="btn-acao btn-editar" (click)="editarVenda(venda)">Editar</button>
-              <button class="btn-acao btn-excluir" (click)="excluirVenda(venda)">Excluir</button>
-            </div>
+        <div class="col-info">
+          <h4 class="produto-titulo" *ngIf="getNumeroProdutos(venda) === 1">{{getItensAgrupados(venda)[0]?.nome}}</h4>
+          <h4 class="produto-titulo txt-pacote" *ngIf="getNumeroProdutos(venda) > 1">Pacote com {{getNumeroProdutos(venda)}} produtos</h4>
+          <div class="tags-group" *ngIf="getNumeroProdutos(venda) === 1">
+            <span class="sku-tag" *ngIf="getItensAgrupados(venda)[0]?.sku">SKU: {{getItensAgrupados(venda)[0]?.sku}}</span>
           </div>
-        </ng-container>
+        </div>
 
-        <ng-container *ngIf="getNumeroProdutos(venda) > 1">
-          <div class="linha-produto linha-clicavel" (click)="toggleProdutos(venda)">
-            
-            <div class="col-toggle">
-              <span class="seta-icon" [class.aberta]="venda.mostrarProdutos">›</span>
-            </div>
+        <div class="col-qtd-custo" *ngIf="getNumeroProdutos(venda) === 1">
+          <div class="metrica-linha"><span class="lbl">Qtd:</span> <span class="val">{{getItensAgrupados(venda)[0]?.quantidade}}</span></div>
+          <div class="metrica-linha"><span class="lbl">Custo Médio:</span> <span class="val">{{getItensAgrupados(venda)[0]?.custoMedio | brlCurrency}}</span></div>
+        </div>
 
-            <div class="grupo-pacote">
-              <div class="imagens-stack" *ngIf="getImagensPreview(venda).length > 0">
-                <img *ngFor="let img of getImagensPreview(venda)" [src]="img" class="img-redonda-sobreposta" (error)="esconderImagemQuebrada($event)">
-              </div>
-              <div class="img-placeholder-venda mini" *ngIf="getImagensPreview(venda).length === 0">
-                <span class="icon-img" style="font-size: 16px; margin: 0;">📦</span>
-              </div>
+        <div class="col-qtd-custo" *ngIf="getNumeroProdutos(venda) > 1">
+          <div class="metrica-linha"><span class="lbl">Qtd Total:</span> <span class="val">{{getNumeroTotalUnidades(venda)}}</span></div>
+          <div class="metrica-linha"><span class="lbl">Custo Efetivo:</span> <span class="val">{{venda.custoEfetivoTotal | brlCurrency}}</span></div>
+        </div>
 
-              <div class="info-pacote">
-                <h3 class="produto-titulo txt-pacote">Pacote de {{ getNumeroProdutos(venda) }} produtos</h3>
-              </div>
-            </div>
+        <div class="divisor-vertical"></div>
 
-            <div class="col-qtd-custo">
-              <div class="metrica-linha">
-                <span class="lbl">Qtd Total:</span>
-                <span class="val txt-white">{{ getNumeroTotalUnidades(venda) }} un.</span>
-              </div>
-            </div>
+        <div class="col-metricas-empilhadas" *ngIf="getNumeroProdutos(venda) === 1">
+          <div class="metrica-linha"><span class="lbl">Faturamento:</span> <span class="val txt-white">{{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency}}</span></div>
+          <div class="metrica-linha"><span class="lbl">Custo Efetivo:</span> <span class="val">{{venda.custoEfetivoTotal | brlCurrency}}</span></div>
+          <div class="metrica-linha"><span class="lbl">Lucro Líquido:</span> <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span></div>
+          <div class="metrica-linha"><span class="lbl">ROI:</span> <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span></div>
+        </div>
 
-            <div class="divisor-vertical"></div>
+        <div class="col-metricas-empilhadas" *ngIf="getNumeroProdutos(venda) > 1">
+          <div class="metrica-linha"><span class="lbl">Faturamento:</span> <span class="val txt-white">{{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency}}</span></div>
+          <div class="metrica-linha"><span class="lbl">Lucro Líquido:</span> <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span></div>
+          <div class="metrica-linha"><span class="lbl">ROI:</span> <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span></div>
+        </div>
 
-            <div class="col-metricas-empilhadas">
-              <div class="metrica-linha">
-                <span class="lbl">Custo Efetivo:</span> 
-                <span class="val txt-white">{{ venda.custoEfetivoTotal | brlCurrency }}</span>
-              </div>
-              <div class="metrica-linha">
-                <span class="lbl">Preço Venda:</span> 
-                <span class="val txt-white">{{ venda.precoVenda | brlCurrency }}</span>
-              </div>
-              <div class="metrica-linha">
-                <span class="lbl">Lucro Líq.:</span> 
-                <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{ venda.lucroLiquido | brlCurrency }}</span>
-              </div>
-              <div class="metrica-linha">
-                <span class="lbl">ROI:</span> 
-                <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{ venda.roi | number:'1.2-2' }}%</span>
-              </div>
-            </div>
-
-            <div class="col-botoes" (click)="$event.stopPropagation()">
-              <button class="btn-acao btn-detalhe" (click)="detalhesVenda(venda)">Ver Detalhe</button>
-              <button class="btn-acao btn-editar" (click)="editarVenda(venda)">Editar</button>
-              <button class="btn-acao btn-excluir" (click)="excluirVenda(venda)">Excluir</button>
-            </div>
-          </div>
-
-          <div class="lista-expandida" *ngIf="venda.mostrarProdutos">
-            <div class="linha-item-expandido" *ngFor="let item of getItensAgrupados(venda)">
-              <div class="espaco-seta"></div>
-              
-              <div class="col-imagem-min">
-                <img *ngIf="item.imagem" [src]="item.imagem" class="img-quadrada-min" (error)="esconderImagemQuebrada($event, item)">
-                <div class="img-placeholder-min" *ngIf="!item.imagem">📷</div>
-              </div>
-              
-              <div class="col-info-min">
-                <div class="produto-titulo-min">{{ item.nome }}</div>
-                <div class="sku-tag-min" *ngIf="item.sku">SKU: {{ item.sku }}</div>
-              </div>
-              
-              <div class="col-qtd-custo-min">
-                <div class="metrica-linha-min">
-                  <span class="lbl">Qtd: </span>
-                  <span class="val txt-white">{{ item.quantidade }} un.</span>
-                </div>
-                <div class="metrica-linha-min">
-                  <span class="lbl">Custo Méd./un: </span>
-                  <span class="val txt-white">{{ item.custoMedio | brlCurrency }}</span>
-                </div>
-              </div>
-              
-              <div class="espaco-botoes"></div> 
-            </div>
-          </div>
-        </ng-container>
-
+        <div class="col-botoes" (click)="$event.stopPropagation()">
+          <button class="btn-acao btn-editar" (click)="editarVenda(venda)">Editar</button>
+          <button class="btn-acao btn-excluir" (click)="excluirVenda(venda)">Excluir</button>
+        </div>
       </div>
+
+      <div class="linha-expandir-detalhes" (click)="detalhesVenda(venda)">
+        <span>{{ vendaDetalhesExpandidaId === venda.id ? 'Ocultar detalhes da venda' : 'Ver mais detalhes da venda' }}</span>
+        <i class="fa-solid" [ngClass]="vendaDetalhesExpandidaId === venda.id ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </div>
+
+      <div class="lista-expandida" *ngIf="venda.mostrarProdutos && getNumeroProdutos(venda) > 1">
+        <div class="linha-item-expandido" *ngFor="let item of getItensAgrupados(venda)">
+          <div class="espaco-seta"></div>
+          <div class="col-imagem-min">
+            <img *ngIf="item.imagem" [src]="item.imagem" class="img-quadrada-min">
+            <div *ngIf="!item.imagem" class="img-placeholder-min"><i class="fa-solid fa-box"></i></div>
+          </div>
+          <div class="col-info-min">
+            <div class="produto-titulo-min">{{item.nome}}</div>
+            <div class="sku-tag-min" *ngIf="item.sku">SKU: {{item.sku}}</div>
+          </div>
+          <div class="col-qtd-custo-min">
+            <div class="metrica-linha-min"><span>Qtd:</span> <strong>{{item.quantidade}}</strong></div>
+            <div class="metrica-linha-min"><span>Custo Médio:</span> <strong>{{item.custoMedio | brlCurrency}}</strong></div>
+          </div>
+          <div class="espaco-botoes"></div>
+        </div>
+      </div>
+
+      <div class="detalhes-expandidos-container" *ngIf="vendaDetalhesExpandidaId === venda.id">
+        <div class="grid-detalhes">
+          
+          <div class="coluna-detalhe">
+            <h4><i class="fa-solid fa-file-lines"></i> Informações Básicas</h4>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Pedido:</span> <span class="detalhe-val">{{venda.idPedido || 'N/A'}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Plataforma:</span> <span class="detalhe-val">{{venda.plataforma}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Data da Venda:</span> <span class="detalhe-val">{{venda.data | date:'dd/MM/yyyy'}}</span></div>
+          </div>
+
+          <div class="coluna-detalhe">
+            <h4><i class="fa-solid fa-money-bill-wave"></i> Valores Financeiros</h4>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Preço de Venda:</span> <span class="detalhe-val txt-white">{{venda.precoVenda | brlCurrency}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Frete Pago (Cliente):</span> <span class="detalhe-val txt-white">{{venda.fretePagoPeloCliente | brlCurrency}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Custo de Envio (Correios/Transp.):</span> <span class="detalhe-val">{{venda.custoEnvio | brlCurrency}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Tarifa da Plataforma:</span> <span class="detalhe-val">{{venda.tarifaPlataforma | brlCurrency}}</span></div>
+          </div>
+
+          <div class="coluna-detalhe">
+            <h4><i class="fa-solid fa-calculator"></i> Cálculos Automáticos</h4>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Faturamento Total:</span> <span class="detalhe-val txt-white">{{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Custo do Produto:</span> <span class="detalhe-val">{{venda.custoProdutoVendido | brlCurrency}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Custo Efetivo Total:</span> <span class="detalhe-val">{{venda.custoEfetivoTotal | brlCurrency}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">Lucro Líquido:</span> <span class="detalhe-val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-lbl">ROI:</span> <span class="detalhe-val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span></div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <div class="paginacao-container" *ngIf="totalPaginas > 1 && !carregando">
-    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual - 1)" [disabled]="paginaAtual === 1">&laquo; Anterior</button>
+  <div class="paginacao-container" *ngIf="!carregando && totalPaginas > 1">
+    <button class="btn-paginacao" [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">Anterior</button>
     <div class="paginas-numeros">
-      <button class="btn-paginacao num" *ngFor="let pag of paginasArray" (click)="mudarPagina(pag)" [class.ativo]="paginaAtual === pag">
-        {{ pag }}
+      <button *ngFor="let p of paginasArray" class="btn-paginacao num" [class.ativo]="p === paginaAtual" (click)="mudarPagina(p)">{{ p }}</button>
+    </div>
+    <button class="btn-paginacao" [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">Próxima</button>
+  </div>
+
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalFiltros" (click)="mostrarModalFiltros = false">
+  <div class="modal-filtros-content" (click)="$event.stopPropagation()">
+    <div class="modal-filtros-header">
+      <h3><i class="fa-solid fa-filter"></i> Filtrar e Ordenar</h3>
+      <button class="btn-fechar-modal" (click)="mostrarModalFiltros = false">
+        <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual + 1)" [disabled]="paginaAtual === totalPaginas">Próxima &raquo;</button>
+    
+    <div class="modal-filtros-body">
+      
+      <div class="filtro-bloco">
+        <label>Período</label>
+        <select [(ngModel)]="periodo" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="todos">Todo o período</option>
+          <option value="hoje">Hoje</option>
+          <option value="7_dias">Últimos 7 dias</option>
+          <option value="30_dias">Últimos 30 dias</option>
+          <option value="este_mes">Este Mês</option>
+          <option value="este_ano">Este Ano</option>
+        </select>
+      </div>
+
+      <div class="filtro-bloco">
+        <label>Ordenar Por</label>
+        <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="mais_recentes">Mais recentes</option>
+          <option value="mais_antigas">Mais antigas</option>
+          <option value="maior_lucro">Maior Lucro</option>
+          <option value="menor_lucro">Menor Lucro</option>
+          <option value="maior_valor">Maior Valor</option>
+        </select>
+      </div>
+
+      <div class="filtro-bloco">
+        <label>Plataforma</label>
+        <select [(ngModel)]="filtroPlataforma" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="todas">Todas as Plataformas</option>
+          <option value="mercado-livre">Mercado Livre</option>
+          <option value="amazon">Amazon</option>
+          <option value="shopee">Shopee</option>
+          <option value="outro">Outros</option>
+        </select>
+      </div>
+
+    </div>
+    
+    <div class="modal-filtros-footer">
+      <button class="btn-aplicar-filtros" (click)="mostrarModalFiltros = false">Aplicar Filtros</button>
+    </div>
   </div>
 </div>
 
-<app-venda-form *ngIf="mostrarFormVenda" [venda]="vendaSelecionada" (fecharModal)="fecharFormVenda()" (vendaSalva)="carregarVendas()" (abrirCompraParaProduto)="abrirCompraParaProduto($event)"></app-venda-form>
-<app-compra-form *ngIf="mostrarFormCompra" [compra]="produtoParaCompra" (fecharModal)="fecharFormCompra()" (compraSalva)="onCompraSalva()"></app-compra-form>
+<app-venda-form 
+  *ngIf="mostrarFormVenda" 
+  [venda]="vendaSelecionada" 
+  (fechar)="fecharFormVenda()" 
+  (salvou)="carregarVendas()"
+  (abrirCompraParaProduto)="abrirCompraParaProduto($event)">
+</app-venda-form>
+
+<app-compra-form 
+  *ngIf="mostrarFormCompra" 
+  [compra]="produtoParaCompra" 
+  (fecharModal)="fecharFormCompra()" 
+  (compraSalva)="onCompraSalva()">
+</app-compra-form>

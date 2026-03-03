@@ -31,15 +31,31 @@ export class VendaListComponent implements OnInit {
   totalPaginas: number = 1;
   paginasArray: number[] = [];
 
+  // Filtros Padrões já selecionados
   termoBusca: string = '';
   ordenacao: string = 'mais_recentes';
   periodo: string = 'todos';
+  filtroPlataforma: string = 'todas';
 
+  // Modais e Estados
   mostrarFormVenda: boolean = false;
   mostrarFormCompra: boolean = false;
+  mostrarModalFiltros: boolean = false;
   carregando: boolean = true;
   vendaSelecionada: any = null;
   produtoParaCompra: any = null;
+  
+  // Controle de expansão dos detalhes
+  vendaDetalhesExpandidaId: any = null;
+
+  // Objeto do Relatório Dinâmico
+  resumoVendas = {
+    quantidade: 0,
+    faturamento: 0,
+    custoEfetivo: 0,
+    lucroLiquido: 0,
+    roi: 0
+  };
 
   constructor(
     private vendaService: VendaService,
@@ -73,7 +89,7 @@ export class VendaListComponent implements OnInit {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    // Filtro de Busca
+    // 1. Filtro de Busca
     if (this.termoBusca.trim() !== '') {
       const termo = this.termoBusca.toLowerCase().trim();
       filtrados = filtrados.filter(v => 
@@ -82,7 +98,7 @@ export class VendaListComponent implements OnInit {
       );
     }
 
-    // Filtro de Período
+    // 2. Filtro de Período
     if (this.periodo !== 'todos') {
       filtrados = filtrados.filter(v => {
         const dataVenda = new Date(v.data);
@@ -90,11 +106,17 @@ export class VendaListComponent implements OnInit {
         if (this.periodo === '7_dias') return dataVenda >= new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
         if (this.periodo === '30_dias') return dataVenda >= new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
         if (this.periodo === 'este_mes') return dataVenda.getMonth() === hoje.getMonth() && dataVenda.getFullYear() === hoje.getFullYear();
+        if (this.periodo === 'este_ano') return dataVenda.getFullYear() === hoje.getFullYear();
         return true;
       });
     }
 
-    // Ordenação
+    // 3. Filtro de Plataforma
+    if (this.filtroPlataforma !== 'todas') {
+      filtrados = filtrados.filter(v => this.getPlataformaClass(v.plataforma) === this.filtroPlataforma);
+    }
+
+    // 4. Ordenação
     filtrados.sort((a, b) => {
       const dataA = new Date(a.data).getTime();
       const dataB = new Date(b.data).getTime();
@@ -111,7 +133,34 @@ export class VendaListComponent implements OnInit {
 
     this.vendasFiltradas = filtrados;
     this.paginaAtual = 1; 
+    
+    // Atualiza Cálculos do Relatório
+    this.calcularResumoVendas();
     this.atualizarPaginacao();
+  }
+
+  calcularResumoVendas(): void {
+    let faturamento = 0;
+    let custoEfetivo = 0;
+    let lucroLiquido = 0;
+
+    this.vendasFiltradas.forEach(venda => {
+      const precoVenda = Number(venda.precoVenda || 0);
+      const fretePago = Number(venda.fretePagoPeloCliente || 0);
+      faturamento += (precoVenda + fretePago);
+      custoEfetivo += Number(venda.custoEfetivoTotal || 0);
+      lucroLiquido += Number(venda.lucroLiquido || 0);
+    });
+
+    const roi = custoEfetivo > 0 ? (lucroLiquido / custoEfetivo) * 100 : 0;
+
+    this.resumoVendas = {
+      quantidade: this.vendasFiltradas.length,
+      faturamento,
+      custoEfetivo,
+      lucroLiquido,
+      roi
+    };
   }
 
   atualizarPaginacao(): void {
@@ -140,7 +189,6 @@ export class VendaListComponent implements OnInit {
     }
   }
 
-  // Busca profunda de Imagem e SKU
   getItensAgrupados(venda: any): any[] {
     if (!venda.itens || !Array.isArray(venda.itens) || venda.itens.length === 0) return [];
     const agrupados = new Map();
@@ -149,7 +197,6 @@ export class VendaListComponent implements OnInit {
       const id = item.produto?.id || item.produtoId || item.id || 'id-desconhecido';
       const nome = item.produto?.nome || item.produtoNome || item.nome || `Produto #${id}`;
       
-      // Mapeamento focado no imagemUrl e em outras variações possíveis
       let imagemUrl = item.imagemUrl || item.produto?.imagemUrl || item.imagemPrincipal || item.produto?.imagemPrincipal || item.urlImagem || item.produto?.urlImagem || item.produto?.imagem || '';
       
       if (!imagemUrl && item.produto?.imagens && item.produto.imagens.length > 0) {
@@ -178,7 +225,6 @@ export class VendaListComponent implements OnInit {
     }));
   }
 
-  // Retorna até 3 imagens válidas para o stack de pacotes
   getImagensPreview(venda: any): string[] {
     const itens = this.getItensAgrupados(venda);
     return itens.map(i => i.imagem).filter(img => img && img !== '').slice(0, 3);
@@ -216,7 +262,6 @@ export class VendaListComponent implements OnInit {
     return 'outro';
   }
 
-  // Esconde imagens que vieram com link quebrado da API
   esconderImagemQuebrada(event: any, item?: any) {
     event.target.style.display = 'none';
     if (item) item.imagem = null; 
@@ -224,7 +269,15 @@ export class VendaListComponent implements OnInit {
 
   novaVenda() { this.vendaSelecionada = null; this.mostrarFormVenda = true; }
   editarVenda(venda: any) { this.vendaSelecionada = venda; this.mostrarFormVenda = true; }
-  detalhesVenda(venda: any) { this.modalService.mostrarDetalhesVenda(venda); }
+  
+  // NOVA FUNÇÃO: Alterna os detalhes expansíveis
+  detalhesVenda(venda: any) { 
+    if (this.vendaDetalhesExpandidaId === venda.id) {
+      this.vendaDetalhesExpandidaId = null;
+    } else {
+      this.vendaDetalhesExpandidaId = venda.id;
+    }
+  }
   
   excluirVenda(venda: any) {
     this.modalService.confirmarExclusao(`Excluir pedido ${venda.idPedido}?`, () => {

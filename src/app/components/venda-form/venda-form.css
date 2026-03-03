@@ -1,4 +1,4 @@
-/* venda-form.css - ESTILO UNIFICADO COM PRODUTO-FORM E CARRINHO - v46.6 */
+/* venda-form.css - ESTILO UNIFICADO COM PRODUTO-FORM E CARRINHO - v46.6/v46.9.2 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -257,7 +257,133 @@
   color: #E53935;
 }
 
-/* ESTILOS PARA O SISTEMA DE CARRINHO */
+/* ✅ ESTILOS DO DROPDOWN CUSTOMIZADO (SUBSTITUI O SELECT NATIVO) */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 90;
+}
+
+.dropdown-selected {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 2px solid #1a3a5f;
+  border-radius: 6px;
+  background-color: #01182d;
+  color: white;
+  cursor: pointer;
+  min-height: 52px;
+  transition: border-color 0.3s ease;
+  position: relative;
+}
+
+.custom-dropdown.aberto .dropdown-selected {
+  border-color: #06A8F4;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 14px;
+  font-size: 10px;
+  color: #06A8F4;
+}
+
+.dropdown-placeholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #01182d;
+  border: 2px solid #06A8F4;
+  border-radius: 6px;
+  margin-top: 4px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 91;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #1a3a5f;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(6, 168, 244, 0.15);
+}
+
+.dropdown-item.novo-produto {
+  background-color: rgba(125, 245, 37, 0.1);
+  border-bottom: 2px solid #1a3a5f;
+}
+
+.dropdown-item.novo-produto:hover {
+  background-color: rgba(125, 245, 37, 0.2);
+}
+
+.icon-plus {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background: #7df525;
+  color: #01182d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 20px;
+  margin-right: 12px;
+}
+
+.dropdown-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-right: 12px;
+  background-color: #1a3a5f;
+  border: 1px solid #06A8F4;
+  flex-shrink: 0;
+}
+
+.dropdown-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+}
+
+.dropdown-title {
+  font-weight: 500;
+  font-size: 14px;
+  color: white;
+  line-height: 1.2;
+}
+
+.dropdown-sku-stock {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
 
 /* Container para adicionar produtos */
 .carrinho-add-container {
@@ -356,7 +482,7 @@
   width: 100%;
 }
 
-/* Cabeçalho do carrinho - SEM COR VERDE */
+/* Cabeçalho do carrinho */
 .carrinho-header {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr 50px;
@@ -393,19 +519,42 @@
   gap: 3px;
 }
 
-.carrinho-col.produto strong {
-  font-size: 13px;
-  color: white;
+/* ✅ ESTILOS DO ITEM COM IMAGEM NO CARRINHO */
+.carrinho-col.produto.item-com-imagem {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
-.carrinho-col.produto small {
+.carrinho-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background-color: #1a3a5f;
+  border: 1px solid #06A8F4;
+  flex-shrink: 0;
+}
+
+.carrinho-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+}
+
+.carrinho-info strong {
+  font-size: 13px;
+  color: white;
+  line-height: 1.2;
+}
+
+.carrinho-info small {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* ✅✅✅ CORREÇÃO v46.6: CAMPOS DO CARRINHO COM CONTROLE DINÂMICO */
-
-/* Estilo BASE para campos do carrinho (neutral) */
+/* ✅ CAMPOS DO CARRINHO COM CONTROLE DINÂMICO */
 .carrinho-col.quantidade input,
 .carrinho-col.preco input {
   padding: 5px 6px;
@@ -419,7 +568,6 @@
   box-sizing: border-box;
 }
 
-/* Campos quando estão EDITÁVEIS (modo edição) */
 .carrinho-col.quantidade input.campo-editavel,
 .carrinho-col.preco input.campo-editavel {
   background-color: rgba(6, 168, 244, 0.15) !important;
@@ -443,7 +591,6 @@
   box-shadow: 0 0 0 2px rgba(125, 245, 37, 0.2);
 }
 
-/* Campos quando estão BLOQUEADOS (modo visualização) */
 .carrinho-col.quantidade input.campo-bloqueado,
 .carrinho-col.preco input.campo-bloqueado {
   background-color: rgba(26, 58, 95, 0.5) !important;
@@ -459,7 +606,7 @@
   background-color: rgba(26, 58, 95, 0.5) !important;
 }
 
-/* Total no carrinho - SEM COR VERDE */
+/* Total no carrinho */
 .carrinho-col.total {
   font-weight: 600;
   color: white;
@@ -511,7 +658,6 @@
   font-weight: 600;
 }
 
-/* Valor total - SEM COR VERDE */
 .total-value {
   color: white;
   font-weight: 700;
@@ -527,6 +673,12 @@
   padding: 2px 5px;
   border-radius: 3px;
   border-left: 2px solid #FF9800;
+}
+
+.info-multiplos-lotes {
+  color: #06A8F4;
+  font-size: 10px;
+  margin-top: 2px;
 }
 
 /* Responsividade para carrinho */
@@ -559,6 +711,10 @@
     font-size: 11px;
     color: white;
     margin-bottom: 3px;
+  }
+
+  .carrinho-col.produto.item-com-imagem::before {
+    display: none;
   }
   
   .carrinho-col.acoes {
@@ -610,26 +766,26 @@
 }
 
 /* ESTILIZAÇÃO DO SCROLLBAR */
-.form-container::-webkit-scrollbar {
+.form-container::-webkit-scrollbar, .dropdown-list::-webkit-scrollbar {
   width: 6px;
 }
 
-.form-container::-webkit-scrollbar-track {
+.form-container::-webkit-scrollbar-track, .dropdown-list::-webkit-scrollbar-track {
   background: #01182d;
   border-radius: 4px;
 }
 
-.form-container::-webkit-scrollbar-thumb {
+.form-container::-webkit-scrollbar-thumb, .dropdown-list::-webkit-scrollbar-thumb {
   background: #1a3a5f;
   border-radius: 4px;
   border: 1px solid #06A8F4;
 }
 
-.form-container::-webkit-scrollbar-thumb:hover {
+.form-container::-webkit-scrollbar-thumb:hover, .dropdown-list::-webkit-scrollbar-thumb:hover {
   background: #06A8F4;
 }
 
-.form-container::-webkit-scrollbar-thumb:active {
+.form-container::-webkit-scrollbar-thumb:active, .dropdown-list::-webkit-scrollbar-thumb:active {
   background: #7df525;
 }
 
@@ -652,7 +808,8 @@
 
 /* Para Firefox */
 .form-container,
-.carrinho-body {
+.carrinho-body,
+.dropdown-list {
   scrollbar-width: thin;
   scrollbar-color: #1a3a5f #01182d;
 }

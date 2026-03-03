@@ -26,8 +26,10 @@ import { ModalService } from '../../services/modal.service';
 })
 export class VendaFormComponent implements OnInit {
   @Input() venda: Venda | null = null;
-  @Output() fecharModal = new EventEmitter<void>();
-  @Output() vendaSalva = new EventEmitter<void>();
+  
+  // ✅ CORREÇÃO: Usando Alias para que o venda-list.html consiga escutar corretamente os eventos
+  @Output('fechar') fecharEvent = new EventEmitter<void>();
+  @Output('salvou') salvouEvent = new EventEmitter<void>();
   @Output() abrirCompraParaProduto = new EventEmitter<Produto>();
   
   vendaEdit: Venda = this.getVendaVazia();
@@ -50,14 +52,12 @@ export class VendaFormComponent implements OnInit {
   quantidadeNoCarrinho: number = 0;
   erroEstoque: { [produtoId: number]: string } = {};
 
-  // ✅✅✅ NOVO: Usar ItemVendaAgrupado para exibição
-  itensExibicao: ItemVendaAgrupado[] = [];
+  dropdownAberto: boolean = false;
+  placeholderImg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%231a3a5f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
 
-  // ✅✅✅ NOVO: Para controle de edição
+  itensExibicao: ItemVendaAgrupado[] = [];
   vendaOriginal: Venda | null = null;
   itensOriginais: ItemVenda[] = [];
-
-  // ✅✅✅ NOVO: Para controle de edição em tempo real
   quantidadesEditadas: Map<number, number> = new Map();
 
   constructor(
@@ -72,28 +72,50 @@ export class VendaFormComponent implements OnInit {
     this.carregarProdutos();
   }
 
-  // ✅✅✅ NOVO: Verificar se há erros de estoque
+  toggleDropdown(): void {
+    this.dropdownAberto = !this.dropdownAberto;
+  }
+
+  selecionarProduto(produtoOuNovo: any): void {
+    this.dropdownAberto = false;
+    
+    if (produtoOuNovo === 'novo') {
+      this.abrirModalProduto();
+      this.produtoSelecionado = null;
+      this.estoqueInsuficiente = false;
+      this.quantidadeNoCarrinho = 0;
+    } else {
+      this.produtoSelecionado = produtoOuNovo as Produto;
+      this.onProdutoChange();
+    }
+  }
+
+  getImagem(produto: any): string {
+    if (!produto) return this.placeholderImg;
+    return produto.imagemUrl || produto.imagem || produto.foto || produto.urlImagem || this.placeholderImg;
+  }
+
+  getImagemPorId(produtoId: number): string {
+    const produto = this.produtos.find(p => p.id === produtoId);
+    return this.getImagem(produto);
+  }
+
   temErroEstoque(): boolean {
     return Object.keys(this.erroEstoque).length > 0;
   }
 
-  // ✅✅✅ NOVO: Verificar se quantidades foram modificadas (usando quantidadesEditadas)
   quantidadesModificadas(): boolean {
     if (!this.modoEdicao || !this.vendaOriginal || !this.vendaOriginal.itens) {
-      return true; // Nova venda ou sem dados originais
+      return true; 
     }
     
-    // Se houve edições no Map, há modificações
     if (this.quantidadesEditadas.size > 0) {
-      console.log('📊 [DEBUG-v46.9.2] Quantidades modificadas no Map:', this.quantidadesEditadas.size);
       return true;
     }
     
-    // Verificar também por comparação direta (para segurança)
     const quantidadesAtuais = new Map<number, number>();
     const quantidadesOriginais = new Map<number, number>();
     
-    // Somar quantidades atuais por produto
     this.vendaEdit.itens.forEach(item => {
       if (item.produtoId) {
         const atual = quantidadesAtuais.get(item.produtoId) || 0;
@@ -101,7 +123,6 @@ export class VendaFormComponent implements OnInit {
       }
     });
     
-    // Somar quantidades originais por produto
     this.vendaOriginal.itens.forEach(item => {
       if (item.produtoId) {
         const original = quantidadesOriginais.get(item.produtoId) || 0;
@@ -109,47 +130,37 @@ export class VendaFormComponent implements OnInit {
       }
     });
     
-    // Comparar
     for (const [produtoId, quantidadeAtual] of quantidadesAtuais) {
       const quantidadeOriginal = quantidadesOriginais.get(produtoId) || 0;
       if (quantidadeAtual !== quantidadeOriginal) {
-        console.log(`📊 [DEBUG-v46.9.2] Quantidades modificadas: Produto ${produtoId} - ${quantidadeOriginal} → ${quantidadeAtual}`);
         return true;
       }
     }
     
-    console.log('📊 [DEBUG-v46.9.2] Quantidades NÃO modificadas');
     return false;
   }
 
-  // ✅✅✅ NOVO: Verificar se apenas campos básicos mudaram
   apenasCamposBasicosModificados(): boolean {
     if (!this.modoEdicao || !this.vendaOriginal) {
       return false;
     }
     
-    // Verificar se apenas estes campos mudaram:
     const camposParaIgnorar = ['data', 'plataforma', 'fretePagoPeloCliente', 'custoEnvio', 'tarifaPlataforma'];
     
     for (const campo of camposParaIgnorar) {
       if (JSON.stringify(this.vendaEdit[campo as keyof Venda]) !== 
           JSON.stringify(this.vendaOriginal[campo as keyof Venda])) {
-        console.log(`📊 [DEBUG-v46.9.2] Campo básico modificado: ${campo}`);
         return false;
       }
     }
     
-    // Verificar se ID do pedido mudou
     if (this.vendaEdit.idPedido !== this.vendaOriginal.idPedido) {
-      console.log('📊 [DEBUG-v46.9.2] ID do pedido modificado');
       return false;
     }
     
-    // Verificar se preço mudou (pode ser apenas recálculo)
     const precoEdit = Math.round(this.vendaEdit.precoVenda * 100) / 100;
     const precoOriginal = Math.round(this.vendaOriginal.precoVenda * 100) / 100;
     if (precoEdit !== precoOriginal) {
-      console.log(`📊 [DEBUG-v46.9.2] Preço modificado: ${precoOriginal} → ${precoEdit}`);
       return false;
     }
     
@@ -173,11 +184,9 @@ export class VendaFormComponent implements OnInit {
   }
 
   carregarProdutos(): void {
-    console.log('🔍 [DEBUG-v46.9.2] Carregando produtos...');
     this.produtoService.getProdutos().subscribe({
       next: (produtos) => {
         this.produtos = produtos;
-        console.log('✅ [DEBUG-v46.9.2] Produtos carregados:', produtos.length);
         this.inicializarFormulario();
       },
       error: (error) => {
@@ -187,28 +196,21 @@ export class VendaFormComponent implements OnInit {
   }
 
   inicializarFormulario(): void {
-    console.log('🔍 [DEBUG-v46.9.2] Inicializando formulário...');
-    
     if (this.venda && this.venda.id) {
       this.modoEdicao = true;
       this.vendaEdit = { ...this.venda };
-      
-      // ✅✅✅ CORREÇÃO CRÍTICA: Salvar cópia ORIGINAL para comparação
       this.vendaOriginal = { ...this.venda };
       this.itensOriginais = [...(this.venda.itens || [])];
       
       if (this.vendaEdit.itens && this.vendaEdit.itens.length > 0) {
         this.vendaEdit.itens = this.vendaEdit.itens.map(item => {
           const precoUnitarioVenda = item.precoUnitarioVenda || item.precoUnitario || 0;
-          
           return {
             ...item,
             precoUnitarioVenda: precoUnitarioVenda,
             precoTotalItem: item.precoTotalItem || (precoUnitarioVenda * item.quantidade) || 0
           };
         });
-        
-        console.log('✅ [DEBUG-v46.9.2] Itens carregados:', this.vendaEdit.itens.length);
         this.atualizarItensExibicao();
       }
       
@@ -222,30 +224,18 @@ export class VendaFormComponent implements OnInit {
       
     } else {
       this.modoEdicao = false;
-      console.log('🔍 [DEBUG-v46.9.2] Modo NOVA VENDA ativado');
     }
   }
 
-  // ✅✅✅ NOVO: Método para atualizar itens de exibição
   private atualizarItensExibicao(): void {
-    console.log('🔍 [DEBUG-v46.9.2] Atualizando itens para exibição...');
-    
     this.itensExibicao = agruparItensPorProduto(this.vendaEdit.itens);
-    
-    console.log('✅ [DEBUG-v46.9.2] Itens de exibição atualizados:', {
-      lotesOriginais: this.vendaEdit.itens.length,
-      itensAgrupados: this.itensExibicao.length
-    });
   }
 
   calcularQuantidadeNoCarrinho(produtoId: number): number {
     if (!produtoId) return 0;
-    
-    const quantidadeTotal = this.vendaEdit.itens
+    return this.vendaEdit.itens
       .filter(item => item.produtoId === produtoId)
       .reduce((total, item) => total + item.quantidade, 0);
-    
-    return quantidadeTotal;
   }
 
   verificarEstoque(): void {
@@ -257,7 +247,6 @@ export class VendaFormComponent implements OnInit {
     if (quantidade && quantidade > 0) {
       this.verificandoEstoque = true;
       this.quantidadeSolicitada = quantidade;
-      
       this.quantidadeNoCarrinho = this.calcularQuantidadeNoCarrinho(produtoId);
       
       this.produtoService.getProduto(produtoId).subscribe({
@@ -298,30 +287,6 @@ export class VendaFormComponent implements OnInit {
     }
   }
 
-  onProdutoSelecionado(event: any): void {
-    const produtoId = event.target.value;
-    
-    if (produtoId === 'novo') {
-      this.abrirModalProduto();
-      this.produtoSelecionado = null;
-      this.estoqueInsuficiente = false;
-      this.quantidadeNoCarrinho = 0;
-      setTimeout(() => {
-        event.target.value = '';
-      });
-    } else {
-      const produtoSelecionado = this.produtos.find(p => p.id === Number(produtoId));
-      if (produtoSelecionado) {
-        this.produtoSelecionado = produtoSelecionado;
-        this.onProdutoChange();
-      } else {
-        this.produtoSelecionado = null;
-        this.estoqueInsuficiente = false;
-        this.quantidadeNoCarrinho = 0;
-      }
-    }
-  }
-
   abrirModalCompra(): void {
     if (this.produtoSelecionado) {
       this.abrirCompraParaProduto.emit(this.produtoSelecionado);
@@ -335,8 +300,7 @@ export class VendaFormComponent implements OnInit {
     const quantidade = this.quantidadeSelecionada || 0;
     
     if (precoUnitario && quantidade) {
-      this.precoTotalSelecionado = precoUnitario * quantidade;
-      this.precoTotalSelecionado = Math.round(this.precoTotalSelecionado * 100) / 100;
+      this.precoTotalSelecionado = Math.round((precoUnitario * quantidade) * 100) / 100;
     } else {
       this.precoTotalSelecionado = 0;
     }
@@ -347,8 +311,7 @@ export class VendaFormComponent implements OnInit {
     const quantidade = this.quantidadeSelecionada || 0;
     
     if (precoTotal && quantidade && quantidade > 0) {
-      this.precoUnitarioSelecionado = precoTotal / quantidade;
-      this.precoUnitarioSelecionado = Math.round(this.precoUnitarioSelecionado * 100) / 100;
+      this.precoUnitarioSelecionado = Math.round((precoTotal / quantidade) * 100) / 100;
     } else {
       this.precoUnitarioSelecionado = 0;
     }
@@ -382,10 +345,7 @@ export class VendaFormComponent implements OnInit {
     }
     
     const produtoId = this.produtoSelecionado.id!;
-    
-    const itemExistente = this.vendaEdit.itens.find(
-      item => item.produtoId === produtoId
-    );
+    const itemExistente = this.vendaEdit.itens.find(item => item.produtoId === produtoId);
     
     if (itemExistente) {
       const novaQuantidadeTotal = itemExistente.quantidade + this.quantidadeSelecionada;
@@ -407,10 +367,8 @@ export class VendaFormComponent implements OnInit {
         this.produtoSelecionado, 
         this.quantidadeSelecionada
       );
-      
       novoItem.precoUnitarioVenda = this.precoUnitarioSelecionado;
       novoItem.precoTotalItem = this.precoTotalSelecionado;
-      
       this.vendaEdit.itens.push(novoItem);
     }
     
@@ -426,11 +384,7 @@ export class VendaFormComponent implements OnInit {
     this.precoTotalSelecionado = 0;
     this.estoqueInsuficiente = false;
     this.quantidadeNoCarrinho = 0;
-    
-    const selectElement = document.getElementById('produtoSelecionado') as HTMLSelectElement;
-    if (selectElement) {
-      selectElement.value = '';
-    }
+    this.dropdownAberto = false;
   }
 
   removerDoCarrinho(index: number): void {
@@ -438,118 +392,66 @@ export class VendaFormComponent implements OnInit {
       'Remover este produto do carrinho?',
       () => {
         const itemExibicao = this.itensExibicao[index];
-        
         if (itemExibicao) {
-          // Remover todos os itens deste produto
           this.vendaEdit.itens = this.vendaEdit.itens.filter(
             item => item.produtoId !== itemExibicao.produtoId
           );
-          
           this.atualizarItensExibicao();
           this.atualizarPrecoTotalVenda();
-          
-          // Limpar edições deste produto
           this.quantidadesEditadas.delete(itemExibicao.produtoId);
         }
       }
     );
   }
 
-  // ✅✅✅ CORREÇÃO CRÍTICA v46.9.2: Novo método para atualizar quantidade TOTAL
   atualizarQuantidadeTotal(itemExibicao: ItemVendaAgrupado, novaQuantidadeTotal: number): void {
-    console.log(`🔧 [DEBUG-v46.9.2] Atualizando quantidade total: Produto ${itemExibicao.produtoId} - ${itemExibicao.quantidadeTotal} → ${novaQuantidadeTotal}`);
-    
-    if (!this.modoEdicao) {
-      console.log('⚠️ [DEBUG-v46.9.2] Não é modo edição - ignorando');
-      return;
-    }
-    
+    if (!this.modoEdicao) return;
     if (novaQuantidadeTotal <= 0) {
-      console.log('⚠️ [DEBUG-v46.9.2] Quantidade inválida');
       this.modalService.mostrarErro('A quantidade deve ser maior que zero.');
       return;
     }
+    if (novaQuantidadeTotal === itemExibicao.quantidadeTotal) return;
     
-    // Verificar se a quantidade realmente mudou
-    if (novaQuantidadeTotal === itemExibicao.quantidadeTotal) {
-      console.log('ℹ️ [DEBUG-v46.9.2] Quantidade não mudou');
-      return;
-    }
-    
-    // Salvar a edição no Map
     this.quantidadesEditadas.set(itemExibicao.produtoId, novaQuantidadeTotal);
-    
-    // Verificar estoque
     this.verificarEstoqueParaEdicao(itemExibicao.produtoId, novaQuantidadeTotal);
   }
 
-  // ✅✅✅ NOVO: Verificar estoque considerando lotes já consumidos
   private verificarEstoqueParaEdicao(produtoId: number, novaQuantidadeTotal: number): void {
     this.produtoService.getProduto(produtoId).subscribe({
       next: (produtoAtualizado) => {
         const estoqueAtual = produtoAtualizado.quantidadeEstoqueTotal || 0;
-        
-        // ✅✅✅ CORREÇÃO: Considerar que na edição, os lotes originais serão REVERTIDOS
-        // Portanto, temos que considerar o estoque ORIGINAL (antes da venda)
         const quantidadeNaVendaOriginal = this.calcularQuantidadeTotalOriginal(produtoId);
-        
-        console.log(`📦 [DEBUG-v46.9.2] Verificando estoque para edição:`, {
-          produtoId,
-          estoqueAtual,
-          novaQuantidadeTotal,
-          quantidadeNaVendaOriginal
-        });
-        
-        // O estoque disponível REAL para edição é:
-        // estoqueAtual + quantidadeNaVendaOriginal (porque vamos reverter)
         const estoqueDisponivelParaEdicao = estoqueAtual + quantidadeNaVendaOriginal;
         
         if (novaQuantidadeTotal > estoqueDisponivelParaEdicao) {
           this.erroEstoque[produtoId] = 
             `⚠️ Estoque insuficiente para edição! Disponível: ${estoqueDisponivelParaEdicao} unidades, Solicitado: ${novaQuantidadeTotal}`;
-          
-          console.log(`❌ [DEBUG-v46.9.2] Estoque insuficiente: ${estoqueDisponivelParaEdicao} < ${novaQuantidadeTotal}`);
         } else {
           delete this.erroEstoque[produtoId];
-          console.log(`✅ [DEBUG-v46.9.2] Estoque suficiente: ${estoqueDisponivelParaEdicao} >= ${novaQuantidadeTotal}`);
         }
-      },
-      error: () => {
-        console.error('❌ [DEBUG-v46.9.2] Erro ao verificar estoque do produto', produtoId);
       }
     });
   }
 
-  // ✅✅✅ NOVO: Calcular quantidade total original (antes da edição)
   private calcularQuantidadeTotalOriginal(produtoId: number): number {
     if (!this.vendaOriginal || !this.vendaOriginal.itens) return 0;
-    
     return this.vendaOriginal.itens
       .filter(item => item.produtoId === produtoId)
       .reduce((total, item) => total + item.quantidade, 0);
   }
 
   atualizarPrecoUnitarioTotal(itemExibicao: ItemVendaAgrupado, novoPrecoUnitario: number): void {
-    console.log(`🔧 [DEBUG-v46.9.2] Atualizando preço unitário: Produto ${itemExibicao.produtoId} - ${itemExibicao.precoUnitarioVenda} → ${novoPrecoUnitario}`);
-    
     if (!this.modoEdicao || novoPrecoUnitario < 0) return;
-    
-    // Atualizar preço unitário em todos os lotes deste produto
-    let precoTotalAtualizado = 0;
     
     this.vendaEdit.itens.forEach(item => {
       if (item.produtoId === itemExibicao.produtoId) {
         item.precoUnitarioVenda = novoPrecoUnitario;
         item.precoTotalItem = calcularPrecoTotalItem(item);
-        precoTotalAtualizado += item.precoTotalItem;
       }
     });
     
-    // Atualizar exibição
     this.atualizarItensExibicao();
     this.atualizarPrecoTotalVenda();
-    
-    console.log(`💰 [DEBUG-v46.9.2] Preço total atualizado: ${precoTotalAtualizado}`);
   }
 
   atualizarPrecoTotalVenda(): void {
@@ -557,9 +459,7 @@ export class VendaFormComponent implements OnInit {
   }
 
   calcularTotalCarrinho(): number {
-    return this.vendaEdit.itens.reduce((total, item) => {
-      return total + (item.precoTotalItem || 0);
-    }, 0);
+    return this.vendaEdit.itens.reduce((total, item) => total + (item.precoTotalItem || 0), 0);
   }
 
   abrirModalProduto(): void {
@@ -578,24 +478,17 @@ export class VendaFormComponent implements OnInit {
   validarData(): void {
     if (!this.vendaEdit.data) {
       const now = new Date();
-      const dataFormatada = now.toISOString().split('T')[0];
-      this.vendaEdit.data = dataFormatada;
+      this.vendaEdit.data = now.toISOString().split('T')[0];
     }
   }
 
   fechar(): void {
-    this.fecharModal.emit();
+    this.fecharEvent.emit(); // ✅ Usando o novo EventEmitter!
   }
 
-  // ✅✅✅ CORREÇÃO CRÍTICA v46.9.2: Preparar dados inteligentes para backend
   prepararDadosParaEnvio(): any {
     const apenasCamposBasicos = this.apenasCamposBasicosModificados();
     const quantidadesModificadas = this.quantidadesModificadas();
-    
-    console.log('📊 [DEBUG-v46.9.2] Análise de modificações:');
-    console.log('📊 [DEBUG] Apenas campos básicos:', apenasCamposBasicos);
-    console.log('📊 [DEBUG] Quantidades modificadas:', quantidadesModificadas);
-    console.log('📊 [DEBUG] Quantidades editadas:', Array.from(this.quantidadesEditadas.entries()));
     
     const dadosVenda: any = {
       idPedido: this.vendaEdit.idPedido,
@@ -607,13 +500,9 @@ export class VendaFormComponent implements OnInit {
       tarifaPlataforma: this.vendaEdit.tarifaPlataforma || 0
     };
     
-    // ✅✅✅ CORREÇÃO: Usar quantidades EDITADAS do Map, não as exibidas
     if (this.modoEdicao && quantidadesModificadas && this.quantidadesEditadas.size > 0) {
-      // Reconstruir itens baseado nas quantidades editadas
       dadosVenda.itens = [];
-      
       this.quantidadesEditadas.forEach((novaQuantidade, produtoId) => {
-        // Buscar informações do produto
         const produto = this.produtos.find(p => p.id === produtoId);
         const itemExibicao = this.itensExibicao.find(i => i.produtoId === produtoId);
         
@@ -625,53 +514,32 @@ export class VendaFormComponent implements OnInit {
           });
         }
       });
-      
-      console.log('📤 [DEBUG-v46.9.2] Enviando ITENS EDITADOS (quantidades modificadas)');
     } else if (this.modoEdicao && apenasCamposBasicos) {
-      // Apenas campos básicos mudaram - NÃO enviar itens
-      console.log('📤 [DEBUG-v46.9.2] NÃO enviando itens (apenas campos básicos modificados)');
-      // Backend manterá os itens originais
+      // Apenas campos básicos mudaram - Backend manterá os itens originais
     } else {
-      // Nova venda ou outras modificações - enviar todos os itens
       dadosVenda.itens = this.vendaEdit.itens.map(item => ({
         produtoId: item.produtoId,
         quantidade: item.quantidade,
         precoUnitarioVenda: item.precoUnitarioVenda || 0
       }));
-      console.log('📤 [DEBUG-v46.9.2] Enviando TODOS OS ITENS');
     }
-    
-    console.log('📤 [DEBUG-v46.9.2] Dados preparados para backend:', {
-      temItens: !!dadosVenda.itens,
-      numItens: dadosVenda.itens ? dadosVenda.itens.length : 0,
-      dadosVenda: dadosVenda
-    });
     
     return dadosVenda;
   }
 
   salvarVenda(): void {
-    console.log('💾 [DEBUG-v46.9.2] Salvando venda...');
-    console.log('💾 [DEBUG] Modo:', this.modoEdicao ? 'EDIÇÃO' : 'NOVA VENDA');
-    console.log('💾 [DEBUG] Quantidades modificadas:', this.quantidadesModificadas());
-    console.log('💾 [DEBUG] Quantidades editadas:', Array.from(this.quantidadesEditadas.entries()));
-    
     if (this.vendaEdit.itens.length === 0) {
       this.modalService.mostrarErro('Adicione pelo menos um produto ao carrinho.');
       return;
     }
-    
     if (!this.vendaEdit.idPedido.trim()) {
       this.modalService.mostrarErro('ID do Pedido é obrigatório.');
       return;
     }
-    
     if (this.temErroEstoque()) {
       this.modalService.confirmarExclusao(
         'Alguns produtos têm estoque insuficiente. Deseja continuar mesmo assim?',
-        () => {
-          this.continuarSalvamento();
-        }
+        () => this.continuarSalvamento()
       );
       return;
     }
@@ -682,7 +550,6 @@ export class VendaFormComponent implements OnInit {
   private continuarSalvamento(): void {
     const dadosParaEnviar = this.prepararDadosParaEnvio();
     
-    // ✅✅✅ AVISO PARA EDIÇÃO COM QUANTIDADES MODIFICADAS
     if (this.modoEdicao && this.quantidadesModificadas()) {
       this.modalService.confirmarExclusao(
         '⚠️ ATENÇÃO: Quantidades modificadas!\n\n' +
@@ -691,9 +558,7 @@ export class VendaFormComponent implements OnInit {
         '2. Aplicar PEPS novamente com as novas quantidades\n' +
         '3. Criar novos registros de lotes consumidos\n\n' +
         'Deseja continuar?',
-        () => {
-          this.executarSalvamento(dadosParaEnviar);
-        }
+        () => this.executarSalvamento(dadosParaEnviar)
       );
       return;
     }
@@ -705,17 +570,14 @@ export class VendaFormComponent implements OnInit {
     if (this.modoEdicao && this.vendaEdit.id) {
       this.vendaService.atualizarVenda(this.vendaEdit.id, dadosParaEnviar).subscribe({
         next: (vendaAtualizada) => {
-          console.log('✅ [DEBUG-v46.9.2] Venda atualizada com sucesso:', vendaAtualizada.id);
-          this.vendaSalva.emit();
+          this.salvouEvent.emit(); // ✅ Emitindo o evento correto!
           this.fechar();
           this.modalService.mostrarSucesso('Venda atualizada com sucesso!');
         },
         error: (error) => {
-          console.error('❌ [DEBUG-v46.9.2] Erro ao atualizar:', error);
-          
           if (error.error && (error.error.includes('ID do pedido já existe') || 
-                             error.error.includes('Já existe outra venda') ||
-                             error.error.includes('Já existe uma venda com este ID do pedido'))) {
+                              error.error.includes('Já existe outra venda') ||
+                              error.error.includes('Já existe uma venda com este ID do pedido'))) {
             this.modalService.mostrarErroIdDuplicadoVenda(this.vendaEdit.idPedido);
           } else {
             this.modalService.mostrarErro('Erro ao atualizar venda: ' + (error.error || error.message));
@@ -725,14 +587,11 @@ export class VendaFormComponent implements OnInit {
     } else {
       this.vendaService.criarVenda(dadosParaEnviar).subscribe({
         next: (vendaSalva) => {
-          console.log('✅ [DEBUG-v46.9.2] Venda criada:', vendaSalva.id);
-          this.vendaSalva.emit();
+          this.salvouEvent.emit(); // ✅ Emitindo o evento correto!
           this.fechar();
           this.modalService.mostrarSucesso('Venda criada com sucesso!');
         },
         error: (error) => {
-          console.error('❌ [DEBUG-v46.9.2] Erro ao criar venda:', error);
-          
           if (error.error && error.error.includes('Já existe uma venda com este ID do pedido')) {
             this.modalService.mostrarErroIdDuplicadoVenda(this.vendaEdit.idPedido);
           } else {
@@ -747,65 +606,36 @@ export class VendaFormComponent implements OnInit {
     return this.modoEdicao ? 'Editar Venda' : 'Nova Venda';
   }
 
-  // ✅✅✅ NOVO MÉTODO: Converter valor do input para número
   converterParaNumero(event: Event): number {
     const input = event.target as HTMLInputElement;
     const valor = input.value;
     
-    console.log(`🔢 [DEBUG-v46.9.2] Converter para número: "${valor}" (tipo: ${input.type}, min: ${input.min})`);
+    if (!valor || valor.trim() === '') return 0;
     
-    if (!valor || valor.trim() === '') {
-      console.log('🔢 [DEBUG] Valor vazio, retornando 0');
-      return 0;
-    }
-    
-    // Tentar converter para número
     let numero: number;
     
     if (input.type === 'number' && input.min === '1') {
-      // Para quantidade, usar parseInt (números inteiros)
       numero = parseInt(valor, 10);
-      console.log(`🔢 [DEBUG] Usando parseInt para quantidade: ${valor} → ${numero}`);
     } else {
-      // Para preço, usar parseFloat (números decimais)
       numero = parseFloat(valor);
-      console.log(`🔢 [DEBUG] Usando parseFloat para preço: ${valor} → ${numero}`);
     }
     
-    // Verificar se a conversão foi bem sucedida
     if (isNaN(numero)) {
-      console.warn('⚠️ [DEBUG] Valor não é um número válido:', valor);
-      
-      // Tentar limpar o valor (remover caracteres não numéricos)
       const valorLimpo = valor.replace(/[^\d,.-]/g, '').replace(',', '.');
       numero = parseFloat(valorLimpo);
-      
-      if (isNaN(numero)) {
-        console.error('❌ [DEBUG] Não foi possível converter para número:', valor);
-        return 0;
-      }
-      
-      console.log(`🔢 [DEBUG] Valor limpo e convertido: ${valor} → ${valorLimpo} → ${numero}`);
+      if (isNaN(numero)) return 0;
     }
     
-    // Garantir valores mínimos
     if (input.type === 'number' && input.min === '1') {
-      // Quantidade mínima 1
       numero = Math.max(1, Math.floor(numero));
-      console.log(`🔢 [DEBUG] Garantindo mínimo 1: → ${numero}`);
     } else if (input.type === 'number' && input.min === '0') {
-      // Preço mínimo 0
       numero = Math.max(0, numero);
-      console.log(`🔢 [DEBUG] Garantindo mínimo 0: → ${numero}`);
     }
     
-    // Arredondar para 2 casas decimais para preços
     if (input.step === '0.01') {
       numero = Math.round(numero * 100) / 100;
-      console.log(`🔢 [DEBUG] Arredondando para 2 casas decimais: → ${numero}`);
     }
     
-    console.log(`✅ [DEBUG-v46.9.2] Valor final convertido: ${numero}`);
     return numero;
   }
 }
