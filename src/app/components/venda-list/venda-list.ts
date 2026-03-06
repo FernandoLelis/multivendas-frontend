@@ -39,11 +39,11 @@ export class VendaListComponent implements OnInit {
 
   // Modais e Estados
   mostrarFormVenda: boolean = false;
-  mostrarFormCompra: boolean = false;
+  mostrarModal: boolean = false;
   mostrarModalFiltros: boolean = false;
   carregando: boolean = true;
   vendaSelecionada: any = null;
-  produtoParaCompra: any = null;
+  compraEditando: any = null;
   
   // Controle de expansão dos detalhes
   vendaDetalhesExpandidaId: any = null;
@@ -296,13 +296,13 @@ export class VendaListComponent implements OnInit {
   
   abrirCompraParaProduto(produto: Produto) { 
     this.mostrarFormVenda = false; 
-    this.produtoParaCompra = produto; 
-    this.mostrarFormCompra = true; 
+    this.compraEditando = produto; 
+    this.mostrarModal = true; 
   }
 
   fecharFormCompra() { 
-    this.mostrarFormCompra = false; 
-    this.produtoParaCompra = null;
+    this.mostrarModal = false; 
+    this.compraEditando = null;
   }
   
   onCompraSalva() { 

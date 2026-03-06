@@ -13,7 +13,7 @@
     <div class="divisor-vertical-header"></div>
     
     <button class="btn-filtrar-ordenar" (click)="mostrarModalFiltros = true">
-      <i class="fa-solid fa-sliders"></i> Filtros
+      <i class="fa-solid fa-sliders"></i> Filtrar e ordenar
     </button>
 
     <div class="espacador"></div>
@@ -254,8 +254,9 @@
 </app-venda-form>
 
 <app-compra-form 
-  *ngIf="mostrarFormCompra" 
-  [compra]="produtoParaCompra" 
+  *ngIf="mostrarModal" 
+  [compra]="compraEditando" 
   (fecharModal)="fecharFormCompra()" 
   (compraSalva)="onCompraSalva()">
 </app-compra-form>
+

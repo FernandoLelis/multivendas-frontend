@@ -115,68 +115,6 @@
 
 
 /* ==============================================================
-   PAGINAÇÃO NO RODAPÉ
-   ============================================================== */
-.paginacao-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  margin-top: 30px;
-  padding: 20px 0;
-}
-
-.paginas-numeros {
-  display: flex;
-  gap: 8px;
-}
-
-.btn-paginacao {
-  background-color: #01182d;
-  color: white;
-  border: 1px solid #1a3a5f;
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-paginacao:hover:not([disabled]) {
-  background-color: #1a3a5f;
-  border-color: #06A8F4;
-}
-
-.btn-paginacao:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-paginacao.num {
-  padding: 8px 12px;
-}
-
-.btn-paginacao.ativo {
-  background-color: #06A8F4;
-  border-color: #06A8F4;
-  color: white;
-  font-weight: bold;
-}
-
-.produto-list h2 {
-  color: white;
-  font-weight: 500;
-  margin: 0;
-  font-size: 28px;
-}
-
-.produtos-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* ==============================================================
    O NOVO CARD COM GRID DE 5 COLUNAS
    ============================================================== */
 .produto-card {
@@ -449,6 +387,68 @@
 .carregando { display: flex; justify-content: center; padding: 40px; }
 .spinner { width: 40px; height: 40px; border: 4px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #7df525; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* ==============================================================
+   PAGINAÇÃO NO RODAPÉ
+   ============================================================== */
+.paginacao-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.paginas-numeros {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-paginacao {
+  background-color: #01182d;
+  color: white;
+  border: 1px solid #1a3a5f;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-paginacao:hover:not([disabled]) {
+  background-color: #1a3a5f;
+  border-color: #06A8F4;
+}
+
+.btn-paginacao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-paginacao.num {
+  padding: 8px 12px;
+}
+
+.btn-paginacao.ativo {
+  background-color: #06A8F4;
+  border-color: #06A8F4;
+  color: white;
+  font-weight: bold;
+}
+
+.produto-list h2 {
+  color: white;
+  font-weight: 500;
+  margin: 0;
+  font-size: 28px;
+}
+
+.produtos-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
 
 /* RESPONSIVIDADE PARA TELAS MENORES */
 @media (max-width: 1024px) {
