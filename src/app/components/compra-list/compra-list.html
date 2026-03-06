@@ -1,104 +1,197 @@
 <div class="compra-list">
-  <div class="header-actions">
-    <h2>Compras</h2>
-    <button class="btn-nova-compra" (click)="novaCompra()">Nova Compra</button>
+  
+  <div class="header-busca-container">
+    <div class="busca-input-group">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input 
+        type="text" 
+        placeholder="ID, Fornecedor, Pedido ou Produto..."
+        [(ngModel)]="termoBusca"
+        (input)="aplicarFiltrosEOrdenacao()">
+    </div>
+    
+    <div class="divisor-vertical"></div>
+    
+    <div class="filtro-group">
+      <span class="filtro-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
+      </span>
+      <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
+        <option value="mais_recentes">Mais recentes</option>
+        <option value="mais_antigas">Mais antigas</option>
+        <option value="maior_valor">Maior valor total</option>
+        <option value="menor_valor">Menor valor total</option>
+      </select>
+    </div>
+
+    <div class="espacador"></div>
+
+    <div class="info-anuncios">
+      {{ comprasFiltradas.length }} compras
+    </div>
+
+    <div class="divisor-vertical"></div>
+
+    <button class="btn-novo-produto" (click)="novaCompra()">
+      Nova Compra
+    </button>
   </div>
 
-  <!-- INDICADOR DE CARREGAMENTO -->
   <div class="carregando" *ngIf="carregando">
-    <div class="spinner"></div>
+      <div class="spinner"></div>
   </div>
 
-  <div class="compras-grid" *ngIf="!carregando">
-    <!-- CARDS DINÂMICOS -->
-    <div class="compra-card" *ngFor="let compra of compras">
-      
-      <!-- HEADER SIMPLIFICADO -->
-      <div class="compra-header">
-        <div class="header-info">
-          <h3>Compra #{{ compra.idPedidoCompra }}</h3>
-          <div class="header-subtitle">
-            <span class="fornecedor">{{ compra.fornecedor || 'Fornecedor não informado' }}</span>
-            <span class="separator">•</span>
-            <span class="data">{{ getDataCompra(compra) }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- CONTEÚDO PRINCIPAL -->
-      <div class="compra-content">
-        <div class="compra-info">
-          <!-- INFORMAÇÕES ESSENCIAIS -->
-          <div class="info-row">
-            <span class="label">Quantidade Total:</span>
-            <span class="value">{{ getQuantidadeTotal(compra) }} unidades</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="label">Produtos:</span>
-            <span class="value">{{ getNumeroProdutos(compra) }} itens</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="label">Custo Total:</span>
-            <span class="value highlight">{{ compra.custoTotal | brlCurrency }}</span>
-          </div>
-          
-          <!-- OBSERVAÇÕES (se existir) -->
-          <div class="info-row" *ngIf="compra.observacoes">
-            <span class="label">Observações:</span>
-            <span class="value observacoes">{{ compra.observacoes }}</span>
-          </div>
-        </div>
-      </div>
+  <div class="sem-resultados" *ngIf="!carregando && comprasOriginais.length > 0 && comprasFiltradas.length === 0">
+    <p>Nenhuma compra encontrada para a sua busca.</p>
+  </div>
 
+  <div class="sem-resultados" *ngIf="!carregando && comprasOriginais.length === 0">
+    <p>Nenhuma compra cadastrada no sistema.</p>
+  </div>
+
+  <div class="produtos-grid" *ngIf="!carregando && comprasPaginadas.length > 0">
+    <div class="produto-card" *ngFor="let compra of comprasPaginadas">
       
-      <!-- LISTA DE PRODUTOS -->
-      <div class="produtos-resumo" *ngIf="compra.itens && compra.itens.length > 0">
-        <div class="produtos-header" (click)="toggleProdutos(compra)">
-          <span class="toggle-icon">{{ getMostrarProdutos(compra) ? '▼' : '▶' }}</span>
-          <span class="produtos-label">
-            Detalhes dos Produtos ({{ compra.itens.length }})
-          </span>
-        </div>
+      <div class="produto-grid-container">
         
-        <div class="produtos-lista" *ngIf="getMostrarProdutos(compra)">
-          <div *ngFor="let item of compra.itens" class="produto-item">
-            <div class="produto-info">
-              <span class="produto-nome">{{ item.produtoNome || 'Produto não identificado' }}</span>
-              <span class="produto-sku" *ngIf="item.produtoSku">({{ item.produtoSku }})</span>
+        <div class="col-imagem" style="position: relative;">
+          
+          <ng-container *ngIf="getNumeroProdutos(compra) <= 1">
+            <img *ngIf="getImagemUrl(compra) || getImagensPreview(compra).length > 0" 
+                 [src]="getImagemUrl(compra) || getImagensPreview(compra)[0]" 
+                 alt="Imagem do Produto" class="produto-img">
+            
+            <div class="img-placeholder" *ngIf="!getImagemUrl(compra) && getImagensPreview(compra).length === 0">
+              <span class="icon-img">📦</span>
             </div>
-            <div class="produto-detalhes">
-              <span class="produto-quantidade">{{ item.quantidade }} unidades</span>
-              <span class="separator">•</span>
-              <span class="produto-custo">{{ item.custoUnitario | brlCurrency }} /un</span>
-              <span class="separator">•</span>
-              <span class="produto-subtotal">
-                Subtotal: {{ (item.quantidade * item.custoUnitario) | brlCurrency }}
-              </span>
+          </ng-container>
+
+          <ng-container *ngIf="getNumeroProdutos(compra) > 1">
+            <div class="imagens-stack">
+              <img *ngFor="let img of getImagensPreview(compra)" [src]="img" class="img-redonda-sobreposta">
+              <div class="img-redonda-sobreposta placeholder-stack" *ngIf="getImagensPreview(compra).length === 0">
+                <span class="icon-img" style="font-size: 16px;">📦</span>
+              </div>
             </div>
+          </ng-container>
+
+        </div>
+
+        <div class="col-identificacao">
+          <h3 *ngIf="getNumeroProdutos(compra) === 1">
+            {{ compra.itens && compra.itens[0] ? compra.itens[0].produtoNome : 'Item não identificado' }}
+          </h3>
+          <h3 *ngIf="getNumeroProdutos(compra) > 1">
+            Pacote com {{ getNumeroProdutos(compra) }} produtos
+          </h3>
+
+          <div class="tags-identificacao">
+            <span class="tag" *ngIf="compra.fornecedor"><i class="fa-solid fa-truck"></i> {{ compra.fornecedor }}</span>
+            <span class="tag" *ngIf="compra.idPedidoCompra">Ped: {{ compra.idPedidoCompra }}</span>
+            <span class="tag alerta-amarelo" *ngIf="isSistemaAntigo(compra)">Sistema Antigo</span>
           </div>
+          
+          <p class="desc-truncada" *ngIf="compra.observacoes">Obs: {{ compra.observacoes }}</p>
+          <span class="data-criacao">Comprado em: {{ getDataCompra(compra) }}</span>
+          
+          <a class="link-expandir" *ngIf="getNumeroProdutos(compra) > 1" (click)="toggleProdutos(compra)">
+            {{ compra.mostrarProdutos ? 'Ocultar' : 'Ver' }} Detalhes do Pacote 
+            <span class="seta">{{ compra.mostrarProdutos ? '▲' : '▼' }}</span>
+          </a>
+        </div>
+
+        <div class="col-estoque">
+          <div class="info-bloco destaque">
+            <span class="info-label">Qtd. de Itens</span>
+            <span class="info-valor">{{ getNumeroProdutos(compra) }}</span>
+          </div>
+          <div class="info-bloco">
+            <span class="info-label">Unidades Totais</span>
+            <span class="info-valor secundario">{{ getQuantidadeTotal(compra) }} un.</span>
+          </div>
+        </div>
+
+        <div class="col-financeiro">
+          <div class="financeiro-linha" style="margin-bottom: 8px;">
+            <span class="fin-label">Valor Total:</span>
+            <span class="fin-valor" style="font-size: 16px; font-weight: bold; color: #7df525;">{{ (compra.custoTotal || compra.totalCompra || 0) | brlCurrency }}</span>
+          </div>
+          <div class="financeiro-linha" *ngIf="getNumeroProdutos(compra) === 1 && compra.itens && compra.itens[0]">
+            <span class="fin-label">Custo Unit.:</span>
+            <span class="fin-valor">{{ (compra.itens[0].custoUnitario || 0) | brlCurrency }}</span>
+          </div>
+        </div>
+
+        <div class="col-acoes">
+          <button class="btn-editar" (click)="editarCompra(compra)">Editar</button>
+          <button class="btn-excluir" (click)="excluirCompra(compra)">Excluir</button>
         </div>
       </div>
 
-      <!-- BOTÕES DE AÇÃO -->
-      <div class="compra-actions">
-        <button class="btn-editar" (click)="editarCompra(compra)">Editar</button>
-        <button class="btn-excluir" (click)="excluirCompra(compra)">Excluir</button>
+      <div class="lista-expandida" *ngIf="compra.mostrarProdutos && getNumeroProdutos(compra) > 1">
+        <div class="linha-item-expandido" *ngFor="let item of compra.itens">
+          <div class="espaco-seta"></div>
+          
+          <div class="col-imagem-min">
+            <img *ngIf="getImagemUrl(item)" [src]="getImagemUrl(item)" class="img-quadrada-min">
+            <div class="img-placeholder-min" *ngIf="!getImagemUrl(item)">
+              <i class="fa-solid fa-box"></i>
+            </div>
+          </div>
+          
+          <div class="col-info-min">
+            <span class="produto-titulo-min">{{ item.produtoNome }}</span>
+            <span class="sku-tag-min" *ngIf="item.produtoSku">SKU: {{ item.produtoSku }}</span>
+          </div>
+          
+          <div class="col-qtd-custo-min">
+            <div class="metrica-linha-min">
+              <span>{{ item.quantidade }} un</span>
+              <span>x {{ (item.custoUnitario || 0) | brlCurrency }}</span>
+            </div>
+            <div class="metrica-linha-min" style="color: white; font-weight: 500; margin-top: 4px;">
+              <span>Subtotal:</span>
+              <span>{{ ((item.quantidade || 0) * (item.custoUnitario || 0)) | brlCurrency }}</span>
+            </div>
+          </div>
+          
+          <div class="espaco-botoes" *ngIf="!isSistemaAntigo(compra)"></div>
+        </div>
       </div>
-    </div>
 
-    <!-- MENSAGEM QUANDO NÃO HÁ COMPRAS -->
-    <div class="sem-compras" *ngIf="compras.length === 0">
-        Nenhuma compra cadastrada
     </div>
   </div>
 
-  <!-- MODAL DE COMPRA -->
-  <app-compra-form 
-    *ngIf="mostrarModal"
-    [compra]="compraEditando"
-    (fecharModal)="fecharModal()"
-    (compraSalva)="onCompraSalva()">
-  </app-compra-form>
+  <div class="paginacao-container" *ngIf="!carregando && totalPaginas > 1">
+    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual - 1)" [disabled]="paginaAtual === 1">
+      &laquo; Anterior
+    </button>
+    
+    <div class="paginas-numeros">
+      <button class="btn-paginacao num" 
+              *ngFor="let pag of paginasArray" 
+              (click)="mudarPagina(pag)" 
+              [class.ativo]="paginaAtual === pag">
+        {{ pag }}
+      </button>
+    </div>
+
+    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual + 1)" [disabled]="paginaAtual === totalPaginas">
+      Próxima &raquo;
+    </button>
+  </div>
+
 </div>
+
+ <app-compra-form 
+   *ngIf="mostrarModal"
+   [compra]="compraEditando"
+   (fecharModal)="fecharModal()"
+   (compraSalva)="onCompraSalva()">
+ </app-compra-form>

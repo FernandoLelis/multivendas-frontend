@@ -1,538 +1,477 @@
-/* IMPORT DA FONTE ROBOTO - PADRÃO DA PLATAFORMA */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 .compra-list {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-}
-
-.header-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.compra-list h2 {
-  color: white;
   font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  margin: 0;
-  font-size: 28px;
 }
 
-.btn-nova-compra {
-  background-color: #7df525; 
-  color: #01182d;
-  border: 2px solid #7df525;
-  border-radius: 6px;
-  padding: 12px 24px;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-nova-compra:hover {
-  background-color: #6cd420; 
-  border-color: #6cd420;
-  transform: translateY(-2px);
-}
-
-/* INDICADOR DE CARREGAMENTO */
-.carregando {
+/* ==============================================================
+   CABEÇALHO DARK COM BUSCA E BOTÃO NOVA COMPRA
+   ============================================================== */
+.header-busca-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  grid-column: 1 / -1;
-}
-
-.carregando .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-top: 4px solid #7df525;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* GRID DE COMPRAS */
-.compras-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* ESTILO IDÊNTICO AO METRIC-CARD */
-.compra-card {
-  background: #01182d;
-  border-radius: 8px;
-  padding: 0;
+  background-color: #01182d;
   border: 3px solid #1a3a5f;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
   color: white;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-  font-family: 'Roboto', sans-serif;
-  overflow: hidden;
 }
 
-/* HEADER SIMPLIFICADO */
-.compra-header {
-  background: #01182d;
-  padding: 20px 20px 15px 20px;
+.busca-input-group {
+  display: flex;
+  align-items: center;
+  flex: 1; 
+  background-color: #0a2540;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: 1px solid #3a5f8f;
 }
 
-.header-info h3 {
+.fa-solid.fa-magnifying-glass {
+  color: #06A8F4; 
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.busca-input-group input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 100%;
   color: white;
-  margin: 0;
-  font-family: 'Roboto', sans-serif;
-  font-size: 18px;
-  font-weight: 500;
+  background: transparent;
 }
 
-.header-subtitle {
+.busca-input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.divisor-vertical {
+  width: 1px;
+  height: 30px;
+  background-color: #1a3a5f;
+  margin: 0 20px;
+}
+
+.filtro-group {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  flex-wrap: wrap;
-}
-
-.header-subtitle .fornecedor {
-  font-weight: 500;
   color: white;
 }
 
-.header-subtitle .separator {
-  color: rgba(255, 255, 255, 0.3);
+.filtro-icon {
+  display: flex;
+  align-items: center;
+  color: #06A8F4;
 }
 
-/* ✅ NOVO: BADGE PARA SISTEMA ANTIGO */
-.badge-sistema-antigo {
-  background-color: #ffc107;
-  color: #000;
-  font-size: 0.75rem;
+.filtro-group select {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.filtro-group select option {
+  background-color: #01182d;
+  color: white;
+}
+
+.espacador {
+  flex-grow: 0.5;
+}
+
+.info-anuncios {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.btn-novo-produto {
+  background-color: #7df525;
+  color: #01182d;
+  border: 1px solid #7df525;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-left: 8px;
-  display: inline-block;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
   white-space: nowrap;
 }
 
-/* CONTEÚDO PRINCIPAL DO CARD */
-.compra-content {
-  padding: 0 20px 15px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.btn-novo-produto:hover {
+  background-color: #6cd420;
+  color: #01182d;
 }
 
-/* INFORMAÇÕES ALINHADAS À ESQUERDA */
-.compra-info {
+/* ==============================================================
+   O CARD COM GRID DE 5 COLUNAS
+   ============================================================== */
+.produto-card {
+  background: #01182d;
+  border-radius: 8px;
+  border: 3px solid #1a3a5f;
+  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.produto-grid-container {
+  display: grid;
+  grid-template-columns: 100px 2.5fr 1fr 1.5fr 120px;
+  gap: 20px;
+  padding: 20px;
+  align-items: center; 
+}
+
+/* 1. COLUNA IMAGEM */
+.col-imagem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.produto-img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #3a5f8f;
+  background-color: white;
+}
+
+.img-placeholder {
+  width: 90px;
+  height: 90px;
+  background-color: #0a2540;
+  border-radius: 8px;
+  border: 1px dashed #3a5f8f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #3a5f8f;
+}
+
+.icon-img { font-size: 24px; }
+
+/* ==============================================================
+   ESTILOS PARA MÚLTIPLOS PRODUTOS (STACK DE IMAGENS)
+   ============================================================== */
+.imagens-stack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.img-redonda-sobreposta {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: white;
+  border: 2px solid #01182d;
+}
+
+.img-redonda-sobreposta:not(:first-child) {
+  margin-left: -50px;
+  z-index: 1;
+}
+
+.img-redonda-sobreposta:nth-child(1) { z-index: 3; }
+.img-redonda-sobreposta:nth-child(2) { z-index: 2; }
+.img-redonda-sobreposta:nth-child(3) { z-index: 1; }
+
+.placeholder-stack {
+  background-color: #0a2540;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 2. COLUNA IDENTIFICAÇÃO */
+.col-identificacao {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+.col-identificacao h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: white;
+}
+
+.tags-identificacao {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 12px;
+  color: #8ab4f8; 
+  background: rgba(138, 180, 248, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.alerta-amarelo {
+  color: #000;
+  background-color: #ffc107;
+  font-weight: 600;
+}
+
+.desc-truncada {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.data-criacao {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
+}
+
+.link-expandir {
+  color: #06A8F4;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+}
+
+.link-expandir:hover {
+  text-decoration: underline;
+  color: #7df525;
+}
+
+.seta { font-size: 10px; }
+
+/* 3. COLUNA ESTOQUE / QUANTIDADES */
+.col-estoque {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 20px;
 }
 
-.info-row {
+.info-bloco {
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.label {
-  color: white;
-  font-weight: 500;
-  font-size: 0.95rem;
-  text-align: left;
-  min-width: 140px;
-}
-
-.value {
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 400;
-  font-size: 0.9rem;
-  text-align: left;
-  flex: 1;
-}
-
-.value.highlight {
-  color: white;
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.observacoes {
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.8);
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 8px 12px;
-  border-radius: 4px;
-  border-left: 3px solid rgba(255, 255, 255, 0.3);
-}
-
-/* ✅ NOVO: AVISO PARA COMPRAS DO SISTEMA ANTIGO */
-.aviso-antigo {
-  background-color: rgba(255, 193, 7, 0.1);
-  border-left: 4px solid #ffc107;
-  padding: 10px 12px;
-  border-radius: 4px;
-  margin-top: 8px;
-  align-items: flex-start;
-}
-
-.aviso-antigo .label {
-  color: #ffc107;
-  font-weight: 600;
-  min-width: 60px;
-}
-
-.aviso-antigo .value {
-  color: #ffecb3;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-/* LISTA DE PRODUTOS EXPANDÍVEL */
-.produtos-resumo {
-  margin: 0 20px;
-  padding-top: 10px;
-}
-
-.produtos-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 10px;
-  border-radius: 6px;
-  background-color: rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.produtos-header:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.toggle-icon {
-  color: rgba(255, 255, 255, 0.8);
+.info-label {
   font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.produtos-label {
+.info-valor {
+  font-size: 18px;
   font-weight: 500;
   color: white;
-  font-size: 0.95rem;
 }
 
-/* ✅ MELHORIA: ANIMAÇÃO PARA EXPANSÃO */
-.produtos-lista {
-  margin-top: 12px;
+.info-valor.secundario {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 4. COLUNA FINANCEIRO */
+.col-financeiro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 20px;
+}
+
+.financeiro-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.fin-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.fin-valor {
+  font-weight: 500;
+  color: white;
+}
+
+/* 5. COLUNA AÇÕES */
+.col-acoes {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.produto-item {
-  padding: 14px;
-  background-color: rgba(255, 255, 255, 0.05);
+.btn-editar, .btn-excluir {
+  width: 100%;
+  padding: 8px 12px;
   border-radius: 6px;
-  border-left: 3px solid rgba(255, 255, 255, 0.2);
-}
-
-.produto-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.produto-nome {
+  font-size: 13px;
   font-weight: 500;
-  color: white;
-  font-size: 0.95rem;
-}
-
-.produto-sku {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 3px 8px;
-  border-radius: 3px;
-}
-
-.produto-detalhes {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-  flex-wrap: wrap;
-}
-
-.produto-quantidade,
-.produto-custo,
-.produto-subtotal {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.produto-subtotal {
-  font-weight: 500;
-  margin-left: auto;
-}
-
-/* BOTÕES DE AÇÃO */
-.compra-actions {
-  background: #01182d;
-  padding: 15px 20px;
-  display: flex;
-  gap: 10px;
-  justify-content: flex-start;
-}
-
-/* BOTÃO EDITAR COM FUNDO AZUL */
-.btn-editar {
-  background-color: #06A8F4;
-  color: white;
-  border: 2px solid #06A8F4;
-  padding: 10px 20px;
-  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-/* BOTÃO EXCLUIR COM FUNDO VERMELHO */
-.btn-excluir {
-  background-color: #E53935;
-  color: white;
-  border: 2px solid #E53935;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-/* ✅ NOVO: BOTÕES DESABILITADOS */
-.btn-desabilitado {
-  opacity: 0.6;
-  cursor: not-allowed !important;
-  background-color: #5a6268 !important;
-  color: #a0a0a0 !important;
-  border-color: #5a6268 !important;
-}
-
-.btn-desabilitado:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  background-color: #5a6268 !important;
-  border-color: #5a6268 !important;
-}
-
-/* HOVER DOS BOTÕES */
-.btn-editar:hover:not(.btn-desabilitado) {
-  background-color: #0590d6;
-  border-color: #0590d6;
-  transform: translateY(-2px);
-}
-
-.btn-excluir:hover:not(.btn-desabilitado) {
-  background-color: #c62828;
-  border-color: #c62828;
-  transform: translateY(-2px);
-}
-
-/* MENSAGEM SEM COMPRAS */
-.sem-compras {
+  transition: all 0.2s;
   text-align: center;
-  padding: 60px 20px;
-  grid-column: 1 / -1;
 }
 
-.sem-compras-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+.btn-editar {
+  background-color: transparent;
+  color: #06A8F4;
+  border: 1px solid #06A8F4;
+}
+
+.btn-editar:hover {
+  background-color: #06A8F4;
+  color: #01182d;
+}
+
+.btn-excluir {
+  background-color: transparent;
+  color: #E53935;
+  border: 1px solid #E53935;
+}
+
+.btn-excluir:hover {
+  background-color: #E53935;
+  color: #01182d;
+}
+
+/* ================== LISTA EXPANDIDA DE PACOTE ================== */
+.lista-expandida { border-top: 1px solid #1a3a5f; background-color: #0a2540; animation: slideDown 0.3s ease-out; padding: 10px 0; }
+.linha-item-expandido { display: flex; align-items: center; padding: 10px 20px; gap: 20px; }
+.espaco-seta { width: 20px; flex-shrink: 0; }
+.col-imagem-min { width: 40px; flex-shrink: 0; }
+.img-quadrada-min { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: white; border: 1px solid #1a3a5f; }
+.img-placeholder-min { width: 40px; height: 40px; border-radius: 4px; background: #01182d; border: 1px dashed #3a5f8f; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #3a5f8f; }
+
+.col-info-min { flex: 1; display: flex; flex-direction: column; min-width: 150px; }
+.produto-titulo-min { font-size: 13px; color: white; font-weight: 500; margin-bottom: 3px;}
+.sku-tag-min { font-size: 11px; color: rgba(255,255,255,0.5); }
+.col-qtd-custo-min { display: flex; flex-direction: column; gap: 4px; min-width: 140px; text-align: right; }
+.metrica-linha-min { font-size: 12px; color: rgba(255,255,255,0.6); display: flex; justify-content: space-between; gap: 10px; }
+.espaco-botoes { width: 100px; flex-shrink: 0; }
+
+/* ================== UTILITÁRIOS & ANIMAÇÕES ================== */
+.carregando { display: flex; justify-content: center; padding: 50px; }
+.spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #7df525; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.sem-resultados { text-align: center; padding: 40px; color: rgba(255,255,255,0.6); background-color: #01182d; border-radius: 8px; border: 1px dashed #1a3a5f; }
+
+/* ==============================================================
+   PAGINAÇÃO NO RODAPÉ
+   ============================================================== */
+.paginacao-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.paginas-numeros {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-paginacao {
+  background-color: #01182d;
+  color: white;
+  border: 1px solid #1a3a5f;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-paginacao:hover:not([disabled]) {
+  background-color: #1a3a5f;
+  border-color: #06A8F4;
+}
+
+.btn-paginacao:disabled {
   opacity: 0.5;
-  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
 }
 
-.sem-compras-texto {
-  font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 8px;
-  font-family: 'Roboto', sans-serif;
+.btn-paginacao.num {
+  padding: 8px 12px;
 }
 
-.sem-compras-dica {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-family: 'Roboto', sans-serif;
+.btn-paginacao.ativo {
+  background-color: #06A8F4;
+  border-color: #06A8F4;
+  color: white;
+  font-weight: bold;
 }
 
-/* RESPONSIVIDADE */
+/* ==============================================================
+   RESPONSIVIDADE
+   ============================================================== */
+@media (max-width: 1024px) {
+  .produto-grid-container {
+    grid-template-columns: 80px 1.5fr 1fr 1fr;
+  }
+  .col-acoes {
+    grid-column: 1 / -1;
+    flex-direction: row;
+  }
+}
+
 @media (max-width: 768px) {
-  .compra-list {
-    padding: 15px;
-  }
-
-  .compra-card {
-    border: 2px solid #1a3a5f;
-  }
-
-  .compra-header {
-    padding: 15px;
-  }
-  
-  .header-actions {
+  .header-busca-container {
     flex-direction: column;
+    align-items: stretch;
     gap: 15px;
-    align-items: flex-start;
-  }
-  
-  .compra-list h2 {
-    font-size: 24px;
-  }
-  
-  .compra-content {
-    padding: 0 15px 15px 15px;
-  }
-  
-  .compra-actions {
-    flex-direction: column;
     padding: 15px;
   }
+  .busca-input-group { width: auto; }
+  .divisor-vertical, .espacador { display: none; }
+  .filtro-group { justify-content: space-between; width: 100%; }
+  .info-anuncios { text-align: center; width: 100%; }
+  .btn-novo-produto { width: 100%; margin-top: 5px; }
   
-  .btn-editar, .btn-excluir {
-    width: 100%;
-  }
-  
-  .btn-nova-compra {
-    width: 100%;
-  }
-  
-  .info-row {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
+  .produto-grid-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
   
-  .label {
-    min-width: 120px;
-    font-size: 0.9rem;
-  }
-  
-  .value {
-    font-size: 0.85rem;
-    text-align: left;
-  }
-  
-  .header-subtitle {
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-  
-  .header-subtitle .separator {
-    display: inline;
-  }
-  
-  .badge-sistema-antigo {
-    margin-left: 0;
-    margin-top: 4px;
-  }
-  
-  .produto-detalhes {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-  
-  .produto-detalhes .separator {
-    display: none;
-  }
-  
-  .produto-subtotal {
-    margin-left: 0;
-  }
-  
-  .aviso-antigo {
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .aviso-antigo .label {
-    min-width: auto;
-  }
-}
-
-@media (max-width: 480px) {
-  .info-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .label {
-    min-width: auto;
-    font-size: 0.85rem;
-  }
-  
-  .value {
-    font-size: 0.8rem;
-  }
-  
-  .produto-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .produto-detalhes {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .header-subtitle {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
-  
-  .header-subtitle .separator {
-    display: none;
-  }
+  .col-imagem { align-items: flex-start; }
+  .col-estoque, .col-financeiro { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-left: 0; padding-top: 15px; }
+  .item-lote-linha { flex-direction: column; gap: 5px; }
 }
