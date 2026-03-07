@@ -19,7 +19,7 @@ import { ModalService } from '../../services/modal.service';
     CommonModule, 
     FormsModule,
     ProdutoFormComponent, 
-    BrazilianCurrencyPipe 
+    BrazilianCurrencyPipe,
   ],
   templateUrl: './venda-form.html',
   styleUrls: ['./venda-form.css']
@@ -59,6 +59,7 @@ export class VendaFormComponent implements OnInit {
   vendaOriginal: Venda | null = null;
   itensOriginais: ItemVenda[] = [];
   quantidadesEditadas: Map<number, number> = new Map();
+mostrarModalCompra: any;
 
   constructor(
     private vendaService: VendaService,

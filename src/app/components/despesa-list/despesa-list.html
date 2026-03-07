@@ -1,57 +1,134 @@
-<div class="despesa-list">
-  <!-- Cabeçalho com ações -->
-  <div class="header-actions">
-    <h2>Despesas</h2>
-    <button class="btn-nova-despesa" (click)="novaDespesa()">Nova Despesa</button>
-  </div>
-
-    <!-- INDICADOR DE CARREGAMENTO -->
-  <div class="carregando" *ngIf="despesas.length === 0">
-      <div class="spinner"></div>
-  </div>
-
-  <!-- Lista de Despesas -->
-  <div class="despesas-grid">
-    <div *ngFor="let despesa of despesas" class="despesa-card">
-      <!-- Header -->
-      <div class="despesa-header">
-        <h3>{{ despesa.descricao }}</h3>
-        <!-- <span class="categoria-tag {{ getClasseCategoria(despesa.categoria) }}">
-          {{ despesa.categoria }}
-        </span> -->
-      </div>
+<div class="list-container despesa-list">
+  
+  <header class="header-busca-container">
+    <div class="busca-input-group">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="termoBusca" 
+        placeholder="Descrição, Observação..."
+        (input)="aplicarFiltrosEOrdenacao()"
+      >
+    </div>
+    
+    <div class="divisor-vertical"></div>
+    
+    <div class="filters-group">
       
-      <!-- Conteúdo -->
-      <div class="despesa-content">
-        <div class="despesa-info">
-          <div class="info-row">
-            <span class="label">Categoria:</span>
-            <span class="value">{{ despesa.categoria }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Data:</span>
-            <span class="value">{{ despesa.data | date:'dd/MM/yyyy' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Valor:</span>
-            <span class="value destaque">{{ despesa.valor | currency:'BRL' }}</span>
-          </div>
-          <div class="info-row" *ngIf="despesa.observacoes">
-            <span class="label">Observações:</span>
-            <span class="value">{{ despesa.observacoes }}</span>
-          </div>
+      <div class="divisor-vertical-mini"></div>
+
+      <div class="filtro-group">
+        <span class="filtro-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </span>
+        <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()" class="filtro-select ordem-select">
+          <option value="mais_recentes">Mais recentes</option>
+          <option value="mais_antigas">Mais antigas</option>
+          <option value="maior_valor">Maior valor</option>
+          <option value="menor_valor">Menor valor</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="espacador"></div>
+
+    <div class="header-resumo">
+      <span class="count-text">{{ resumoDespesas.quantidade }} despesas</span>
+    </div>
+
+    <div class="divisor-vertical"></div>
+
+    <button class="btn-nova btn-novo-produto" (click)="novaDespesa()">
+      Nova Despesa
+    </button>
+  </header>
+
+  <div class="carregando" *ngIf="carregando">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="sem-resultados sem-dados" *ngIf="!carregando && despesasOriginais.length > 0 && despesasFiltradas.length === 0">
+    <p>Nenhuma despesa encontrada para os filtros aplicados.</p>
+    <button class="btn-limpar btn-paginacao" (click)="limparFiltros()">Limpar Filtros</button>
+  </div>
+
+  <div class="sem-resultados sem-dados" *ngIf="!carregando && despesasOriginais.length === 0">
+    <p>Nenhuma despesa cadastrada no sistema.</p>
+  </div>
+
+  <div class="despesa-card" *ngFor="let despesa of despesasPaginadas">
+    <div class="despesa-grid-container">
+      
+      <div class="col-icone">
+        <div class="icone-box" [ngClass]="getClasseCategoria(despesa.categoria)">
+          {{ getIconeCategoria(despesa.categoria) }}
         </div>
       </div>
 
-      <!-- Ações -->
-      <div class="despesa-actions">
-        <button class="btn-editar" (click)="editarDespesa(despesa)">Editar</button>
-        <button class="btn-excluir" (click)="excluirDespesa(despesa)">Excluir</button>
+      <div class="col-identificacao">
+        <h3>{{ despesa.descricao }}</h3>
+        
+        <div class="tags-identificacao">
+          <span class="tag">{{ despesa.categoria }}</span>
+          <span class="data-criacao">📅 {{ despesa.data | date:'dd/MM/yyyy' }}</span>
+        </div>
+        
+        <div *ngIf="despesa.observacoes">
+          <p class="desc-truncada" [class.expandida]="despesa.mostrarObservacoes">
+            <strong>Obs:</strong> {{ despesa.observacoes }}
+          </p>
+          <a class="link-expandir" *ngIf="despesa.observacoes.length > 80" (click)="toggleObservacoes(despesa)">
+            {{ despesa.mostrarObservacoes ? 'Ocultar' : 'Ver' }} Obs.
+            <span class="seta">{{ despesa.mostrarObservacoes ? '▲' : '▼' }}</span>
+          </a>
+        </div>
       </div>
+
+      <div class="col-financeiro">
+        <div class="financeiro-linha">
+          <span class="fin-label">Valor:</span>
+          <span class="fin-valor">{{ despesa.valor | currency:'BRL' }}</span>
+        </div>
+      </div>
+
+      <div class="col-acoes">
+        <button class="btn-editar" (click)="editarDespesa(despesa)">
+          Editar
+        </button>
+        <button class="btn-excluir" (click)="excluirDespesa(despesa)">
+          Excluir
+        </button>
+      </div>
+
     </div>
+  </div>
+
+  <footer class="paginacao-container" *ngIf="!carregando && totalPaginas > 1">
+    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual - 1)" [disabled]="paginaAtual === 1">
+      &laquo; Anterior
+    </button>
+    
+    <div class="paginas-numeros">
+      <button class="btn-paginacao num" 
+              *ngFor="let pag of paginasArray" 
+              (click)="mudarPagina(pag)" 
+              [class.ativo]="paginaAtual === pag">
+        {{ pag }}
+      </button>
+    </div>
+
+    <button class="btn-paginacao" (click)="mudarPagina(paginaAtual + 1)" [disabled]="paginaAtual === totalPaginas">
+      Próxima &raquo;
+    </button>
+  </footer>
 </div>
 
-<!-- Modal de Formulário de Despesa -->
 <app-despesa-form 
   *ngIf="mostrarFormDespesa"
   [despesa]="despesaSelecionada"

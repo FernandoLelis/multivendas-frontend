@@ -15,8 +15,8 @@
   align-items: center;
   background-color: #01182d; /* Cor original de fundo do card */
   border: 3px solid #1a3a5f;
-  border-radius: 12px;
-  padding: 12px 20px;
+  border-radius: 8px;
+  padding: 10px 20px;
   margin-bottom: 24px;
   color: white;
 }

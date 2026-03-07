@@ -6,6 +6,11 @@ import { DespesaService } from '../../services/despesa.service';
 import { ModalService } from '../../services/modal.service';
 import { DespesaFormComponent } from '../despesa-form/despesa-form';
 
+// Interface unificada com flag de UI
+interface DespesaComUI extends Despesa {
+  mostrarObservacoes: boolean;
+}
+
 @Component({
   selector: 'app-despesa-list',
   standalone: true,
@@ -14,11 +19,32 @@ import { DespesaFormComponent } from '../despesa-form/despesa-form';
   styleUrls: ['./despesa-list.css']
 })
 export class DespesaListComponent implements OnInit {
-  despesas: Despesa[] = [];
-  despesaSelecionada: Despesa | null = null;
-  mostrarFormDespesa: boolean = false;
-  categorias: string[] = [];
+  despesasOriginais: DespesaComUI[] = [];
+  despesasFiltradas: DespesaComUI[] = [];
+  despesasPaginadas: DespesaComUI[] = [];
+
+  // Paginação - Espelhado de compra-list
+  paginaAtual: number = 1;
+  itensPorPagina: number = 10;
+  totalPaginas: number = 1;
+  paginasArray: number[] = [];
+
+  // Filtros Padrões - Unificados
+  termoBusca: string = '';
   filtroCategoria: string = '';
+  ordenacao: string = 'mais_recentes';
+
+  // Modais e Estados
+  carregando: boolean = true;
+  mostrarFormDespesa: boolean = false;
+  despesaSelecionada: Despesa | null = null;
+  categorias: string[] = [];
+
+  // Resumo Dinâmico
+  resumoDespesas = {
+    quantidade: 0,
+    custoTotal: 0
+  };
 
   constructor(
     private despesaService: DespesaService,
@@ -31,16 +57,29 @@ export class DespesaListComponent implements OnInit {
   }
 
   carregarDespesas(): void {
+    console.log('🚀 [DESPESA-LIST] Carregando despesas...');
+    this.carregando = true;
+    
     this.despesaService.getDespesas().subscribe({
-      next: (despesas) => {
-        this.despesas = despesas;
+      next: (despesasBackend: Despesa[]) => {
+        this.processarDespesas(despesasBackend);
       },
-      error: (error) => {
-        console.error('Erro ao carregar despesas:', error);
-        // ✅ REMOVIDO: Modal de erro desnecessário - mantém apenas o log
-        // As outras páginas não mostram modal quando não há dados
+      error: (error: any) => {
+        console.error('❌ [DESPESA-LIST] Erro ao carregar despesas:', error);
+        this.carregando = false;
+        this.modalService.mostrarErro('Erro ao carregar despesas. Verifique sua conexão.');
       }
     });
+  }
+
+  private processarDespesas(despesasBackend: Despesa[]): void {
+    this.despesasOriginais = despesasBackend.map((despesa: Despesa) => ({
+      ...despesa,
+      mostrarObservacoes: false
+    }));
+    
+    this.aplicarFiltrosEOrdenacao();
+    this.carregando = false;
   }
 
   carregarCategorias(): void {
@@ -48,11 +87,126 @@ export class DespesaListComponent implements OnInit {
       next: (categorias) => {
         this.categorias = categorias;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Erro ao carregar categorias:', error);
       }
     });
   }
+
+  // ==================== FILTROS E PAGINAÇÃO ====================
+
+  aplicarFiltrosEOrdenacao(): void {
+    let filtradas = [...this.despesasOriginais];
+
+    // Filtro por texto (Busca)
+    if (this.termoBusca.trim() !== '') {
+      const termo = this.termoBusca.toLowerCase().trim();
+      filtradas = filtradas.filter((d: DespesaComUI) => 
+        d.descricao.toLowerCase().includes(termo) ||
+        (d.observacoes && d.observacoes.toLowerCase().includes(termo))
+      );
+    }
+
+    // Filtro por Categoria
+    if (this.filtroCategoria !== '') {
+      filtradas = filtradas.filter((d: DespesaComUI) => d.categoria === this.filtroCategoria);
+    }
+
+    // Ordenação - Mesma lógica de compras
+    filtradas.sort((a: DespesaComUI, b: DespesaComUI) => {
+      const dataA = a.data ? new Date(a.data).getTime() : 0;
+      const dataB = b.data ? new Date(b.data).getTime() : 0;
+
+      switch (this.ordenacao) {
+        case 'mais_recentes': return dataB - dataA;
+        case 'mais_antigas': return dataA - dataB;
+        case 'maior_valor': return (b.valor || 0) - (a.valor || 0);
+        case 'menor_valor': return (a.valor || 0) - (b.valor || 0);
+        default: return 0;
+      }
+    });
+
+    this.despesasFiltradas = filtradas;
+    this.paginaAtual = 1; 
+    
+    this.calcularResumoDespesas();
+    this.atualizarPaginacao();
+  }
+
+  calcularResumoDespesas(): void {
+    const custoTotal = this.despesasFiltradas.reduce((total, despesa) => total + Number(despesa.valor || 0), 0);
+
+    this.resumoDespesas = {
+      quantidade: this.despesasFiltradas.length,
+      custoTotal
+    };
+  }
+
+  atualizarPaginacao(): void {
+    this.totalPaginas = Math.ceil(this.despesasFiltradas.length / this.itensPorPagina);
+    if (this.totalPaginas === 0) this.totalPaginas = 1;
+    
+    const blocoAtual = Math.floor((this.paginaAtual - 1) / 10);
+    const startPage = blocoAtual * 10 + 1;
+    const endPage = Math.min(startPage + 9, this.totalPaginas);
+
+    this.paginasArray = [];
+    for (let i = startPage; i <= endPage; i++) {
+      this.paginasArray.push(i);
+    }
+
+    const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
+    const fim = inicio + this.itensPorPagina;
+    this.despesasPaginadas = this.despesasFiltradas.slice(inicio, fim);
+  }
+
+  mudarPagina(novaPagina: number): void {
+    if (novaPagina >= 1 && novaPagina <= this.totalPaginas) {
+      this.paginaAtual = novaPagina;
+      this.atualizarPaginacao();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  limparFiltros(): void {
+    this.filtroCategoria = '';
+    this.termoBusca = '';
+    this.ordenacao = 'mais_recentes';
+    this.carregarDespesas();
+  }
+
+  // ==================== HELPERS DE UI E DADOS ====================
+
+  getClasseCategoria(categoria: string): string {
+    const classes: { [key: string]: string } = {
+      'Material de Escritório': 'badge-material',
+      'Embalagem': 'badge-embalagem',
+      'Manutenção': 'badge-manutencao',
+      'Marketing': 'badge-marketing',
+      'Transporte': 'badge-transporte',
+      'Outros': 'badge-outros'
+    };
+    return classes[categoria] || 'badge-default';
+  }
+
+  // Novo método para gerar o ícone/emoji correspondente (substituto da imagem)
+  getIconeCategoria(categoria: string): string {
+    const icones: { [key: string]: string } = {
+      'Material de Escritório': '📎',
+      'Embalagem': '📦',
+      'Manutenção': '🔧',
+      'Marketing': '📢',
+      'Transporte': '🚚',
+      'Outros': '🏷️'
+    };
+    return icones[categoria] || '🏷️';
+  }
+
+  toggleObservacoes(despesa: DespesaComUI): void {
+    despesa.mostrarObservacoes = !despesa.mostrarObservacoes;
+  }
+
+  // ==================== AÇÕES ====================
 
   novaDespesa(): void {
     this.despesaSelecionada = null;
@@ -74,7 +228,7 @@ export class DespesaListComponent implements OnInit {
               this.carregarDespesas();
               this.modalService.mostrarSucesso('Despesa excluída com sucesso!');
             },
-            error: (error) => {
+            error: (error: any) => {
               console.error('Erro ao excluir despesa:', error);
               this.modalService.mostrarErro('Erro ao excluir despesa');
             }
@@ -92,50 +246,5 @@ export class DespesaListComponent implements OnInit {
   onDespesaSalva(): void {
     this.carregarDespesas();
     this.fecharFormDespesa();
-  }
-
-  aplicarFiltro(): void {
-    if (this.filtroCategoria) {
-      this.despesaService.getDespesasPorCategoria(this.filtroCategoria).subscribe({
-        next: (despesas) => {
-          this.despesas = despesas;
-        },
-        error: (error) => {
-          console.error('Erro ao filtrar despesas:', error);
-        }
-      });
-    } else {
-      this.carregarDespesas();
-    }
-  }
-
-  limparFiltro(): void {
-    this.filtroCategoria = '';
-    this.carregarDespesas();
-  }
-
-  get despesasFiltradas(): Despesa[] {
-    if (!this.filtroCategoria) {
-      return this.despesas;
-    }
-    return this.despesas.filter(despesa => 
-      despesa.categoria === this.filtroCategoria
-    );
-  }
-
-  get totalDespesas(): number {
-    return this.despesas.reduce((total, despesa) => total + despesa.valor, 0);
-  }
-
-  getClasseCategoria(categoria: string): string {
-    const classes: { [key: string]: string } = {
-      'Material de Escritório': 'categoria-material',
-      'Embalagem': 'categoria-embalagem',
-      'Manutenção': 'categoria-manutencao',
-      'Marketing': 'categoria-marketing',
-      'Transporte': 'categoria-transporte',
-      'Outros': 'categoria-outros'
-    };
-    return classes[categoria] || 'categoria-default';
   }
 }
