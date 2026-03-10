@@ -5,42 +5,37 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <input 
         type="text" 
-        placeholder="ID, Fornecedor, Pedido ou Produto..."
+        placeholder="ID, Fornecedor, Pedido ou..."
         [(ngModel)]="termoBusca"
         (input)="aplicarFiltrosEOrdenacao()">
     </div>
     
-    <div class="divisor-vertical"></div>
+    <div class="divisor-vertical-header"></div>
     
-    <div class="filtro-group">
-      <span class="filtro-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-          <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-          <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
-          <line x1="17" y1="16" x2="23" y2="16"></line>
-        </svg>
-      </span>
-      <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
-        <option value="mais_recentes">Mais recentes</option>
-        <option value="mais_antigas">Mais antigas</option>
-        <option value="maior_valor">Maior valor total</option>
-        <option value="menor_valor">Menor valor total</option>
-      </select>
-    </div>
+    <button class="btn-filtrar-ordenar" (click)="mostrarModalFiltros = true">
+      <i class="fa-solid fa-sliders"></i> Filtrar e ordenar
+    </button>
 
     <div class="espacador"></div>
 
-    <div class="info-anuncios">
-      {{ comprasFiltradas.length }} compras
+    <div class="resumo-mini-container" *ngIf="!carregando">
+      <div class="resumo-mini-item" title="Quantidade de Compras">
+        <span class="lbl">Qtd:</span>
+        <span class="val">{{ resumoCompras.quantidade }}</span>
+      </div>
+      <div class="divisor-mini"></div>
+      <div class="resumo-mini-item" title="Total de Peças">
+        <span class="lbl">Peças:</span>
+        <span class="val">{{ resumoCompras.totalPecas }}</span>
+      </div>
+      <div class="divisor-mini"></div>
+      <div class="resumo-mini-item" title="Custo Total">
+        <span class="lbl">Custo:</span>
+        <span class="val">{{ resumoCompras.custoTotal | brlCurrency }}</span>
+      </div>
     </div>
 
-    <div class="divisor-vertical"></div>
-
-    <button class="btn-novo-produto" (click)="novaCompra()">
-      Nova Compra
-    </button>
+    <button class="btn-novo-produto" (click)="novaCompra()">Nova Compra</button>
   </div>
 
   <div class="carregando" *ngIf="carregando">
@@ -48,7 +43,7 @@
   </div>
 
   <div class="sem-resultados" *ngIf="!carregando && comprasOriginais.length > 0 && comprasFiltradas.length === 0">
-    <p>Nenhuma compra encontrada para a sua busca.</p>
+    <p>Nenhuma compra encontrada para a sua busca ou filtros.</p>
   </div>
 
   <div class="sem-resultados" *ngIf="!carregando && comprasOriginais.length === 0">
@@ -109,7 +104,7 @@
         <div class="col-estoque">
           <div class="info-bloco destaque">
             <span class="info-label">Qtd. de Itens</span>
-            <span class="info-valor">{{ getNumeroProdutos(compra) }}</span>
+            <span class="info-valor">{{ getNumeroProdutos(compra) }} un.</span>
           </div>
           <div class="info-bloco">
             <span class="info-label">Unidades Totais</span>
@@ -120,7 +115,7 @@
         <div class="col-financeiro">
           <div class="financeiro-linha" style="margin-bottom: 8px;">
             <span class="fin-label">Valor Total:</span>
-            <span class="fin-valor" style="font-size: 16px; font-weight: bold; color: #7df525;">{{ (compra.custoTotal || compra.totalCompra || 0) | brlCurrency }}</span>
+            <span class="fin-valor">{{ (compra.custoTotal || compra.totalCompra || 0) | brlCurrency }}</span>
           </div>
           <div class="financeiro-linha" *ngIf="getNumeroProdutos(compra) === 1 && compra.itens && compra.itens[0]">
             <span class="fin-label">Custo Unit.:</span>
@@ -189,9 +184,58 @@
 
 </div>
 
- <app-compra-form 
+<div class="modal-overlay" *ngIf="mostrarModalFiltros" (click)="mostrarModalFiltros = false">
+  <div class="modal-filtros-content" (click)="$event.stopPropagation()">
+    <div class="modal-filtros-header">
+      <h3><i class="fa-solid fa-filter"></i> Filtrar e ordenar</h3>
+      <button class="btn-fechar-modal" (click)="mostrarModalFiltros = false">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="modal-filtros-body">
+      
+      <div class="filtro-bloco">
+        <label>Período</label>
+        <select [(ngModel)]="periodo" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="todos">Todo o período</option>
+          <option value="hoje">Hoje</option>
+          <option value="7_dias">Últimos 7 dias</option>
+          <option value="30_dias">Últimos 30 dias</option>
+          <option value="este_mes">Este Mês</option>
+          <option value="este_ano">Este Ano</option>
+        </select>
+      </div>
+
+      <div class="filtro-bloco">
+        <label>Fornecedor</label>
+        <select [(ngModel)]="filtroFornecedor" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="todos">Todos os Fornecedores</option>
+          <option *ngFor="let forn of fornecedoresUnicos" [value]="forn">{{ forn }}</option>
+        </select>
+      </div>
+
+      <div class="filtro-bloco">
+        <label>Ordenar por</label>
+        <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="mais_recentes">Mais recentes</option>
+          <option value="mais_antigas">Mais antigas</option>
+          <option value="maior_valor">Maior valor total</option>
+          <option value="menor_valor">Menor valor total</option>
+        </select>
+      </div>
+
+    </div>
+    
+    <div class="modal-filtros-footer">
+      <button class="btn-aplicar-filtros" (click)="mostrarModalFiltros = false">Aplicar Filtros</button>
+    </div>
+  </div>
+</div>
+
+<app-compra-form 
    *ngIf="mostrarModal"
    [compra]="compraEditando"
    (fecharModal)="fecharModal()"
    (compraSalva)="onCompraSalva()">
- </app-compra-form>
+</app-compra-form>

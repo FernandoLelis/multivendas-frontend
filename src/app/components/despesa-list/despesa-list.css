@@ -8,129 +8,137 @@
 }
 
 /* ==============================================================
-   CABEÇALHO DARK COM BUSCA E BOTÕES (Espelhado de Compras)
+   BARRA SUPERIOR E BUSCA (Ref. Vendas)
    ============================================================== */
 .header-busca-container {
-  display: flex;
-  align-items: center;
-  background-color: #01182d;
-  border: 3px solid #1a3a5f;
+  display: flex; 
+  align-items: center; 
+  background-color: #01182d; 
   border-radius: 8px;
-  padding: 10px 20px;
-  margin-bottom: 24px;
-  color: white;
+  padding: 10px 20px; 
+  margin-bottom: 24px; 
+  border: 3px solid #1a3a5f; 
+  flex-wrap: wrap; 
   gap: 15px;
 }
 
-.busca-input-group {
-  display: flex;
-  align-items: center;
+.busca-input-group { 
+  display: flex; 
+  align-items: center; 
   flex: 1; 
-  background-color: #0a2540;
-  padding: 8px 15px;
-  border-radius: 8px;
+  min-width: 250px; 
+  max-width: 250px;
+  background-color: #0a2540; 
+  padding: 8px 15px; 
+  border-radius: 8px; 
   border: 1px solid #3a5f8f;
 }
 
-.fa-solid.fa-magnifying-glass {
+.fa-solid.fa-magnifying-glass { 
+  margin-right: 10px; 
   color: #06A8F4; 
-  margin-right: 10px;
-  font-size: 16px;
 }
 
-.busca-input-group input {
-  border: none;
-  outline: none;
+.busca-input-group input { 
+  background: transparent; 
+  border: none; 
+  color: white; 
+  width: 100%; 
+  outline: none; 
+  font-size: 14px; 
+}
+.busca-input-group input::placeholder { 
+  color: rgba(255, 255, 255, 0.4); 
+}
+
+.divisor-vertical-header { 
+  width: 1px; 
+  height: 24px; 
+  background-color: #1a3a5f; 
+}
+
+.espacador { 
+  flex-grow: 1; 
+}
+
+.btn-filtrar-ordenar {
+  background-color: transparent;
+  color: #fff;
+  border: 0px;
+  border-radius: 6px;
   font-size: 14px;
-  width: 100%;
-  color: white;
-  background: transparent;
-}
-
-.busca-input-group input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.divisor-vertical {
-  width: 1px;
-  height: 30px;
-  background-color: #1a3a5f;
-  margin: 0 10px;
-}
-
-.filtro-group {
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: white;
-}
-
-.filtro-icon {
-  display: flex;
-  align-items: center;
-  color: #06A8F4;
-}
-
-.filtro-group select {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 14px;
-  color: white;
-  cursor: pointer;
-  padding: 5px;
-}
-
-.filtro-group select option {
-  background-color: #01182d;
-  color: white;
-}
-
-.espacador {
-  flex-grow: 0.5;
-}
-
-.header-resumo {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.info-resumo strong {
-  color: white;
-  font-weight: 500;
-}
-
-.btn-novo-produto {
-  background-color: #7df525;
-  color: #01182d;
-  border: 1px solid #7df525;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
   transition: all 0.2s;
-  text-align: center;
+}
+.btn-filtrar-ordenar:hover { 
+  color: #06A8F4; 
+}
+
+.btn-nova-venda {
+  background-color: #7df525; 
+  color: #01182d; 
+  border: 1px solid #7df525; 
+  padding: 8px 16px; 
+  border-radius: 6px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.2s; 
   white-space: nowrap;
 }
+.btn-nova-venda:hover { 
+  background-color: #6cd420; 
+  color: #01182d; }
 
-.btn-novo-produto:hover {
-  background-color: #6cd420;
-  color: #01182d;
+/* ==============================================================
+   MINI RESUMO NA BARRA
+   ============================================================== */
+.resumo-mini-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: transparent;
+  padding: 6px 15px;
+  border-radius: 6px;
+  border: 0px;
+  font-size: 13px;
+}
+
+.resumo-mini-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.resumo-mini-item .lbl { 
+  color: rgba(255,255,255,0.6); 
+  font-size: 11px; 
+  text-transform: uppercase; 
+  font-weight: 600;
+}
+
+.resumo-mini-item .val { 
+  font-weight: 700; 
+  color: white; 
+}
+
+.divisor-mini { 
+  width: 1px; 
+  height: 14px; 
+  background-color: #1a3a5f; 
 }
 
 /* ==============================================================
-   O CARD COM GRID (Ajustado para 4 colunas em Despesas)
+   O CARD COM GRID DE DESPESA
    ============================================================== */
 .despesa-card {
   background: #01182d;
   border-radius: 8px;
   border: 3px solid #1a3a5f;
   color: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition: border-color 0.3s ease;
   margin-bottom: 15px;
@@ -138,31 +146,29 @@
 
 .despesa-grid-container {
   display: grid;
-  /* Proporção mantida: Ícone(100px) | Info(3fr) | Valor(1.5fr) | Ações(120px) */
-  grid-template-columns: 100px 3fr 1.5fr 120px;
+  grid-template-columns: 100px 2.5fr 1.5fr 120px;
   gap: 20px;
   padding: 20px;
   align-items: center; 
 }
 
-/* 1. COLUNA ÍCONE (Substitui a Imagem) */
-.col-icone {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* COLUNA ÍCONE */
+.col-icone { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
 }
 
-.icone-box {
-  width: 90px;
-  height: 90px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 32px;
+.icone-box { 
+  width: 90px; 
+  height: 90px; 
+  border-radius: 6px; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  font-size: 32px; 
 }
 
-/* Cores translúcidas para as categorias */
 .badge-material { background: rgba(125, 245, 37, 0.15); border: 1px solid #7df525; color: #7df525; }
 .badge-embalagem { background: rgba(6, 168, 244, 0.15); border: 1px solid #06A8F4; color: #06A8F4; }
 .badge-manutencao { background: rgba(255, 152, 0, 0.15); border: 1px solid #FF9800; color: #FF9800; }
@@ -171,170 +177,180 @@
 .badge-outros { background: rgba(117, 117, 117, 0.15); border: 1px solid #757575; color: #757575; }
 .badge-default { background: rgba(6, 168, 244, 0.15); border: 1px solid #06A8F4; color: #06A8F4; }
 
-/* 2. COLUNA IDENTIFICAÇÃO (Título, Tags e Observações) */
-.col-identificacao {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  justify-content: center;
-  min-width: 0; /* Previne estouro do flexbox */
+/* COLUNA IDENTIFICAÇÃO */
+.col-identificacao { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px; 
+  justify-content: center; 
+  min-width: 0; 
 }
 
-.col-identificacao h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 500;
-  color: white;
+.col-identificacao h3 { 
+  margin: 0 0 6px 0; 
+  font-size: 18px; 
+  font-weight: 500; 
+  color: white; 
 }
 
-.tags-identificacao {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
+.tags-identificacao { 
+  display: flex; 
+  gap: 10px; 
+  flex-wrap: wrap; 
+  align-items: center; 
 }
 
-.tag {
-  font-size: 12px;
+.tag { 
+  font-size: 12px; 
   color: #8ab4f8; 
-  background: rgba(138, 180, 248, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
+  background: rgba(138, 180, 248, 0.1); 
+  padding: 2px 6px; 
+  border-radius: 4px; 
 }
 
-.data-criacao {
+.desc-truncada { 
+  margin: 4px 0 0 0; 
+  font-size: 13px; 
+  color: rgba(255, 255, 255, 0.7); 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2; 
+  line-clamp: 2; 
+  -webkit-box-orient: vertical; 
+  overflow: hidden;  
+}
+
+.data-criacao { 
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
-}
-
-/* Tratamento Exato das Observações Grandes */
-.desc-truncada {
-  margin: 4px 0 0 0;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* Mesma quantidade de linhas do seu css base */
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  word-wrap: break-word; /* Força quebra de linha se a palavra for gigante */
-}
-
-.desc-truncada.expandida {
-  -webkit-line-clamp: initial;
-  line-clamp: initial;
-}
-
-.link-expandir {
-  color: #06A8F4;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
   margin-top: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  width: max-content;
 }
 
-.link-expandir:hover {
-  text-decoration: underline;
-  color: #7df525;
+.desc-truncada.expandida { 
+  -webkit-line-clamp: initial; 
+  line-clamp: initial; 
+}
+
+.link-expandir { 
+  color: #06A8F4; 
+  font-size: 13px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  margin-top: 8px; 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 4px; 
+  width: max-content; 
+}
+
+.link-expandir:hover { 
+  text-decoration: underline; 
+  color: #7df525; 
 }
 
 .seta { font-size: 10px; }
 
-/* 3. COLUNA FINANCEIRO */
-.col-financeiro {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  padding-left: 20px;
-  justify-content: center;
+/* COLUNA FINANCEIRO */
+.col-financeiro { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+  border-left: 1px solid rgba(255, 255, 255, 0.1); 
+  padding-left: 20px; 
+  justify-content: center; 
 }
 
-.financeiro-linha {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
+.financeiro-linha { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  font-size: 13px; 
 }
 
-.fin-label {
-  color: rgba(255, 255, 255, 0.6);
+.fin-label { 
+  color: rgba(255, 255, 255, 0.6); 
 }
 
-.fin-valor {
-  font-size: 18px;
-  font-weight: 500;
-  color: #E53935; /* Valor em vermelho para despesa */
+.fin-valor { 
+  font-weight: 500; 
+  color: white; 
 }
 
-/* 4. COLUNA AÇÕES */
-.col-acoes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* COLUNA AÇÕES */
+.col-acoes { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
 }
 
-.btn-editar, .btn-excluir {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
+.btn-editar, .btn-excluir { 
+  width: 100%; 
+  padding: 8px 12px; 
+  border-radius: 6px; 
+  font-size: 13px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  text-align: center; 
 }
 
-.btn-editar {
-  background-color: transparent;
-  color: #06A8F4;
-  border: 1px solid #06A8F4;
+.btn-editar { 
+  background-color: transparent; 
+  color: #06A8F4; 
+  border: 1px solid #06A8F4; 
 }
 
-.btn-editar:hover {
-  background-color: #06A8F4;
-  color: #01182d;
+.btn-editar:hover { 
+  background-color: #06A8F4; 
+  color: #01182d; 
 }
 
-.btn-excluir {
-  background-color: transparent;
-  color: #E53935;
-  border: 1px solid #E53935;
+.btn-excluir { 
+  background-color: transparent; 
+  color: #E53935; 
+  border: 1px solid #E53935; 
 }
 
-.btn-excluir:hover {
-  background-color: #E53935;
-  color: #01182d;
+.btn-excluir:hover { 
+  background-color: #E53935; 
+  color: #01182d; 
 }
 
-/* ================== UTILITÁRIOS & ESTADOS ================== */
+/* ==============================================================
+   MODAL DE FILTROS (Ref. Vendas)
+   ============================================================== */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
+.modal-filtros-content { background-color: #1A202C; border: 1px solid #2D3748; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+.modal-filtros-header { padding: 16px 20px; border-bottom: 1px solid #2D3748; display: flex; justify-content: space-between; align-items: center; }
+.modal-filtros-header h3 { margin: 0; color: #fff; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.btn-fechar-modal { background: transparent; border: none; color: #A0AEC0; font-size: 18px; cursor: pointer; transition: color 0.2s; }
+.btn-fechar-modal:hover { color: #fff; }
+.modal-filtros-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.filtro-bloco { display: flex; flex-direction: column; gap: 8px; }
+.filtro-bloco label { font-size: 13px; color: #A0AEC0; font-weight: 500; }
+.filtro-bloco select { width: 100%; padding: 10px 12px; background-color: #2D3748; border: 1px solid #4A5568; border-radius: 6px; color: #fff; font-size: 14px; outline: none; cursor: pointer; }
+.filtro-bloco select:focus { border-color: #06A8F4; }
+.modal-filtros-footer { padding: 16px 20px; border-top: 1px solid #2D3748; display: flex; justify-content: flex-end; }
+.btn-aplicar-filtros { background-color: #06A8F4; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: background-color 0.2s; }
+.btn-aplicar-filtros:hover { background-color: #0584C2; }
+
+/* ==============================================================
+   UTILITÁRIOS & PAGINAÇÃO
+   ============================================================== */
 .carregando { display: flex; justify-content: center; padding: 50px; }
 .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #7df525; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .sem-resultados { text-align: center; padding: 40px; color: rgba(255,255,255,0.6); background-color: #01182d; border-radius: 8px; border: 1px dashed #1a3a5f; }
 
-/* ==============================================================
-   PAGINAÇÃO NO RODAPÉ
-   ============================================================== */
-.paginacao-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  margin-top: 30px;
-  padding: 20px 0;
+.paginacao-container { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  gap: 15px; 
+  margin-top: 30px; 
+  padding: 20px 0; 
 }
 
-.paginas-numeros {
-  display: flex;
-  gap: 8px;
-}
-
-.btn-paginacao {
+.btn-paginacao { 
   background-color: #01182d;
   color: white;
   border: 1px solid #1a3a5f;
@@ -342,62 +358,51 @@
   padding: 8px 14px;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s; 
 }
 
-.btn-paginacao:hover:not([disabled]) {
-  background-color: #1a3a5f;
-  border-color: #06A8F4;
+.btn-paginacao:hover:not([disabled]) { 
+  background-color: #1a3a5f; 
+  border-color: #06A8F4; 
 }
 
-.btn-paginacao:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.btn-paginacao[disabled] { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
 }
 
-.btn-paginacao.num {
-  padding: 8px 12px;
+.btn-paginacao.num { 
+  padding: 8px 12px; 
 }
-
-.btn-paginacao.ativo {
+.btn-paginacao.ativo { 
   background-color: #06A8F4;
   border-color: #06A8F4;
   color: white;
   font-weight: bold;
 }
 
+.paginas-numeros { 
+  display: flex; 
+  gap: 8px; 
+}
+
 /* ==============================================================
    RESPONSIVIDADE
    ============================================================== */
 @media (max-width: 1024px) {
-  .despesa-grid-container {
-    grid-template-columns: 80px 1.5fr 1fr;
-  }
+  .despesa-grid-container { grid-template-columns: 80px 1.5fr 1fr; }
   .icone-box { width: 70px; height: 70px; font-size: 24px; }
-  .col-acoes {
-    grid-column: 1 / -1;
-    flex-direction: row;
-  }
+  .col-acoes { grid-column: 1 / -1; flex-direction: row; }
 }
 
 @media (max-width: 768px) {
-  .header-busca-container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 15px;
-    padding: 15px;
-  }
+  .header-busca-container { flex-direction: column; align-items: stretch; gap: 15px; padding: 15px; }
   .busca-input-group { width: auto; }
-  .divisor-vertical, .espacador { display: none; }
-  .filtro-group { justify-content: space-between; width: 100%; }
-  .info-resumo { text-align: center; width: 100%; justify-content: center; }
-  .btn-novo-produto { width: 100%; margin-top: 5px; }
+  .divisor-vertical-header, .espacador { display: none; }
+  .resumo-mini-container { width: 100%; justify-content: center; flex-wrap: wrap; }
+  .btn-nova-venda { width: 100%; text-align: center; }
   
-  .despesa-grid-container {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-  
+  .despesa-grid-container { grid-template-columns: 1fr; gap: 15px; }
   .col-icone { align-items: flex-start; justify-content: flex-start; }
   .col-financeiro { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-left: 0; padding-top: 15px; }
   .financeiro-linha { justify-content: space-between; }

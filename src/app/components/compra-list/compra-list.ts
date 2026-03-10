@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
-import { ComprasService } from '../../services/compra.service'; // Restaurado para ComprasService
+import { ComprasService } from '../../services/compra.service'; 
 import { CompraFormComponent } from '../compra-form/compra-form';
 import { ModalService } from '../../services/modal.service';
 import { BrazilianCurrencyPipe } from '../../pipes/brazilian-currency.pipe';
@@ -23,7 +23,6 @@ interface CompraComUI extends Compra {
   templateUrl: './compra-list.html',
   styleUrls: ['./compra-list.css']
 })
-// Restaurado para ComprasComponent para não quebrar o app.routes.ts
 export class ComprasComponent implements OnInit {
   comprasOriginais: CompraComUI[] = [];
   comprasFiltradas: CompraComUI[] = [];
@@ -39,6 +38,8 @@ export class ComprasComponent implements OnInit {
   termoBusca: string = '';
   ordenacao: string = 'mais_recentes';
   periodo: string = 'todos';
+  filtroFornecedor: string = 'todos';
+  fornecedoresUnicos: string[] = [];
 
   // Modais e Estados
   carregando: boolean = true;
@@ -59,11 +60,9 @@ export class ComprasComponent implements OnInit {
       .map((item: any) => this.getImagemUrl(item))
       .filter((img: string | null) => img != null) as string[];
     
-    // Retorna apenas imagens únicas, limitadas a 3
     return [...new Set(imagens)].slice(0, 3);
   }
   
-
   // Resumo Dinâmico
   resumoCompras = {
     quantidade: 0,
@@ -72,7 +71,7 @@ export class ComprasComponent implements OnInit {
   };
 
   constructor(
-    private compraService: ComprasService, // Restaurado para ComprasService
+    private compraService: ComprasService, 
     private modalService: ModalService
   ) {}
 
@@ -102,6 +101,7 @@ export class ComprasComponent implements OnInit {
       mostrarProdutos: false
     }));
     
+    this.extrairFornecedores();
     this.aplicarFiltrosEOrdenacao();
     this.carregando = false;
   }
@@ -132,6 +132,7 @@ export class ComprasComponent implements OnInit {
         
         this.comprasOriginais = [...this.comprasOriginais, ...comprasAntigas];
         this.agruparComprasPorPedido();
+        this.extrairFornecedores();
         this.aplicarFiltrosEOrdenacao();
         this.carregando = false;
       },
@@ -151,6 +152,7 @@ export class ComprasComponent implements OnInit {
         }));
         
         this.agruparComprasPorPedido();
+        this.extrairFornecedores();
         this.aplicarFiltrosEOrdenacao();
         this.carregando = false;
         
@@ -188,6 +190,13 @@ export class ComprasComponent implements OnInit {
     this.comprasOriginais = Array.from(comprasAgrupadas.values());
   }
 
+  private extrairFornecedores(): void {
+    const fornecedores = this.comprasOriginais
+      .map((c: CompraComUI) => c.fornecedor)
+      .filter((f: string | undefined): f is string => !!f && f.trim() !== '');
+    this.fornecedoresUnicos = [...new Set(fornecedores)].sort();
+  }
+
   // ==================== FILTROS E PAGINAÇÃO ====================
 
   aplicarFiltrosEOrdenacao(): void {
@@ -195,6 +204,7 @@ export class ComprasComponent implements OnInit {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
+    // Busca de texto
     if (this.termoBusca.trim() !== '') {
       const termo = this.termoBusca.toLowerCase().trim();
       filtrados = filtrados.filter((c: CompraComUI) => 
@@ -204,6 +214,7 @@ export class ComprasComponent implements OnInit {
       );
     }
 
+    // Período
     if (this.periodo !== 'todos') {
       filtrados = filtrados.filter((c: CompraComUI) => {
         if (!c.data) return false;
@@ -217,6 +228,12 @@ export class ComprasComponent implements OnInit {
       });
     }
 
+    // Fornecedor
+    if (this.filtroFornecedor !== 'todos') {
+      filtrados = filtrados.filter((c: CompraComUI) => c.fornecedor === this.filtroFornecedor);
+    }
+
+    // Ordenação
     filtrados.sort((a: CompraComUI, b: CompraComUI) => {
       const dataA = a.data ? new Date(a.data).getTime() : 0;
       const dataB = b.data ? new Date(b.data).getTime() : 0;
@@ -303,7 +320,6 @@ export class ComprasComponent implements OnInit {
   toggleProdutos(compra: CompraComUI): void {
     compra.mostrarProdutos = !compra.mostrarProdutos;
   }
-
 
   // ==================== AÇÕES ====================
 

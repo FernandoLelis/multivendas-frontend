@@ -5,7 +5,7 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <input 
         type="text" 
-        placeholder="Título, código universal, SKU ou #"
+        placeholder="Título, código universal, SKU..."
         [(ngModel)]="termoBusca"
         (input)="aplicarFiltrosEOrdenacao()">
     </div>
@@ -38,8 +38,6 @@
     <div class="info-anuncios">
       {{ produtosFiltrados.length }} produtos
     </div>
-
-    <div class="divisor-vertical"></div>
 
     <button class="btn-novo-produto" (click)="abrirModal()">
       Novo Produto

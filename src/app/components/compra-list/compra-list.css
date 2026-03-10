@@ -8,120 +8,253 @@
 }
 
 /* ==============================================================
-   CABEÇALHO DARK COM BUSCA E BOTÃO NOVA COMPRA
+   CABEÇALHO DARK COM BUSCA, FILTROS E BOTÃO NOVA COMPRA (NOVO PADRÃO)
    ============================================================== */
 .header-busca-container {
-  display: flex;
-  align-items: center;
-  background-color: #01182d;
-  border: 3px solid #1a3a5f;
+  display: flex; 
+  align-items: center; 
+  background-color: #01182d; 
   border-radius: 8px;
-  padding: 10px 20px;
-  margin-bottom: 24px;
-  color: white;
+  padding: 10px 20px; 
+  margin-bottom: 24px; 
+  border: 3px solid #1a3a5f; 
+  flex-wrap: wrap; 
+  gap: 15px;
 }
 
-.busca-input-group {
-  display: flex;
-  align-items: center;
+.busca-input-group { 
+  display: flex; 
+  align-items: center; 
   flex: 1; 
-  background-color: #0a2540;
-  padding: 8px 15px;
-  border-radius: 8px;
-  border: 1px solid #3a5f8f;
+  min-width: 250px; 
+  max-width: 250px;
+  background-color: #0a2540; 
+  padding: 8px 15px; 
+  border-radius: 8px; 
+  border: 1px solid #3a5f8f; 
 }
 
 .fa-solid.fa-magnifying-glass {
   color: #06A8F4; 
   margin-right: 10px;
-  font-size: 16px;
 }
 
-.busca-input-group input {
-  border: none;
-  outline: none;
-  font-size: 14px;
-  width: 100%;
-  color: white;
-  background: transparent;
+.busca-input-group input { 
+  background: transparent; 
+  border: none; color: white; 
+  width: 100%; 
+  outline: none; 
+  font-size: 14px; 
 }
 
 .busca-input-group input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
-.divisor-vertical {
-  width: 1px;
-  height: 30px;
-  background-color: #1a3a5f;
-  margin: 0 20px;
-}
-
-.filtro-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: white;
-}
-
-.filtro-icon {
-  display: flex;
-  align-items: center;
-  color: #06A8F4;
-}
-
-.filtro-group select {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 14px;
-  color: white;
-  cursor: pointer;
-  padding: 5px;
-}
-
-.filtro-group select option {
-  background-color: #01182d;
-  color: white;
+.divisor-vertical-header { 
+  width: 1px; 
+  height: 24px; 
+  background-color: #1a3a5f; 
 }
 
 .espacador {
-  flex-grow: 0.5;
+  flex-grow: 1;
 }
 
-.info-anuncios {
+.btn-filtrar-ordenar {
+  background-color: transparent;
+  color: #fff;
+  border: 0px;
+  border-radius: 6px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-filtrar-ordenar:hover { 
+  color: #06A8F4; 
+}
+
+/* ================== MINI RESUMO NA BARRA ================== */
+.resumo-mini-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: transparent;
+  padding: 6px 15px;
+  border-radius: 6px;
+  border: 0px;
+  font-size: 13px;
+}
+
+.resumo-mini-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.resumo-mini-item .lbl { 
+  color: rgba(255,255,255,0.6); 
+  font-size: 11px; 
+  text-transform: uppercase; 
+  font-weight: 600;
+}
+
+.resumo-mini-item .val { 
+  font-weight: 700; 
+  color: white; 
+}
+
+.divisor-mini { 
+  width: 1px; 
+  height: 14px; 
+  background-color: #1a3a5f; 
 }
 
 .btn-novo-produto {
-  background-color: #7df525;
-  color: #01182d;
-  border: 1px solid #7df525;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
+  background-color: #7df525; 
+  color: #01182d; 
+  border: 1px solid #7df525; 
+  padding: 8px 16px; 
+  border-radius: 6px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.2s; 
   white-space: nowrap;
 }
 
 .btn-novo-produto:hover {
-  background-color: #6cd420;
-  color: #01182d;
+  background-color: #6cd420; 
+  color: #01182d; 
+}
+
+/* ================== MODAL FILTROS ================== */
+.modal-overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  background: rgba(0, 0, 0, 0.6); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 1000; 
+  backdrop-filter: blur(2px); 
+}
+
+.modal-filtros-content {
+  background-color: #1A202C; 
+  border: 1px solid #2D3748; 
+  border-radius: 12px; 
+  width: 100%; 
+  max-width: 400px; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+  display: flex; 
+  flex-direction: column; 
+}
+
+.modal-filtros-header {
+  padding: 16px 20px; 
+  border-bottom: 1px solid #2D3748; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+}
+
+.modal-filtros-header h3 {
+  margin: 0; 
+  color: #fff; 
+  font-size: 16px; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+}
+
+.btn-fechar-modal {
+  background: transparent; 
+  border: none; 
+  color: #A0AEC0; 
+  font-size: 18px; 
+  cursor: pointer; 
+  transition: color 0.2s; 
+}
+
+.btn-fechar-modal:hover {
+  color: #fff;
+}
+
+.modal-filtros-body {
+  padding: 20px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 16px; 
+}
+
+.filtro-bloco {
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+}
+
+.filtro-bloco label {
+  font-size: 13px; 
+  color: #A0AEC0; 
+  font-weight: 500; 
+}
+
+.filtro-bloco select {
+  width: 100%; 
+  padding: 10px 12px; 
+  background-color: #2D3748; 
+  border: 1px solid #4A5568; 
+  border-radius: 6px; 
+  color: #fff; 
+  font-size: 14px; 
+  outline: none; 
+  cursor: pointer; 
+}
+
+.filtro-bloco select:focus { 
+  border-color: #06A8F4; 
+}
+
+.modal-filtros-footer {
+  padding: 16px 20px; 
+  border-top: 1px solid #2D3748; 
+  display: flex; 
+  justify-content: flex-end;
+}
+
+.btn-aplicar-filtros {
+  background-color: #06A8F4; 
+  color: #fff; 
+  border: none; 
+  padding: 10px 24px; 
+  border-radius: 6px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  width: 100%; 
+  transition: background-color 0.2s;
+}
+
+.btn-aplicar-filtros:hover {
+  background-color: #0584C2; 
 }
 
 /* ==============================================================
-   O CARD COM GRID DE 5 COLUNAS
+   O CARD COM GRID DE 5 COLUNAS (MANTIDO IGUAL)
    ============================================================== */
 .produto-card {
   background: #01182d;
   border-radius: 8px;
   border: 3px solid #1a3a5f;
   color: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition: border-color 0.3s ease;
   margin-bottom: 15px;
@@ -146,8 +279,8 @@
   width: 90px;
   height: 90px;
   object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #3a5f8f;
+  border-radius: 6px;
+  border: 1px solid #1a3a5f;
   background-color: white;
 }
 
@@ -164,7 +297,10 @@
   color: #3a5f8f;
 }
 
-.icon-img { font-size: 24px; }
+.icon-img { 
+  font-size: 20px; 
+  margin-bottom: 2px; 
+}
 
 /* ==============================================================
    ESTILOS PARA MÚLTIPLOS PRODUTOS (STACK DE IMAGENS)
@@ -180,7 +316,7 @@
 .img-redonda-sobreposta {
   width: 70px;
   height: 70px;
-  border-radius: 8px;
+  border-radius: 6px;
   object-fit: cover;
   background-color: white;
   border: 2px solid #01182d;
@@ -211,10 +347,11 @@
 }
 
 .col-identificacao h3 {
-  margin: 0;
   font-size: 18px;
   font-weight: 500;
   color: white;
+  margin: 0 0 6px 0; 
+  line-height: 1.4; 
 }
 
 .tags-identificacao {
@@ -289,7 +426,7 @@
 }
 
 .info-label {
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
 }
 
@@ -461,10 +598,9 @@
     padding: 15px;
   }
   .busca-input-group { width: auto; }
-  .divisor-vertical, .espacador { display: none; }
-  .filtro-group { justify-content: space-between; width: 100%; }
-  .info-anuncios { text-align: center; width: 100%; }
-  .btn-novo-produto { width: 100%; margin-top: 5px; }
+  .divisor-vertical-header, .espacador { display: none; }
+  .resumo-mini-container { justify-content: center; flex-wrap: wrap; }
+  .btn-novo-produto, .btn-filtrar-ordenar { width: 100%; margin-top: 5px; justify-content: center; }
   
   .produto-grid-container {
     grid-template-columns: 1fr;

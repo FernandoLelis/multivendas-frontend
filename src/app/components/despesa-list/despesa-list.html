@@ -11,40 +11,27 @@
       >
     </div>
     
-    <div class="divisor-vertical"></div>
+    <div class="divisor-vertical-header"></div>
     
-    <div class="filters-group">
-      
-      <div class="divisor-vertical-mini"></div>
-
-      <div class="filtro-group">
-        <span class="filtro-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-            <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
-            <line x1="17" y1="16" x2="23" y2="16"></line>
-          </svg>
-        </span>
-        <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()" class="filtro-select ordem-select">
-          <option value="mais_recentes">Mais recentes</option>
-          <option value="mais_antigas">Mais antigas</option>
-          <option value="maior_valor">Maior valor</option>
-          <option value="menor_valor">Menor valor</option>
-        </select>
-      </div>
-    </div>
+    <button class="btn-filtrar-ordenar" (click)="abrirModalFiltros()">
+      <i class="fa-solid fa-sliders"></i> Filtrar e ordenar
+    </button>
 
     <div class="espacador"></div>
 
-    <div class="header-resumo">
-      <span class="count-text">{{ resumoDespesas.quantidade }} despesas</span>
+    <div class="resumo-mini-container">
+      <div class="resumo-mini-item">
+        <span class="lbl">QTD:</span>
+        <span class="val">{{ resumoDespesas.quantidade }}</span>
+      </div>
+      <div class="divisor-mini"></div>
+      <div class="resumo-mini-item">
+        <span class="lbl">CUSTO:</span>
+        <span class="val txt-lucro negativo">{{ resumoDespesas.custoTotal | currency:'BRL' }}</span>
+      </div>
     </div>
 
-    <div class="divisor-vertical"></div>
-
-    <button class="btn-nova btn-novo-produto" (click)="novaDespesa()">
+    <button class="btn-nova-venda" (click)="novaDespesa()">
       Nova Despesa
     </button>
   </header>
@@ -76,18 +63,19 @@
         
         <div class="tags-identificacao">
           <span class="tag">{{ despesa.categoria }}</span>
-          <span class="data-criacao">📅 {{ despesa.data | date:'dd/MM/yyyy' }}</span>
         </div>
         
         <div *ngIf="despesa.observacoes">
           <p class="desc-truncada" [class.expandida]="despesa.mostrarObservacoes">
             <strong>Obs:</strong> {{ despesa.observacoes }}
           </p>
+
           <a class="link-expandir" *ngIf="despesa.observacoes.length > 80" (click)="toggleObservacoes(despesa)">
             {{ despesa.mostrarObservacoes ? 'Ocultar' : 'Ver' }} Obs.
             <span class="seta">{{ despesa.mostrarObservacoes ? '▲' : '▼' }}</span>
           </a>
         </div>
+        <span class="data-criacao">Pago em:  {{ despesa.data | date:'dd/MM/yyyy' }}</span>
       </div>
 
       <div class="col-financeiro">
@@ -127,6 +115,58 @@
       Próxima &raquo;
     </button>
   </footer>
+
+  <div class="modal-overlay" *ngIf="mostrarModalFiltros" (click)="fecharModalFiltros()">
+    <div class="modal-filtros-content" (click)="$event.stopPropagation()">
+      
+      <div class="modal-filtros-header">
+        <h3><i class="fa-solid fa-filter"></i> Filtrar e ordenar
+        </h3>
+        <button class="btn-fechar-modal" (click)="mostrarModalFiltros = false">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      </div>
+
+      <div class="modal-filtros-body">
+
+        <div class="filtro-bloco">
+        <label>Período</label>
+        <select [(ngModel)]="periodo" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="todos">Todo o período</option>
+          <option value="hoje">Hoje</option>
+          <option value="7_dias">Últimos 7 dias</option>
+          <option value="30_dias">Últimos 30 dias</option>
+          <option value="este_mes">Este Mês</option>
+          <option value="este_ano">Este Ano</option>
+        </select>
+      </div>
+        
+        <div class="filtro-bloco">
+          <label>Categoria</label>
+          <select [(ngModel)]="filtroCategoriaTemp">
+            <option value="">Todas as Categorias</option>
+            <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+
+        <div class="filtro-bloco">
+          <label>Ordenar por</label>
+          <select [(ngModel)]="ordenacaoTemp">
+            <option value="mais_recentes">Mais recentes</option>
+            <option value="mais_antigas">Mais antigas</option>
+            <option value="maior_valor">Maior valor</option>
+            <option value="menor_valor">Menor valor</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-filtros-footer">
+        <button class="btn-aplicar-filtros" (click)="aplicarFiltrosModal()">Aplicar Filtros</button>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <app-despesa-form 

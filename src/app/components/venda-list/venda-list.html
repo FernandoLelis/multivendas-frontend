@@ -44,8 +44,6 @@
       </div>
     </div>
 
-    <div class="espacador"></div>
-
     <button class="btn-nova-venda" (click)="novaVenda()">Nova Venda</button>
   </div>
 
@@ -183,11 +181,11 @@
   </div>
 
   <div class="paginacao-container" *ngIf="!carregando && totalPaginas > 1">
-    <button class="btn-paginacao" [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">Anterior</button>
+    <button class="btn-paginacao" [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">&laquo; Anterior</button>
     <div class="paginas-numeros">
       <button *ngFor="let p of paginasArray" class="btn-paginacao num" [class.ativo]="p === paginaAtual" (click)="mudarPagina(p)">{{ p }}</button>
     </div>
-    <button class="btn-paginacao" [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">Próxima</button>
+    <button class="btn-paginacao" [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">Próxima &raquo;</button>
   </div>
 
 </div>
@@ -195,7 +193,7 @@
 <div class="modal-overlay" *ngIf="mostrarModalFiltros" (click)="mostrarModalFiltros = false">
   <div class="modal-filtros-content" (click)="$event.stopPropagation()">
     <div class="modal-filtros-header">
-      <h3><i class="fa-solid fa-filter"></i> Filtrar e Ordenar</h3>
+      <h3><i class="fa-solid fa-filter"></i> Filtrar e ordenar</h3>
       <button class="btn-fechar-modal" (click)="mostrarModalFiltros = false">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -216,17 +214,6 @@
       </div>
 
       <div class="filtro-bloco">
-        <label>Ordenar Por</label>
-        <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
-          <option value="mais_recentes">Mais recentes</option>
-          <option value="mais_antigas">Mais antigas</option>
-          <option value="maior_lucro">Maior Lucro</option>
-          <option value="menor_lucro">Menor Lucro</option>
-          <option value="maior_valor">Maior Valor</option>
-        </select>
-      </div>
-
-      <div class="filtro-bloco">
         <label>Plataforma</label>
         <select [(ngModel)]="filtroPlataforma" (change)="aplicarFiltrosEOrdenacao()">
           <option value="todas">Todas as Plataformas</option>
@@ -234,6 +221,17 @@
           <option value="amazon">Amazon</option>
           <option value="shopee">Shopee</option>
           <option value="outro">Outros</option>
+        </select>
+      </div>
+
+      <div class="filtro-bloco">
+        <label>Ordenar por</label>
+        <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="mais_recentes">Mais recentes</option>
+          <option value="mais_antigas">Mais antigas</option>
+          <option value="maior_lucro">Maior Lucro</option>
+          <option value="menor_lucro">Menor Lucro</option>
+          <option value="maior_valor">Maior Valor</option>
         </select>
       </div>
 
@@ -259,4 +257,3 @@
   (fecharModal)="fecharFormCompra()" 
   (compraSalva)="onCompraSalva()">
 </app-compra-form>
-

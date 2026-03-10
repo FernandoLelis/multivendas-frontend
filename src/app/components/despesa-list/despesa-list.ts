@@ -23,16 +23,22 @@ export class DespesaListComponent implements OnInit {
   despesasFiltradas: DespesaComUI[] = [];
   despesasPaginadas: DespesaComUI[] = [];
 
-  // Paginação - Espelhado de compra-list
+  // Paginação
   paginaAtual: number = 1;
   itensPorPagina: number = 10;
   totalPaginas: number = 1;
   paginasArray: number[] = [];
 
-  // Filtros Padrões - Unificados
+  // Filtros Padrões e Busca
   termoBusca: string = '';
-  filtroCategoria: string = '';
   ordenacao: string = 'mais_recentes';
+  periodo: string = 'todos';
+  filtroCategoria: string = '';
+
+  // Variáveis Temporárias para o Modal de Filtros
+  mostrarModalFiltros: boolean = false;
+  filtroCategoriaTemp: string = '';
+  ordenacaoTemp: string = 'mais_recentes';
 
   // Modais e Estados
   carregando: boolean = true;
@@ -93,10 +99,33 @@ export class DespesaListComponent implements OnInit {
     });
   }
 
+  // ==================== CONTROLE DO MODAL DE FILTROS ====================
+
+  abrirModalFiltros(): void {
+    // Sincroniza os temporários com os atuais antes de abrir
+    this.filtroCategoriaTemp = this.filtroCategoria;
+    this.ordenacaoTemp = this.ordenacao;
+    this.mostrarModalFiltros = true;
+  }
+
+  fecharModalFiltros(): void {
+    this.mostrarModalFiltros = false;
+  }
+
+  aplicarFiltrosModal(): void {
+    // Aplica os temporários nos reais e executa a filtragem
+    this.filtroCategoria = this.filtroCategoriaTemp;
+    this.ordenacao = this.ordenacaoTemp;
+    this.aplicarFiltrosEOrdenacao();
+    this.fecharModalFiltros();
+  }
+
   // ==================== FILTROS E PAGINAÇÃO ====================
 
   aplicarFiltrosEOrdenacao(): void {
     let filtradas = [...this.despesasOriginais];
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
 
     // Filtro por texto (Busca)
     if (this.termoBusca.trim() !== '') {
@@ -107,12 +136,25 @@ export class DespesaListComponent implements OnInit {
       );
     }
 
+    // 2. Filtro de Período
+    if (this.periodo !== 'todos') {
+      filtradas = filtradas.filter(v => {
+        const dataVenda = new Date(v.data);
+        if (this.periodo === 'hoje') return dataVenda >= hoje;
+        if (this.periodo === '7_dias') return dataVenda >= new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
+        if (this.periodo === '30_dias') return dataVenda >= new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
+        if (this.periodo === 'este_mes') return dataVenda.getMonth() === hoje.getMonth() && dataVenda.getFullYear() === hoje.getFullYear();
+        if (this.periodo === 'este_ano') return dataVenda.getFullYear() === hoje.getFullYear();
+        return true;
+      });
+    }
+
     // Filtro por Categoria
     if (this.filtroCategoria !== '') {
       filtradas = filtradas.filter((d: DespesaComUI) => d.categoria === this.filtroCategoria);
     }
 
-    // Ordenação - Mesma lógica de compras
+    // Ordenação
     filtradas.sort((a: DespesaComUI, b: DespesaComUI) => {
       const dataA = a.data ? new Date(a.data).getTime() : 0;
       const dataB = b.data ? new Date(b.data).getTime() : 0;
@@ -172,6 +214,9 @@ export class DespesaListComponent implements OnInit {
     this.filtroCategoria = '';
     this.termoBusca = '';
     this.ordenacao = 'mais_recentes';
+    // Sincroniza temporários também
+    this.filtroCategoriaTemp = '';
+    this.ordenacaoTemp = 'mais_recentes';
     this.carregarDespesas();
   }
 
@@ -189,17 +234,16 @@ export class DespesaListComponent implements OnInit {
     return classes[categoria] || 'badge-default';
   }
 
-  // Novo método para gerar o ícone/emoji correspondente (substituto da imagem)
   getIconeCategoria(categoria: string): string {
     const icones: { [key: string]: string } = {
-      'Material de Escritório': '📎',
+      'Material de Escritório': '🖨️',
       'Embalagem': '📦',
       'Manutenção': '🔧',
       'Marketing': '📢',
       'Transporte': '🚚',
       'Outros': '🏷️'
     };
-    return icones[categoria] || '🏷️';
+    return icones[categoria] || '🧾';
   }
 
   toggleObservacoes(despesa: DespesaComUI): void {
