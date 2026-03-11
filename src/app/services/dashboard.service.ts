@@ -93,15 +93,15 @@ export class DashboardService {
   };
 
   // Mock para cálculos de crescimento (previous month)
-  private previousMonthData = {
-    faturamento: 4500,
-    custoEfetivo: 3200,
-    lucroBruto: 1300,
-    lucroLiquido: 850,
-    despesasOperacionais: 450,
-    roi: 40,
-    quantidadeVendas: 7
-  };
+  // private previousMonthData = {
+  //   faturamento: 4500,
+  //   custoEfetivo: 3200,
+  //   lucroBruto: 1300,
+  //   lucroLiquido: 850,
+  //   despesasOperacionais: 450,
+  //   roi: 40,
+  //   quantidadeVendas: 7
+  // };
 
   constructor(private http: HttpClient) {}
 
@@ -125,6 +125,12 @@ export class DashboardService {
     return this.http.get<number>(`${this.apiUrl}/api/despesas/total-mes-atual`).pipe(
       map((total: any) => typeof total === 'object' ? total : Number(total)),
       catchError(() => of(0))
+    );
+  }
+
+  getMetricasMesAnterior(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/api/vendas/metricas-mes-anterior`).pipe(
+      catchError(() => of({ faturamento: 0, custoEfetivo: 0, lucroBruto: 0, lucroLiquido: 0, roi: 0 }))
     );
   }
 
@@ -154,11 +160,11 @@ export class DashboardService {
       despesasAno: this.getTotalDespesas(),
       faturamentoMes: this.getFaturamentoMesAtual(),
       custoEfetivoMes: this.getCustoEfetivoMesAtual(),
-      quantidadeVendas: this.getQuantidadeVendas()
+      quantidadeVendas: this.getQuantidadeVendas(),
+      metricasAnteriores: this.getMetricasMesAnterior() // ✅ Injetando a chamada real
     }).pipe(
-      map(({ faturamentoAno, custoEfetivoAno, lucroBrutoAno, despesasMes, despesasAno, faturamentoMes, custoEfetivoMes, quantidadeVendas }) => {
+      map(({ faturamentoAno, custoEfetivoAno, lucroBrutoAno, despesasMes, despesasAno, faturamentoMes, custoEfetivoMes, quantidadeVendas, metricasAnteriores }) => {
         
-        // Cálculos no Frontend para garantir consistência
         const lucroBrutoMes = faturamentoMes - custoEfetivoMes;
         const lucroLiquidoMes = lucroBrutoMes - despesasMes;
         const roiMes = custoEfetivoMes > 0 ? (lucroLiquidoMes / custoEfetivoMes) * 100 : 0;
@@ -170,31 +176,31 @@ export class DashboardService {
           quantidadeVendas: {
             atual: quantidadeVendas.mesAtual || 0,
             total: quantidadeVendas.anoAtual || 0,
-            growth: quantidadeVendas.variacao || 0
+            growth: quantidadeVendas.variacao || 0 // Esse já vinha certo do Java
           },
           faturamento: { 
             atual: faturamentoMes, total: faturamentoAno, 
-            growth: this.calculateGrowth(faturamentoMes, this.previousMonthData.faturamento)
+            growth: this.calculateGrowth(faturamentoMes, metricasAnteriores.faturamento) // ✅ Usando o real
           },
           custoEfetivo: { 
             atual: custoEfetivoMes, total: custoEfetivoAno, 
-            growth: this.calculateGrowth(custoEfetivoMes, this.previousMonthData.custoEfetivo)
+            growth: this.calculateGrowth(custoEfetivoMes, metricasAnteriores.custoEfetivo) // ✅ Usando o real
           },
           lucroBruto: {
             atual: lucroBrutoMes, total: lucroBrutoAno,
-            growth: this.calculateGrowth(lucroBrutoMes, this.previousMonthData.lucroBruto)
+            growth: this.calculateGrowth(lucroBrutoMes, metricasAnteriores.lucroBruto) // ✅ Usando o real
           },
           lucroLiquido: { 
             atual: lucroLiquidoMes, total: lucroLiquidoAno,
-            growth: this.calculateGrowth(lucroLiquidoMes, this.previousMonthData.lucroLiquido)
+            growth: this.calculateGrowth(lucroLiquidoMes, metricasAnteriores.lucroLiquido) // ✅ Usando o real
           },
           despesasOperacionais: {
             atual: despesasMes, total: despesasAno,
-            growth: this.calculateGrowth(despesasMes, this.previousMonthData.despesasOperacionais)
+            growth: 0 // (Como as despesas vêm de outro controller, você pode manter 0 ou criar uma rota similar em DespesaController no futuro)
           },
           roi: { 
             atual: roiMes, total: roiAno,
-            growth: this.calculateGrowth(roiMes, this.previousMonthData.roi)
+            growth: this.calculateGrowth(roiMes, metricasAnteriores.roi) // ✅ Usando o real
           }
         };
       }),

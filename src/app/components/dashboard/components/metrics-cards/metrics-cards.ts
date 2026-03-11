@@ -28,21 +28,16 @@ export class MetricsCardsComponent implements OnInit {
 
     this.dashboardService.getCardsMetrics().subscribe({
       next: (data: CardMetrics) => {
-        // ✅ CORREÇÃO 2: Aplica a proporção MTD (Month-To-Date) antes de salvar no state
-        this.recalcularCrescimentos(data);
-
+        // ✅ O Service já calcula o Growth corretamente baseado nos dados reais do Java.
+        // A gambiarra "recalcularCrescimentos" foi removida!
+        
         this.metricsData = data;
         this.isLoading = false;
         
-        // DEBUG: Verificar cálculos
+        // DEBUG: Verificar cálculos reais que chegaram do service
         console.log('📊 DEBUG Component - Valores recebidos:');
-        console.log('  Faturamento Mês:', data.faturamento.atual);
-        console.log('  Custo Efetivo Mês:', data.custoEfetivo.atual);
-        console.log('  Lucro Bruto Mês:', data.lucroBruto.atual);
-        console.log('  Cálculo esperado:', 
-          data.faturamento.atual - data.custoEfetivo.atual);
-        console.log('  Diferença:', 
-          data.lucroBruto.atual - (data.faturamento.atual - data.custoEfetivo.atual));
+        console.log('  Faturamento Mês Atual:', data.faturamento.atual);
+        console.log('  Crescimento Real (Growth):', data.faturamento.growth + '%');
       },
       error: (error: any) => {
         console.error('Erro ao carregar métricas:', error);
@@ -50,50 +45,6 @@ export class MetricsCardsComponent implements OnInit {
         this.isLoading = false;
       }
     });
-  }
-
-  /**
-   * ✅ NOVA LÓGICA: Calcula o crescimento comparando apenas os dias transcorridos do mês
-   */
-  private recalcularCrescimentos(data: any): void {
-    const hoje = new Date();
-    const diaAtual = Math.max(1, hoje.getDate()); // O dia de hoje (ex: 15)
-    // Quantidade total de dias que o mês passado teve (ex: 30 ou 31)
-    const diasMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0).getDate() || 30; 
-
-    const ajustarProporcao = (metric: any) => {
-      if (!metric || metric.atual === undefined || metric.growth === undefined) return;
-      
-      const atual = metric.atual;
-      const originalGrowth = metric.growth;
-
-      // Se for 0 ou se o crescimento já veio -100%, ignora a matemática para não dividir por zero
-      if (atual === 0 || originalGrowth <= -100) return;
-      
-      // 1. Engenharia reversa: descobre qual foi o valor cheio do mês passado usando o growth original
-      const anteriorCompleto = atual / ((originalGrowth / 100) + 1);
-      if (anteriorCompleto === 0 || isNaN(anteriorCompleto)) return;
-
-      // 2. Descobre quanto o mês passado tinha feito ATÉ esse mesmo dia do mês
-      const valorProporcionalAnterior = (anteriorCompleto / diasMesAnterior) * diaAtual;
-      
-      if (valorProporcionalAnterior === 0) {
-        metric.growth = originalGrowth > 0 ? 100 : 0;
-        return;
-      }
-
-      // 3. Substitui o growth antigo pelo crescimento justo (proporcional)
-      metric.growth = ((atual / valorProporcionalAnterior) - 1) * 100;
-    };
-
-    // Aplica a regra em todos os cards
-    ajustarProporcao(data.quantidadeVendas);
-    ajustarProporcao(data.faturamento);
-    ajustarProporcao(data.custoEfetivo);
-    ajustarProporcao(data.lucroBruto);
-    ajustarProporcao(data.despesasOperacionais);
-    ajustarProporcao(data.lucroLiquido);
-    ajustarProporcao(data.roi);
   }
 
   // ✅ CORREÇÃO 1: Valores >= 1000 perdem as casas decimais para não quebrar layout
@@ -118,7 +69,13 @@ export class MetricsCardsComponent implements OnInit {
     return `${formatted}%`;
   }
 
+  // Formata o Growth para visualização
   formatGrowth(growth: number): { value: string, isPositive: boolean } {
+    // Se o valor for "Infinity" ou erro matemático do JS, força zero
+    if (!isFinite(growth) || isNaN(growth)) {
+       growth = 0;
+    }
+
     const signal = growth >= 0 ? '+' : '';
     const value = `${signal}${growth.toFixed(1)}%`;
     return {

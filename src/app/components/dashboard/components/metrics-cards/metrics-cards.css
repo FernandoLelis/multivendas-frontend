@@ -209,12 +209,15 @@
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
+    min-height: auto;
+    margin-top: auto;
   }
   
   .metric-card {
     padding: 8px 6px;
     border: 2px solid #1a3a5f;
-    min-height: 84px;
+    min-height: 75px;
+    max-height: auto;
     gap: 6px;
     align-items: stretch;
   }
@@ -250,12 +253,12 @@
   }
   
   .metric-growth {
-    font-size: 8px;
+    font-size: 9px;
   }
   
   .growth-arrow {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
   
   .growth-container {
