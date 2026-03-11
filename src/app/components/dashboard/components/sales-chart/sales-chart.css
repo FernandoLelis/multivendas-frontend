@@ -114,7 +114,7 @@
   }
   
   .chart-header {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
   
   .chart-wrapper {
@@ -124,7 +124,7 @@
 
 @media (max-width: 768px) {
   .sales-chart-container {
-    padding: 16px;
+    padding: 12px;
     margin-bottom: 16px;
     border: 2px solid #1a3a5f;
   }
@@ -136,7 +136,7 @@
   }
   
   .chart-header h3 {
-    font-size: 16px;
+    font-size: 14px;
   }
   
   .legend-container {

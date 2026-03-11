@@ -46,8 +46,8 @@ const conditionalPointsPlugin = {
         const corFundoBolinha = isPositive ? '#7df525' : '#E53935'; 
         const corTexto = '#00305C'; // Texto sempre branco para contraste
         
-        const raio = isLast ? 12 : 10;
-        const fontSize = isLast ? 11 : 10;
+        const raio = isLast ? 11 : 10;
+        const fontSize = isLast ? 10 : 9;
 
         // Bordinha branca ao redor
         ctx.strokeStyle = '#00305C';
@@ -149,7 +149,7 @@ export class SalesChartComponent implements AfterViewInit {
           color: 'rgba(255, 255, 255, 0.5)',
           font: {
             size: 11,
-            weight: 'bold'
+            weight: 'normal'
           }
         }
       },
@@ -163,7 +163,7 @@ export class SalesChartComponent implements AfterViewInit {
         ticks: {
           color: 'rgba(255, 255, 255, 0.7)',
           font: {
-            size: 11
+            size: 9
           },
           maxTicksLimit: 10
         },

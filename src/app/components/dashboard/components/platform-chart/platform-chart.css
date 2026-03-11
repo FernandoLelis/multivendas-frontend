@@ -168,6 +168,14 @@ canvas {
 
 /* ========== RESPONSIVIDADE INTERNA DO CARD (MOBILE) ========== */
 @media (max-width: 768px) {
+  .chart-container {
+  padding: 12px;
+  }
+
+  .chart-header h3 {
+  font-size: 14px;
+  }
+
   .chart-main-layout {
     flex-direction: column; 
     justify-content: center;

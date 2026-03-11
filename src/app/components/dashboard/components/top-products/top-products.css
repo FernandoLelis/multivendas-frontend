@@ -162,7 +162,7 @@
 @media (max-width: 768px) {
   .top-products-container {
     padding: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 0;
     border: 2px solid #1a3a5f;
   }
   
@@ -223,7 +223,7 @@
 @media (max-width: 480px) {
   .top-products-container {
     padding: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     border-width: 1px;
     border: 2px solid #1a3a5f;
   }
