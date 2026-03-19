@@ -1,6 +1,17 @@
 <div class="top-products-container">
   <div class="top-products-header">
     <h3>PRODUTOS MAIS VENDIDOS</h3>
+    
+    <div class="filter-wrapper">
+      <i class="fas fa-filter filter-icon"></i>
+      <select class="period-select" (change)="onFilterChange($event)">
+        <option value="all" selected>Todo o período</option>
+        <option value="7d">Últimos 7 dias</option>
+        <option value="30d">Últimos 30 dias</option>
+        <option value="month">Mês atual</option>
+        <option value="year">Ano atual</option>
+      </select>
+    </div>
   </div>
 
   <div class="top-products-content">
@@ -16,16 +27,56 @@
     </div>
 
     <div *ngIf="!isLoading && !errorMessage" class="products-list">
-      <div *ngFor="let product of topProducts; let i = index" class="product-item">
-        <div class="product-rank">
+      <div *ngFor="let produto of topProducts; let i = index" 
+           class="product-item" 
+           [class.first-place]="i === 0">
+        
+        <div class="product-rank" [class.gold-rank]="i === 0">
           <span class="rank-number">{{ i + 1 }}</span>
         </div>
         
-        <div class="product-info">
-          <!-- ✅ ADICIONADO: Tooltip com atributo title para mostrar nome completo -->
-          <span class="product-name" [title]="product.nome">{{ product.nome }}</span>
-          <span class="product-sales">{{ product.quantidadeVendida }} vendas</span>
+        <div class="col-imagem container-imagem-top">
+          <img *ngIf="produto.imagemUrl" [src]="produto.imagemUrl" alt="Imagem do Produto" class="produto-img">
+          <!-- <i *ngIf="i === 0" class="fa-solid fa-circle-up" title="Campeão de Vendas"></i> -->
+          <div class="img-placeholder" *ngIf="!produto.imagemUrl">
+            <span class="icon-img">📷</span>
+          </div>
+          
         </div>
+        
+        <div class="product-info">
+          <span class="product-name" [title]="produto.nome">{{ produto.nome }}</span>
+          
+          <div class="product-metrics">
+            <div class="metric-box">              
+              <span class="metric-value highlight-blue">{{ produto.quantidadeVendida || 0 }}</span>
+              <span class="metric-label">Vendas</span>
+            </div>
+
+            
+            <!-- <div class="metric-box">
+              <span class="metric-label">Preço Médio</span>
+              <span class="metric-value">{{ formatarMoeda(produto.precoMedioVenda) }}</span>
+            </div>
+            
+            <div class="metric-box">
+              <span class="metric-label">Custo Médio</span>
+              <span class="metric-value">{{ formatarMoeda(produto.custoMedio) }}</span>
+            </div> -->
+            
+            <!-- <div class="metric-box">
+              <span class="metric-label">Lucro por unidade</span>
+              <span class="metric-value" 
+                    [ngClass]="{
+                      'lucro-positivo': calcularLucro(produto) > 0, 
+                      'lucro-negativo': calcularLucro(produto) < 0
+                    }">
+                {{ formatarMoeda(calcularLucro(produto)) }}
+              </span>
+            </div> -->
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

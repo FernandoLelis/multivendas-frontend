@@ -16,6 +16,7 @@ export interface TopProduct {
   quantidadeVendida: number;
   faturamento: number;
   lucroLiquido: number;
+  imagemUrl?: string;
 }
 
 export interface DashboardData {
@@ -55,7 +56,6 @@ export interface CardMetrics {
 }
 
 export interface VendasPorDia { [key: string]: number; }
-
 export interface DadosComparacaoMensal {
   mesAtual: VendasPorDia;
   mesAnterior: VendasPorDia;
@@ -66,6 +66,10 @@ export interface DadosComparacaoMensal {
 export interface ProdutoMaisVendido {
   nome: string;
   quantidadeVendida: number;
+  imagemUrl?: string;
+  precoMedioVenda?: number; // Adicionado
+  custoMedio?: number;      // Adicionado
+  lucroPorUnidade?: number; // Adicionado
 }
 
 export interface VendasPorPlataforma {
@@ -77,6 +81,7 @@ export interface VendasPorPlataforma {
 @Injectable({
   providedIn: 'root'
 })
+
 export class DashboardService {
   private apiUrl = environment.apiUrl;
 
@@ -91,17 +96,6 @@ export class DashboardService {
     'MERCADO_LIVRE': 'Mercado Livre',
     'SHOPEE': 'Shopee'
   };
-
-  // Mock para cálculos de crescimento (previous month)
-  // private previousMonthData = {
-  //   faturamento: 4500,
-  //   custoEfetivo: 3200,
-  //   lucroBruto: 1300,
-  //   lucroLiquido: 850,
-  //   despesasOperacionais: 450,
-  //   roi: 40,
-  //   quantidadeVendas: 7
-  // };
 
   constructor(private http: HttpClient) {}
 
@@ -138,8 +132,8 @@ export class DashboardService {
   getFaturamentoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/faturamento-mes-atual`).pipe(catchError(() => of(0))); }
   getCustoEfetivoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/custo-efetivo-mes-atual`).pipe(catchError(() => of(0))); }
   getLucroBrutoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-bruto-mes-atual`).pipe(catchError(() => of(0))); }
-  getLucroLiquidoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-liquido-mes-atual`).pipe(catchError(() => of(0))); }
-  
+  getLucroLiquidoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-liquido-mes-atual`).pipe(catchError(() => of(0))); }  
+
   getQuantidadeVendas(): Observable<QuantidadeVendas> {
     return this.http.get<QuantidadeVendas>(`${this.apiUrl}/api/vendas/quantidade-vendas`).pipe(
       catchError(() => of({ mesAtual: 0, anoAtual: 0, variacao: 0 }))
@@ -163,15 +157,12 @@ export class DashboardService {
       quantidadeVendas: this.getQuantidadeVendas(),
       metricasAnteriores: this.getMetricasMesAnterior() // ✅ Injetando a chamada real
     }).pipe(
-      map(({ faturamentoAno, custoEfetivoAno, lucroBrutoAno, despesasMes, despesasAno, faturamentoMes, custoEfetivoMes, quantidadeVendas, metricasAnteriores }) => {
-        
+      map(({ faturamentoAno, custoEfetivoAno, lucroBrutoAno, despesasMes, despesasAno, faturamentoMes, custoEfetivoMes, quantidadeVendas, metricasAnteriores }) => {    
         const lucroBrutoMes = faturamentoMes - custoEfetivoMes;
         const lucroLiquidoMes = lucroBrutoMes - despesasMes;
-        const roiMes = custoEfetivoMes > 0 ? (lucroLiquidoMes / custoEfetivoMes) * 100 : 0;
-        
+        const roiMes = custoEfetivoMes > 0 ? (lucroLiquidoMes / custoEfetivoMes) * 100 : 0;     
         const lucroLiquidoAno = lucroBrutoAno - despesasAno;
         const roiAno = custoEfetivoAno > 0 ? (lucroLiquidoAno / custoEfetivoAno) * 100 : 0;
-        
         return {
           quantidadeVendas: {
             atual: quantidadeVendas.mesAtual || 0,
@@ -179,7 +170,7 @@ export class DashboardService {
             growth: quantidadeVendas.variacao || 0 // Esse já vinha certo do Java
           },
           faturamento: { 
-            atual: faturamentoMes, total: faturamentoAno, 
+            atual: faturamentoMes, total: faturamentoAno,
             growth: this.calculateGrowth(faturamentoMes, metricasAnteriores.faturamento) // ✅ Usando o real
           },
           custoEfetivo: { 
@@ -212,6 +203,7 @@ export class DashboardService {
   }
 
   // ✅ CORREÇÃO AQUI: Adicionado parâmetro 'period'
+
   getPlatformData(period: 'month' | 'year' = 'month'): Observable<PlatformData[]> {
     // Agora chama o endpoint específico do DashboardController que criamos
     return this.http.get<any[]>(`${this.apiUrl}/api/dashboard/platform-data?period=${period}`).pipe(
@@ -262,16 +254,22 @@ export class DashboardService {
     );
   }
 
-  getProdutosMaisVendidos(limite: number = 5): Observable<ProdutoMaisVendido[]> {
-    return this.http.get<DashboardData>(`${this.apiUrl}/api/vendas/dashboard`).pipe(
-      map(dashboardData => {
-        const produtos = dashboardData.produtosMaisVendidos || [];
-        return produtos.slice(0, limite).map(item => ({
+  getProdutosMaisVendidos(limite: number = 5, period: string = 'all'): Observable<ProdutoMaisVendido[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/api/dashboard/top-products?limit=${limite}&period=${period}`).pipe(
+      map(produtos => {
+        return produtos.map(item => ({
           nome: item.produtoNome || 'Produto sem nome',
-          quantidadeVendida: item.quantidadeVendida || 0
+          quantidadeVendida: item.quantidadeVendida || 0,
+          imagemUrl: item.imagemUrl || '', // Pegando a URL real do DTO
+          precoMedioVenda: item.precoMedioVenda || 0,
+          custoMedio: item.custoMedio || 0,
+          lucroPorUnidade: item.lucroPorUnidade || 0
         }));
       }),
-      catchError(() => of(this.getMockProdutosMaisVendidos(limite)))
+      catchError(error => {
+        console.error('Erro ao buscar produtos mais vendidos:', error);
+        return of(this.getMockProdutosMaisVendidos(limite));
+      })
     );
   }
 
@@ -301,6 +299,7 @@ export class DashboardService {
       faturamentoPorPlataforma: { AMAZON: 2800, MERCADO_LIVRE: 1300, SHOPEE: 800 }
     };
   }
+
   private getMockPlatformData(): PlatformData[] {
     return [
       { name: 'Amazon', value: 2800, color: '#1E88E5', percentage: 57 },
@@ -308,6 +307,7 @@ export class DashboardService {
       { name: 'Shopee', value: 800, color: '#b388ff', percentage: 16 }
     ];
   }
+
   private getMockCardsMetrics(): CardMetrics {
     return {
       quantidadeVendas: { atual: 8, total: 45, growth: 14.3 },

@@ -4,14 +4,16 @@
   padding: 24px;
   border: 3px solid #1a3a5f;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-  margin-bottom: 24px;
+  color: white;
 }
 
 .top-products-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .top-products-header h3 {
@@ -21,13 +23,48 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  line-height: 1.2;
+}
+
+/* ESTILO DO FILTRO */
+.filter-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(26, 58, 95, 0.4);
+  border: 1px solid #1a3a5f;
+  border-radius: 6px;
+  padding: 2px 6px;
+  transition: border-color 0.2s;
+} 
+
+.filter-wrapper:hover {
+  border-color: #06A8F4;
+}
+
+.filter-icon {
+  color: #06A8F4;
+  margin-right: 8px;
+  font-size: 12px;
+}
+
+.period-select {
+  background: transparent;
+  color: white;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 3px 0;
+}
+
+.period-select option {
+  background: #01182d;
+  color: white;
 }
 
 .top-products-content {
-  max-height: 250px;
-  min-height: 250px;
   position: relative;
+  min-height: 250px;
 }
 
 .loading, .error {
@@ -35,24 +72,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 250px;
+  min-height: 300px;
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
 }
 
-.loading p {
-  font-size: 1.125rem;
-  margin: 0;
-}
-
-.error {
-  color: #E53935;
-}
-
-.error p {
-  font-size: 1.125rem;
-  margin-bottom: 16px;
-}
+.error { color: #E53935; }
 
 .retry-btn {
   background: #E53935;
@@ -62,37 +87,36 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.retry-btn:hover {
-  background: #c62828;
-  transform: translateY(-1px);
+  margin-top: 10px;
 }
 
 .products-list {
-  position: relative;
-  width: 100%;
-  min-height: 250px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-/* ✅ ABORDAGEM COM DIVISÓRIAS E PADDING MENOR */
 .product-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 0px;
-  flex: 1;
-  min-height: 52px;
-  border-bottom: 1px solid rgba(26, 58, 95, 0.5);
+  gap: 8px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(26, 58, 95, 0.5);
+  border-radius: 8px;
+  transition: transform 0.2s, background 0.2s;
 }
 
-/* ✅ REMOVER BORDA DO ÚLTIMO ITEM */
-.product-item:last-child {
-  border-bottom: none;
+/*.product-item:hover {
+  background: rgba(26, 58, 95, 0.3);
+  transform: translateX(4px);
+} */
+
+/* 🔥 DESTAQUE DO PRIMEIRO LUGAR */
+.product-item.first-place {
+  background: linear-gradient(90deg, #7cf52538 0%, #7cf52500 100%);
+  border: 1px solid linear-gradient(90deg, #7cf52538 0%, rgba(26, 58, 95, 0.5)100%);
+  box-shadow: 0 4px 12px #7cf5250a;
 }
 
 .product-rank {
@@ -101,220 +125,164 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  background: #3b82f6;
-  border-radius: 6px;
+  background: transparent;
+  border-radius: 50%;
   flex-shrink: 0;
-}
-
-.rank-number {
-  color: white;
-  font-size: 14px;
   font-weight: 500;
+  font-size: 16px;
 }
 
+.product-rank.gold-rank {
+  background: transparent;
+  color: #7df525;
+  /* box-shadow: 0 0 10px #7cf52561; */
+}
+
+/* IMAGEM E PLACEHOLDER (ALINHADO COM PRODUTO-LIST) */
+.container-imagem-top {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: rgba(26, 58, 95, 0.3);
+  border: 1px solid #1a3a5f;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.produto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px; /* Ligeiramente menor que o container para não sobrepor a borda */
+  display: block;
+}
+
+.img-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.img-placeholder .icon-img {
+  font-size: 20px;
+  opacity: 0.5;
+}
+
+/* .fa-circle-up {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  color: #E68A00;
+  font-size: 16px;
+  background: white;
+  border-radius: 50%;
+  padding: 1px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  z-index: 2;
+} */
+
+/* INFORMAÇÕES E MÉTRICAS */
 .product-info {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 2px;
-  /* ✅ ADICIONADO: Permite que o container flexível encolha abaixo do tamanho do conteúdo */
   min-width: 0;
 }
 
 .product-name {
-  color: white;
   font-size: 14px;
-  font-weight: 400;
-  line-height: 1.2;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* ✅ ADICIONADO: Ocupa 100% da largura disponível do container pai */
-  width: 100%;
-  display: block;
+  margin-bottom: 0px;
 }
 
-.product-sales {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 11px;
-  font-weight: 400;
+.first-place .product-name {
+  color: white;
 }
+
+.product-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.metric-box {
+  display: flex;
+  align-items:flex-start;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.metric-value {
+  font-size: 12px;
+}
+
+.highlight-blue { color: rgba(255, 255, 255, 0.5); }
+.lucro-positivo { color: #7df525; }
+.lucro-negativo { color: #F44336; }
+
 
 /* ========== RESPONSIVO ========== */
 
-/* TABLET (1024px) */
-@media (max-width: 1024px) {
-  .top-products-container {
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .top-products-header {
-    margin-bottom: 16px;
-  }
-  
-  .products-list {
-    height: 250px;
-  }
-}
-
-/* MOBILE GRANDE (768px) */
 @media (max-width: 768px) {
-  .top-products-container {
-    padding: 16px;
-    margin-bottom: 0;
-    border: 2px solid #1a3a5f;
+  .top-products-container { 
+    padding: 14px 12px; 
   }
-  
-  .top-products-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  
-  .top-products-header h3 {
-    font-size: 16px;
-  }
-  
-  .products-list {
-    height: 200px;
-  }
-  
-  .top-products-content {
-    min-height: 200px;
-  }
-  
-  .loading, .error {
-    min-height: 200px;
+
+  .filter-wrapper {
+    display: none;
   }
   
   .product-item {
-    padding: 10px 0px;
-    min-height: 48px;
-    gap: 10px;
-    /* ✅ GARANTIR comportamento flex correto no mobile */
-    min-width: 0;
-  }
-  
-  .product-rank {
-    width: 26px;
-    height: 26px;
-  }
-  
-  .rank-number {
-    font-size: 11px;
-  }
-  
-  .product-name {
-    font-size: 14px;
-  }
-  
-  .product-sales {
-    font-size: 10px;
-  }
-  
-  /* ✅ REFORÇAR para mobile */
-  .product-info {
-    min-width: 0;
-  }
-}
-
-/* ✅ NOVO BREAKPOINT CRÍTICO: MOBILE PEQUENO (480px) */
-@media (max-width: 480px) {
-  .top-products-container {
-    padding: 12px;
-    margin-bottom: 0;
-    border-width: 1px;
-    border: 2px solid #1a3a5f;
-  }
-  
-  .top-products-header {
-    margin-bottom: 12px;
-  }
-  
-  .top-products-header h3 {
-    font-size: 14px;
-  }
-  
-  .product-item {
-    padding: 8px 0px;
-    min-height: 42px;
-    gap: 8px;
-  }
-  
-  .product-rank {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-  }
-  
-  .rank-number {
-    font-size: 10px;
-  }
-  
-  /* ✅ SOLUÇÃO DEFINITIVA PARA MOBILE PEQUENO */
-  .product-name {
-    font-size: 12px;
-    /* Força truncamento com largura máxima calculada */
-    max-width: calc(100vw - 120px); /* Largura da tela menos espaço dos outros elementos */
-  }
-  
-  .product-sales {
-    font-size: 9px;
-  }
-}
-
-/* ✅ BREAKPOINT PARA MOBILE MUITO PEQUENO (360px) - CELULARES ANTIGOS */
-@media (max-width: 360px) {
-  .top-products-container {
+    display: flex;
+    flex-wrap: wrap; /* Permite que os elementos quebrem para a linha de baixo */
+    align-items: center;
+    gap: 8px; /* Mantém o espaçamento horizontal uniforme */
     padding: 8px;
-    margin-bottom: 8px;
   }
-  
-  .top-products-header h3 {
+
+  /* O display: contents faz o título e as métricas agirem como filhos diretos do .product-item */
+.product-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+  .product-rank {
+    position: static; /* Remove a posição absoluta para ele seguir o fluxo */
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  /* A imagem mantém o tamanho padrão, sem precisar de margens forçadas */
+  .container-imagem-top {
+    margin: 0;
+  }
+
+  .product-name {
     font-size: 13px;
   }
   
-  .product-item {
-    gap: 6px;
-    padding: 6px 0px;
-    min-height: 38px;
-  }
-  
-  .product-name {
-    font-size: 10px;
-    max-width: calc(100vw - 100px); /* Ainda mais ajustado */
-  }
-  
-  .product-rank {
-    width: 20px;
-    height: 20px;
-    border-radius: 3px;
-  }
-  
-  .rank-number {
-    font-size: 9px;
-  }
-  
-  .product-sales {
-    font-size: 8px;
-  }
 }
 
-/* ✅ CORREÇÃO DE EMERGÊNCIA - SE NADA FUNCIONAR */
-/* Descomente apenas se os breakpoints acima não resolverem */
-/*
 @media (max-width: 480px) {
-  .top-products-container {
-    overflow-x: hidden !important;
-  }
-  
-  .products-list {
-    overflow-x: hidden !important;
-  }
-  
-  .product-name {
-    max-width: 150px !important;
-  }
+  .top-products-container { padding: 12px; }
+  .top-products-header h3 { font-size: 14px; }
+  .metric-value { font-size: 12px; }
+  .metric-label { font-size: 10px; }
+  .product-name { font-size: 12px; }
 }
-*/

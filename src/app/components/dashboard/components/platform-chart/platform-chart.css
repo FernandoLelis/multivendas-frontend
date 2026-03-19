@@ -30,7 +30,17 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 254px;
+  min-height: 301px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);  
+  min-height: 303px;
 }
 
 .chart-main-layout {
@@ -39,7 +49,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 10px;
+  gap: 10px;  
 }
 
 /* Wrapper do gráfico */
