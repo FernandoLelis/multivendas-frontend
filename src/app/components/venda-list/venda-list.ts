@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VendaService } from '../../services/venda.service';
 import { VendaFormComponent } from '../venda-form/venda-form';
+import { VendaCancelarFormComponent } from '../venda-cancelar-form/venda-cancelar-form';
 import { CompraFormComponent } from '../compra-form/compra-form';
 import { ModalService } from '../../services/modal.service';
 import { BrazilianCurrencyPipe } from '../../pipes/brazilian-currency.pipe';
@@ -15,6 +16,7 @@ import { Produto } from '../../models/produto';
     CommonModule, 
     FormsModule, 
     VendaFormComponent, 
+    VendaCancelarFormComponent,
     CompraFormComponent,
     BrazilianCurrencyPipe
   ],
@@ -31,13 +33,16 @@ export class VendaListComponent implements OnInit {
   totalPaginas: number = 1;
   paginasArray: number[] = [];
 
-  // Filtros Padrões já selecionados
   termoBusca: string = '';
   ordenacao: string = 'mais_recentes';
   periodo: string = 'todos';
   filtroPlataforma: string = 'todas';
+  filtroStatus: string = 'todas';
 
-  // Modais e Estados
+  periodoPersonalizado: boolean = false;
+  dataInicioPersonalizada: string = '';
+  dataFimPersonalizada: string = '';
+
   mostrarFormVenda: boolean = false;
   mostrarModal: boolean = false;
   mostrarModalFiltros: boolean = false;
@@ -45,10 +50,11 @@ export class VendaListComponent implements OnInit {
   vendaSelecionada: any = null;
   compraEditando: any = null;
   
-  // Controle de expansão dos detalhes
+  mostrarModalCancelar: boolean = false;
+  vendaParaCancelar: any = null;
+
   vendaDetalhesExpandidaId: any = null;
 
-  // Objeto do Relatório Dinâmico
   resumoVendas = {
     quantidade: 0,
     faturamento: 0,
@@ -71,7 +77,7 @@ export class VendaListComponent implements OnInit {
     this.vendaService.getVendas().subscribe({
       next: (vendas) => {
         this.vendasOriginais = (vendas || []).map((venda: any) => ({
-          ...this.calcularLucroERoi(venda),
+          ...venda,
           mostrarProdutos: false
         }));
         this.aplicarFiltrosEOrdenacao();
@@ -89,26 +95,34 @@ export class VendaListComponent implements OnInit {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    // 1. Filtro de Busca
+    // 1. Filtro de Busca (agora abrangente)
     if (this.termoBusca.trim() !== '') {
-      const termo = this.termoBusca.toLowerCase().trim();
-      filtrados = filtrados.filter(v => 
-        (v.idPedido && v.idPedido.toLowerCase().includes(termo)) ||
-        (v.plataforma && v.plataforma.toLowerCase().includes(termo))
-      );
+      const termo = this.termoBusca.trim();
+      filtrados = filtrados.filter(v => this.vendaContemTermo(v, termo));
     }
 
     // 2. Filtro de Período
     if (this.periodo !== 'todos') {
-      filtrados = filtrados.filter(v => {
-        const dataVenda = new Date(v.data);
-        if (this.periodo === 'hoje') return dataVenda >= hoje;
-        if (this.periodo === '7_dias') return dataVenda >= new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
-        if (this.periodo === '30_dias') return dataVenda >= new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
-        if (this.periodo === 'este_mes') return dataVenda.getMonth() === hoje.getMonth() && dataVenda.getFullYear() === hoje.getFullYear();
-        if (this.periodo === 'este_ano') return dataVenda.getFullYear() === hoje.getFullYear();
-        return true;
-      });
+      if (this.periodo === 'personalizado' && this.dataInicioPersonalizada && this.dataFimPersonalizada) {
+        const inicio = new Date(this.dataInicioPersonalizada);
+        inicio.setHours(0, 0, 0, 0);
+        const fim = new Date(this.dataFimPersonalizada);
+        fim.setHours(23, 59, 59, 999);
+        filtrados = filtrados.filter(v => {
+          const dataVenda = new Date(v.data);
+          return dataVenda >= inicio && dataVenda <= fim;
+        });
+      } else if (this.periodo !== 'personalizado') {
+        filtrados = filtrados.filter(v => {
+          const dataVenda = new Date(v.data);
+          if (this.periodo === 'hoje') return dataVenda >= hoje;
+          if (this.periodo === '7_dias') return dataVenda >= new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
+          if (this.periodo === '30_dias') return dataVenda >= new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
+          if (this.periodo === 'este_mes') return dataVenda.getMonth() === hoje.getMonth() && dataVenda.getFullYear() === hoje.getFullYear();
+          if (this.periodo === 'este_ano') return dataVenda.getFullYear() === hoje.getFullYear();
+          return true;
+        });
+      }
     }
 
     // 3. Filtro de Plataforma
@@ -116,7 +130,16 @@ export class VendaListComponent implements OnInit {
       filtrados = filtrados.filter(v => this.getPlataformaClass(v.plataforma) === this.filtroPlataforma);
     }
 
-    // 4. Ordenação
+    // 4. Filtro de Status
+    if (this.filtroStatus !== 'todas') {
+      if (this.filtroStatus === 'ativas') {
+        filtrados = filtrados.filter(v => v.status === 'ATIVA');
+      } else if (this.filtroStatus === 'canceladas') {
+        filtrados = filtrados.filter(v => v.status === 'CANCELADA');
+      }
+    }
+
+    // 5. Ordenação
     filtrados.sort((a, b) => {
       const dataA = new Date(a.data).getTime();
       const dataB = new Date(b.data).getTime();
@@ -134,9 +157,37 @@ export class VendaListComponent implements OnInit {
     this.vendasFiltradas = filtrados;
     this.paginaAtual = 1; 
     
-    // Atualiza Cálculos do Relatório
     this.calcularResumoVendas();
     this.atualizarPaginacao();
+  }
+
+  // Função auxiliar para verificar se a venda contém o termo de busca
+  private vendaContemTermo(venda: any, termo: string): boolean {
+    const termoLower = termo.toLowerCase();
+
+    // ID do pedido
+    if (venda.idPedido && venda.idPedido.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+
+    // Plataforma
+    if (venda.plataforma && venda.plataforma.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+
+    // Produtos
+    if (venda.itens && Array.isArray(venda.itens)) {
+      for (const item of venda.itens) {
+        const nome = item.produto?.nome || item.produtoNome || '';
+        const sku = item.produto?.sku || item.produtoSku || '';
+        if (nome.toLowerCase().includes(termoLower) ||
+            sku.toLowerCase().includes(termoLower)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   calcularResumoVendas(): void {
@@ -238,22 +289,6 @@ export class VendaListComponent implements OnInit {
     return this.getItensAgrupados(venda).length;
   }
 
-  calcularLucroERoi(venda: any): any {
-    const custoProduto = Number(venda.custoProdutoVendido || 0);
-    const custoEnvio = Number(venda.custoEnvio || 0);
-    const tarifa = Number(venda.tarifaPlataforma || 0);
-    const precoVenda = Number(venda.precoVenda || 0);
-    const fretePago = Number(venda.fretePagoPeloCliente || 0);
-    const despesasOperacionais = Number(venda.despesasOperacionais || 0);
-
-    const faturamento = precoVenda + fretePago;
-    const custoEfetivoTotal = custoProduto + custoEnvio + tarifa;
-    const lucroLiquido = (faturamento - custoEfetivoTotal) - despesasOperacionais;
-    const roi = custoEfetivoTotal > 0 ? (lucroLiquido / custoEfetivoTotal) * 100 : 0;
-
-    return { ...venda, custoEfetivoTotal, lucroLiquido, roi };
-  }
-
   getPlataformaClass(plataforma: string): string {
     const p = (plataforma || '').toLowerCase();
     if (p.includes('amazon')) return 'amazon';
@@ -270,7 +305,6 @@ export class VendaListComponent implements OnInit {
   novaVenda() { this.vendaSelecionada = null; this.mostrarFormVenda = true; }
   editarVenda(venda: any) { this.vendaSelecionada = venda; this.mostrarFormVenda = true; }
   
-  // NOVA FUNÇÃO: Alterna os detalhes expansíveis
   detalhesVenda(venda: any) { 
     if (this.vendaDetalhesExpandidaId === venda.id) {
       this.vendaDetalhesExpandidaId = null;
@@ -286,6 +320,37 @@ export class VendaListComponent implements OnInit {
         this.carregarVendas();
       });
     });
+  }
+
+  abrirModalCancelar(venda: any): void {
+    this.vendaParaCancelar = venda;
+    this.mostrarModalCancelar = true;
+  }
+
+  fecharModalCancelar(): void {
+    this.mostrarModalCancelar = false;
+    this.vendaParaCancelar = null;
+  }
+
+  onVendaCancelada(): void {
+    this.carregarVendas();
+  }
+
+  abrirModalReativar(venda: any): void {
+    this.modalService.confirmarReativacao(
+      `Reativar venda ${venda.idPedido}? Esta ação irá reverter o cancelamento e ajustar o estoque se necessário.`,
+      () => {
+        this.vendaService.reativarVenda(venda.id).subscribe({
+          next: () => {
+            this.modalService.mostrarSucesso('Venda reativada com sucesso!');
+            this.carregarVendas();
+          },
+          error: (err) => {
+            this.modalService.mostrarErro('Erro ao reativar venda: ' + err.message);
+          }
+        });
+      }
+    );
   }
 
   toggleProdutos(venda: any): void {

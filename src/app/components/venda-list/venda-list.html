@@ -5,7 +5,7 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <input 
         type="text" 
-        placeholder="Buscar por ID ou Plataforma..."
+        placeholder="Buscar por ID, Produto, SKU..."
         [(ngModel)]="termoBusca"
         (input)="aplicarFiltrosEOrdenacao()">
     </div>
@@ -65,6 +65,11 @@
         <span class="separador-header">•</span>
         <span class="pedido-data">{{venda.data | date:'dd/MM/yyyy'}}</span>
       </div>
+
+      <!-- NOVA SEÇÃO: Motivo do cancelamento -->
+      <div *ngIf="venda.status === 'CANCELADA' && venda.motivoCancelamento" class="cancelamento-info">
+        <strong>Cancelada:</strong> {{ venda.motivoCancelamento }}
+      </div>
       
       <div class="linha-produto linha-clicavel" (click)="toggleProdutos(venda)">
         
@@ -93,32 +98,71 @@
         </div>
 
         <div class="col-qtd-custo" *ngIf="getNumeroProdutos(venda) === 1">
-          <div class="metrica-linha"><span class="lbl">Qtd:</span> <span class="val">{{getItensAgrupados(venda)[0]?.quantidade}}</span></div>
-          <div class="metrica-linha"><span class="lbl">Custo Médio:</span> <span class="val">{{getItensAgrupados(venda)[0]?.custoMedio | brlCurrency}}</span></div>
+          <div class="metrica-linha">
+            <span class="lbl">Qtd:</span> 
+            <span class="val" [class.striked]="venda.status === 'CANCELADA' && venda.retornouEstoque === true">{{getItensAgrupados(venda)[0]?.quantidade}}</span>
+          </div>
+          <div class="metrica-linha">
+            <span class="lbl">Custo Médio:</span> 
+            <span class="val" [class.striked]="venda.status === 'CANCELADA' && venda.retornouEstoque === true">{{getItensAgrupados(venda)[0]?.custoMedio | brlCurrency}}</span>
+          </div>
         </div>
 
         <div class="col-qtd-custo" *ngIf="getNumeroProdutos(venda) > 1">
-          <div class="metrica-linha"><span class="lbl">Qtd Total:</span> <span class="val">{{getNumeroTotalUnidades(venda)}}</span></div>
-          <div class="metrica-linha"><span class="lbl">Custo Efetivo:</span> <span class="val">{{venda.custoEfetivoTotal | brlCurrency}}</span></div>
+          <div class="metrica-linha">
+            <span class="lbl">Qtd Total:</span> 
+            <span class="val" [class.striked]="venda.status === 'CANCELADA' && venda.retornouEstoque === true">{{getNumeroTotalUnidades(venda)}}</span>
+          </div>
+          <div class="metrica-linha">
+            <span class="lbl">Custo Efetivo:</span> 
+            <span class="val">{{venda.custoEfetivoTotal | brlCurrency}}</span>
+          </div>
         </div>
 
         <div class="divisor-vertical"></div>
 
         <div class="col-metricas-empilhadas" *ngIf="getNumeroProdutos(venda) === 1">
-          <div class="metrica-linha"><span class="lbl">Faturamento:</span> <span class="val txt-white">{{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency}}</span></div>
-          <div class="metrica-linha"><span class="lbl">Custo Efetivo:</span> <span class="val">{{venda.custoEfetivoTotal | brlCurrency}}</span></div>
-          <div class="metrica-linha"><span class="lbl">Lucro Líquido:</span> <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span></div>
-          <div class="metrica-linha"><span class="lbl">ROI:</span> <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span></div>
+          <div class="metrica-linha">
+            <span class="lbl">Faturamento:</span> 
+            <span class="val" [class.striked]="venda.status === 'CANCELADA'">
+              {{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency }}
+            </span>
+          </div>
+          <div class="metrica-linha">
+            <span class="lbl">Custo Efetivo:</span> 
+            <span class="val">{{venda.custoEfetivoTotal | brlCurrency}}</span>
+          </div>
+          <div class="metrica-linha">
+            <span class="lbl">Lucro Líquido:</span> 
+            <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span>
+          </div>
+          <div class="metrica-linha">
+            <span class="lbl">ROI:</span> 
+            <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span>
+          </div>
         </div>
 
         <div class="col-metricas-empilhadas" *ngIf="getNumeroProdutos(venda) > 1">
-          <div class="metrica-linha"><span class="lbl">Faturamento:</span> <span class="val txt-white">{{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency}}</span></div>
-          <div class="metrica-linha"><span class="lbl">Lucro Líquido:</span> <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span></div>
-          <div class="metrica-linha"><span class="lbl">ROI:</span> <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span></div>
+          <div class="metrica-linha">
+            <span class="lbl">Faturamento:</span> 
+            <span class="val" [class.striked]="venda.status === 'CANCELADA'">
+              {{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency }}
+            </span>
+          </div>
+          <div class="metrica-linha">
+            <span class="lbl">Lucro Líquido:</span> 
+            <span class="val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span>
+          </div>
+          <div class="metrica-linha">
+            <span class="lbl">ROI:</span> 
+            <span class="val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span>
+          </div>
         </div>
 
         <div class="col-botoes" (click)="$event.stopPropagation()">
           <button class="btn-acao btn-editar" (click)="editarVenda(venda)">Editar</button>
+          <button *ngIf="venda.status === 'ATIVA'" class="btn-acao btn-cancelar" (click)="abrirModalCancelar(venda)">Cancelar</button>
+          <button *ngIf="venda.status === 'CANCELADA'" class="btn-acao btn-reativar" (click)="abrirModalReativar(venda)">Reativar</button>
           <button class="btn-acao btn-excluir" (click)="excluirVenda(venda)">Excluir</button>
         </div>
       </div>
@@ -140,8 +184,14 @@
             <div class="sku-tag-min" *ngIf="item.sku">SKU: {{item.sku}}</div>
           </div>
           <div class="col-qtd-custo-min">
-            <div class="metrica-linha-min"><span>Qtd:</span> <strong>{{item.quantidade}}</strong></div>
-            <div class="metrica-linha-min"><span>Custo Médio:</span> <strong>{{item.custoMedio | brlCurrency}}</strong></div>
+            <div class="metrica-linha-min">
+              <span>Qtd:</span> 
+              <strong [class.striked]="venda.status === 'CANCELADA' && venda.retornouEstoque === true">{{item.quantidade}}</strong>
+            </div>
+            <div class="metrica-linha-min">
+              <span>Custo Médio:</span> 
+              <strong [class.striked]="venda.status === 'CANCELADA' && venda.retornouEstoque === true">{{item.custoMedio | brlCurrency}}</strong>
+            </div>
           </div>
           <div class="espaco-botoes"></div>
         </div>
@@ -159,19 +209,50 @@
 
           <div class="coluna-detalhe">
             <h4><i class="fa-solid fa-money-bill-wave"></i> Valores Financeiros</h4>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Preço de Venda:</span> <span class="detalhe-val txt-white">{{venda.precoVenda | brlCurrency}}</span></div>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Frete Pago (Cliente):</span> <span class="detalhe-val txt-white">{{venda.fretePagoPeloCliente | brlCurrency}}</span></div>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Custo de Envio (Correios/Transp.):</span> <span class="detalhe-val">{{venda.custoEnvio | brlCurrency}}</span></div>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Tarifa da Plataforma:</span> <span class="detalhe-val">{{venda.tarifaPlataforma | brlCurrency}}</span></div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Preço de Venda:</span>
+              <span class="detalhe-val" [class.striked]="venda.status === 'CANCELADA'">{{venda.precoVenda | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Frete Pago (Cliente):</span>
+              <span class="detalhe-val" [class.striked]="venda.status === 'CANCELADA'">{{venda.fretePagoPeloCliente | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Custo de Envio (Correios/Transp.):</span>
+              <span class="detalhe-val">{{venda.custoEnvio | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Tarifa da Plataforma:</span>
+              <span class="detalhe-val" [class.striked]="venda.status === 'CANCELADA'">{{venda.tarifaPlataforma | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha" *ngIf="venda.status === 'CANCELADA'">
+              <span class="detalhe-lbl">Custo de Retorno (Logística Reversa):</span>
+              <span class="detalhe-val">{{venda.custoRetorno | brlCurrency}}</span>
+            </div>
           </div>
 
           <div class="coluna-detalhe">
             <h4><i class="fa-solid fa-calculator"></i> Cálculos Automáticos</h4>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Faturamento Total:</span> <span class="detalhe-val txt-white">{{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency}}</span></div>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Custo do Produto:</span> <span class="detalhe-val">{{venda.custoProdutoVendido | brlCurrency}}</span></div>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Custo Efetivo Total:</span> <span class="detalhe-val">{{venda.custoEfetivoTotal | brlCurrency}}</span></div>
-            <div class="detalhe-linha"><span class="detalhe-lbl">Lucro Líquido:</span> <span class="detalhe-val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span></div>
-            <div class="detalhe-linha"><span class="detalhe-lbl">ROI:</span> <span class="detalhe-val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span></div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Faturamento Total:</span>
+              <span class="detalhe-val" [class.striked]="venda.status === 'CANCELADA'">{{ (venda.precoVenda + (venda.fretePagoPeloCliente || 0)) | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Custo do Produto:</span>
+              <span class="detalhe-val" [class.striked]="venda.status === 'CANCELADA' && venda.retornouEstoque === true">{{venda.custoProdutoVendido | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Custo Efetivo Total:</span>
+              <span class="detalhe-val">{{venda.custoEfetivoTotal | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">Lucro Líquido:</span>
+              <span class="detalhe-val txt-lucro" [class.negativo]="venda.lucroLiquido < 0">{{venda.lucroLiquido | brlCurrency}}</span>
+            </div>
+            <div class="detalhe-linha">
+              <span class="detalhe-lbl">ROI:</span>
+              <span class="detalhe-val txt-lucro" [class.negativo]="venda.roi < 0">{{venda.roi | number:'1.2-2'}}%</span>
+            </div>
           </div>
 
         </div>
@@ -201,18 +282,35 @@
     
     <div class="modal-filtros-body">
       
+      <!-- Período -->
       <div class="filtro-bloco">
         <label>Período</label>
-        <select [(ngModel)]="periodo" (change)="aplicarFiltrosEOrdenacao()">
+        <select [(ngModel)]="periodo" (change)="periodoPersonalizado = (periodo === 'personalizado'); aplicarFiltrosEOrdenacao()">
           <option value="todos">Todo o período</option>
           <option value="hoje">Hoje</option>
           <option value="7_dias">Últimos 7 dias</option>
           <option value="30_dias">Últimos 30 dias</option>
           <option value="este_mes">Este Mês</option>
           <option value="este_ano">Este Ano</option>
+          <option value="personalizado">Personalizado</option>
         </select>
       </div>
 
+      <!-- Datas personalizadas -->
+      <div class="filtro-bloco" *ngIf="periodo === 'personalizado'">
+        <div class="datas-personalizadas">
+          <div class="campo-data">
+            <label>Data Início</label>
+            <input type="date" [(ngModel)]="dataInicioPersonalizada" (change)="aplicarFiltrosEOrdenacao()">
+          </div>
+          <div class="campo-data">
+            <label>Data Fim</label>
+            <input type="date" [(ngModel)]="dataFimPersonalizada" (change)="aplicarFiltrosEOrdenacao()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Plataforma -->
       <div class="filtro-bloco">
         <label>Plataforma</label>
         <select [(ngModel)]="filtroPlataforma" (change)="aplicarFiltrosEOrdenacao()">
@@ -224,6 +322,17 @@
         </select>
       </div>
 
+      <!-- Status -->
+      <div class="filtro-bloco">
+        <label>Status</label>
+        <select [(ngModel)]="filtroStatus" (change)="aplicarFiltrosEOrdenacao()">
+          <option value="todas">Todas</option>
+          <option value="ativas">Ativas</option>
+          <option value="canceladas">Canceladas</option>
+        </select>
+      </div>
+
+      <!-- Ordenação -->
       <div class="filtro-bloco">
         <label>Ordenar por</label>
         <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">
@@ -257,3 +366,10 @@
   (fecharModal)="fecharFormCompra()" 
   (compraSalva)="onCompraSalva()">
 </app-compra-form>
+
+<app-venda-cancelar-form
+  *ngIf="mostrarModalCancelar"
+  [venda]="vendaParaCancelar"
+  (fechar)="fecharModalCancelar()"
+  (cancelado)="onVendaCancelada()">
+</app-venda-cancelar-form>

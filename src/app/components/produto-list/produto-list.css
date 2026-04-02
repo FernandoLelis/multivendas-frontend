@@ -471,11 +471,7 @@
 }
 
 @media (max-width: 768px) {
-  .produto-grid-container {
-    /* No Celular: Empilha tudo */
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
+  
   
   .col-imagem { align-items: flex-start; }
   .col-estoque, .col-financeiro { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-left: 0; padding-top: 15px; }
@@ -487,14 +483,14 @@
    ============================================================== */
 @media (max-width: 768px) {
   .header-busca-container {
-    flex-direction: column;
-    align-items: stretch;
+    /* align-items: stretch; */
     gap: 15px;
     padding: 15px;
+    border: 2px solid #1a3a5f; 
   }
   
   .busca-input-group {
-    width: auto; /* Remove max-width travado */
+    min-width: 100%; 
   }
   
   .divisor-vertical {
@@ -503,7 +499,9 @@
   
   .filtro-group {
     justify-content: space-between;
-    width: 100%;
+    width: auto;
+    margin: auto auto auto 0;
+    gap: 4px;
   }
 
   .espacador {
@@ -511,12 +509,23 @@
   }
 
   .info-anuncios {
-    text-align: center;
-    width: 100%;
+    text-align: right;
+    width: auto;
+    padding: 0;
   }
 
   .btn-novo-produto {
     width: 100%;
     margin-top: 5px;
+  }
+
+  .produto-card {
+      border: 2px solid #1a3a5f;
+  }
+
+  .produto-grid-container {
+    /* No Celular: Empilha tudo */
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 }

@@ -1,0 +1,56 @@
+<div class="modal-overlay" (click)="fecharModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-ban"></i> Cancelar Venda</h2>
+      <button class="btn-fechar" (click)="fecharModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="venda-info">
+        <strong>Pedido:</strong> {{ venda.idPedido }}<br>
+        <strong>Plataforma:</strong> {{ venda.plataforma }}<br>
+        <strong>Valor total:</strong> {{ (venda.precoVenda + venda.fretePagoPeloCliente) | brlCurrency }}
+      </p>
+
+      <div class="form-group">
+        <label for="motivo">Motivo do cancelamento *</label>
+        <textarea
+          id="motivo"
+          [(ngModel)]="motivo"
+          rows="3"
+          placeholder="Ex: Cliente desistiu, produto com defeito, etc."
+          required
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="custoRetorno">Custo de retorno (logística reversa) R$</label>
+        <input
+          type="number"
+          id="custoRetorno"
+          [(ngModel)]="custoRetorno"
+          step="0.01"
+          min="0"
+          placeholder="0.00"
+        />
+        <small>Custo adicional para trazer o produto de volta (frete reverso, etc.)</small>
+      </div>
+
+      <div class="checkbox-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="retornouEstoque" />
+          Retornar produtos ao estoque
+        </label>
+        <small *ngIf="!retornouEstoque">Os produtos serão dados como baixa (não voltam ao estoque).</small>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="fecharModal()" [disabled]="carregando">Voltar</button>
+      <button class="btn-confirmar-cancelamento" (click)="cancelarVenda()" [disabled]="carregando">
+        <span *ngIf="!carregando">Confirmar Cancelamento</span>
+        <span *ngIf="carregando">Cancelando...</span>
+      </button>
+    </div>
+  </div>
+</div>

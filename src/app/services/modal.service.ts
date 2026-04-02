@@ -192,6 +192,19 @@ export class ModalService {
     });
   }
 
+  // ✅ NOVO MÉTODO PARA REATIVAÇÃO
+  confirmarReativacao(mensagem: string, onConfirmar: () => void): void {
+    this.abrirModal({
+      titulo: 'Confirmar Reativação',
+      mensagem,
+      tipo: 'confirmacao',
+      textoBotaoPrimario: 'Reativar',
+      textoBotaoSecundario: 'Cancelar',
+      onConfirmar,
+      onCancelar: () => this.fecharModal()
+    });
+  }
+
   mostrarSucesso(mensagem: string): void {
     this.abrirModal({
       titulo: 'Sucesso',

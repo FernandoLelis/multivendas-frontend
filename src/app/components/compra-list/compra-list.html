@@ -5,7 +5,7 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <input 
         type="text" 
-        placeholder="ID, Fornecedor, Pedido ou..."
+        placeholder="Buscar por ID, Produto, SKU..."
         [(ngModel)]="termoBusca"
         (input)="aplicarFiltrosEOrdenacao()">
     </div>
@@ -89,6 +89,10 @@
           <div class="tags-identificacao">
             <span class="tag" *ngIf="compra.fornecedor"><i class="fa-solid fa-truck"></i> {{ compra.fornecedor }}</span>
             <span class="tag" *ngIf="compra.idPedidoCompra">Ped: {{ compra.idPedidoCompra }}</span>
+            <!-- SKU para compras de 1 produto -->
+            <span class="tag" *ngIf="getNumeroProdutos(compra) === 1 && compra.itens && compra.itens[0]?.produtoSku">
+              SKU: {{ compra.itens[0].produtoSku }}
+            </span>
             <span class="tag alerta-amarelo" *ngIf="isSistemaAntigo(compra)">Sistema Antigo</span>
           </div>
           
@@ -195,26 +199,35 @@
     
     <div class="modal-filtros-body">
       
+      <!-- Período -->
       <div class="filtro-bloco">
         <label>Período</label>
-        <select [(ngModel)]="periodo" (change)="aplicarFiltrosEOrdenacao()">
+        <select [(ngModel)]="periodo" (change)="periodoPersonalizado = (periodo === 'personalizado'); aplicarFiltrosEOrdenacao()">
           <option value="todos">Todo o período</option>
           <option value="hoje">Hoje</option>
           <option value="7_dias">Últimos 7 dias</option>
           <option value="30_dias">Últimos 30 dias</option>
           <option value="este_mes">Este Mês</option>
           <option value="este_ano">Este Ano</option>
+          <option value="personalizado">Personalizado</option>
         </select>
       </div>
 
-      <div class="filtro-bloco">
-        <label>Fornecedor</label>
-        <select [(ngModel)]="filtroFornecedor" (change)="aplicarFiltrosEOrdenacao()">
-          <option value="todos">Todos os Fornecedores</option>
-          <option *ngFor="let forn of fornecedoresUnicos" [value]="forn">{{ forn }}</option>
-        </select>
+      <!-- Datas personalizadas -->
+      <div class="filtro-bloco" *ngIf="periodo === 'personalizado'">
+        <div class="datas-personalizadas">
+          <div class="campo-data">
+            <label>Data Início</label>
+            <input type="date" [(ngModel)]="dataInicioPersonalizada" (change)="aplicarFiltrosEOrdenacao()">
+          </div>
+          <div class="campo-data">
+            <label>Data Fim</label>
+            <input type="date" [(ngModel)]="dataFimPersonalizada" (change)="aplicarFiltrosEOrdenacao()">
+          </div>
+        </div>
       </div>
 
+      <!-- Ordenação -->
       <div class="filtro-bloco">
         <label>Ordenar por</label>
         <select [(ngModel)]="ordenacao" (change)="aplicarFiltrosEOrdenacao()">

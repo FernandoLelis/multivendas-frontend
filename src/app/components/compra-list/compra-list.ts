@@ -38,8 +38,11 @@ export class ComprasComponent implements OnInit {
   termoBusca: string = '';
   ordenacao: string = 'mais_recentes';
   periodo: string = 'todos';
-  filtroFornecedor: string = 'todos';
-  fornecedoresUnicos: string[] = [];
+  
+  // NOVOS CAMPOS PARA PERÍODO PERSONALIZADO
+  periodoPersonalizado: boolean = false;
+  dataInicioPersonalizada: string = '';
+  dataFimPersonalizada: string = '';
 
   // Modais e Estados
   carregando: boolean = true;
@@ -101,7 +104,6 @@ export class ComprasComponent implements OnInit {
       mostrarProdutos: false
     }));
     
-    this.extrairFornecedores();
     this.aplicarFiltrosEOrdenacao();
     this.carregando = false;
   }
@@ -132,7 +134,6 @@ export class ComprasComponent implements OnInit {
         
         this.comprasOriginais = [...this.comprasOriginais, ...comprasAntigas];
         this.agruparComprasPorPedido();
-        this.extrairFornecedores();
         this.aplicarFiltrosEOrdenacao();
         this.carregando = false;
       },
@@ -152,7 +153,6 @@ export class ComprasComponent implements OnInit {
         }));
         
         this.agruparComprasPorPedido();
-        this.extrairFornecedores();
         this.aplicarFiltrosEOrdenacao();
         this.carregando = false;
         
@@ -190,13 +190,6 @@ export class ComprasComponent implements OnInit {
     this.comprasOriginais = Array.from(comprasAgrupadas.values());
   }
 
-  private extrairFornecedores(): void {
-    const fornecedores = this.comprasOriginais
-      .map((c: CompraComUI) => c.fornecedor)
-      .filter((f: string | undefined): f is string => !!f && f.trim() !== '');
-    this.fornecedoresUnicos = [...new Set(fornecedores)].sort();
-  }
-
   // ==================== FILTROS E PAGINAÇÃO ====================
 
   aplicarFiltrosEOrdenacao(): void {
@@ -204,33 +197,50 @@ export class ComprasComponent implements OnInit {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    // Busca de texto
+    // Busca de texto (AMPLIADA)
     if (this.termoBusca.trim() !== '') {
       const termo = this.termoBusca.toLowerCase().trim();
-      filtrados = filtrados.filter((c: CompraComUI) => 
-        (c.idPedidoCompra && c.idPedidoCompra.toLowerCase().includes(termo)) ||
-        (c.fornecedor && c.fornecedor.toLowerCase().includes(termo)) ||
-        (c.observacoes && c.observacoes.toLowerCase().includes(termo))
-      );
+      filtrados = filtrados.filter((c: CompraComUI) => {
+        // Busca por ID do pedido
+        if (c.idPedidoCompra && c.idPedidoCompra.toLowerCase().includes(termo)) return true;
+        // Busca por fornecedor
+        if (c.fornecedor && c.fornecedor.toLowerCase().includes(termo)) return true;
+        // Busca por nome do produto e SKU nos itens
+        if (c.itens && c.itens.length > 0) {
+          return c.itens.some((item: any) => {
+            const nomeProduto = item.produtoNome?.toLowerCase() || '';
+            const sku = item.produtoSku?.toLowerCase() || '';
+            return nomeProduto.includes(termo) || sku.includes(termo);
+          });
+        }
+        return false;
+      });
     }
 
     // Período
     if (this.periodo !== 'todos') {
-      filtrados = filtrados.filter((c: CompraComUI) => {
-        if (!c.data) return false;
-        const dataCompra = new Date(c.data);
-        if (this.periodo === 'hoje') return dataCompra >= hoje;
-        if (this.periodo === '7_dias') return dataCompra >= new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
-        if (this.periodo === '30_dias') return dataCompra >= new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
-        if (this.periodo === 'este_mes') return dataCompra.getMonth() === hoje.getMonth() && dataCompra.getFullYear() === hoje.getFullYear();
-        if (this.periodo === 'este_ano') return dataCompra.getFullYear() === hoje.getFullYear();
-        return true;
-      });
-    }
-
-    // Fornecedor
-    if (this.filtroFornecedor !== 'todos') {
-      filtrados = filtrados.filter((c: CompraComUI) => c.fornecedor === this.filtroFornecedor);
+      if (this.periodo === 'personalizado' && this.dataInicioPersonalizada && this.dataFimPersonalizada) {
+        const inicio = new Date(this.dataInicioPersonalizada);
+        inicio.setHours(0, 0, 0, 0);
+        const fim = new Date(this.dataFimPersonalizada);
+        fim.setHours(23, 59, 59, 999);
+        filtrados = filtrados.filter((c: CompraComUI) => {
+          if (!c.data) return false;
+          const dataCompra = new Date(c.data);
+          return dataCompra >= inicio && dataCompra <= fim;
+        });
+      } else if (this.periodo !== 'personalizado') {
+        filtrados = filtrados.filter((c: CompraComUI) => {
+          if (!c.data) return false;
+          const dataCompra = new Date(c.data);
+          if (this.periodo === 'hoje') return dataCompra >= hoje;
+          if (this.periodo === '7_dias') return dataCompra >= new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
+          if (this.periodo === '30_dias') return dataCompra >= new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
+          if (this.periodo === 'este_mes') return dataCompra.getMonth() === hoje.getMonth() && dataCompra.getFullYear() === hoje.getFullYear();
+          if (this.periodo === 'este_ano') return dataCompra.getFullYear() === hoje.getFullYear();
+          return true;
+        });
+      }
     }
 
     // Ordenação

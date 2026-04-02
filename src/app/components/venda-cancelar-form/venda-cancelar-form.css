@@ -1,0 +1,192 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #01182d;
+  border-radius: 12px;
+  border: 3px solid #1a3a5f;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #1a3a5f;
+  background: #01182d;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-header h2 i {
+  color: #FF9800;
+}
+
+.btn-fechar {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.btn-fechar:hover {
+  color: #E53935;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.venda-info {
+  background: #0a2540;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border-left: 4px solid #FF9800;
+  line-height: 1.5;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: white;
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.form-group textarea,
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #1a3a5f;
+  border-radius: 6px;
+  background-color: #01182d;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group textarea:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #06A8F4;
+}
+
+.form-group small {
+  display: block;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.checkbox-group {
+  background: #0a2540;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #1a3a5f;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #FF9800;
+}
+
+.checkbox-group small {
+  margin-top: 8px;
+  display: block;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  padding-left: 26px;
+}
+
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid #1a3a5f;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-cancelar {
+  background-color: transparent;
+  color: white;
+  border: 2px solid #1a3a5f;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover:not(:disabled) {
+  background-color: #1a3a5f;
+}
+
+.btn-confirmar-cancelamento {
+  background-color: #FF9800;
+  color: #01182d;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-confirmar-cancelamento:hover:not(:disabled) {
+  background-color: #F57C00;
+}
+
+.btn-confirmar-cancelamento:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+}

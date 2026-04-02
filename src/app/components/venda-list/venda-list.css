@@ -283,7 +283,7 @@
   flex-shrink: 0; 
 }
 
-.btn-editar, .btn-excluir {
+.btn-editar, .btn-excluir, .btn-cancelar, .btn-reativar {
   width: 100%;
   padding: 8px 12px;
   border-radius: 6px;
@@ -294,11 +294,45 @@
   text-align: center;
 }
 
+.btn-editar { 
+  background: transparent; 
+  color: #06A8F4; 
+  border: 1px solid #06A8F4; 
+}
+.btn-editar:hover { 
+  background-color: #06A8F4; 
+  color: #01182d; 
+}
 
-.btn-editar { background: transparent; color: #06A8F4; border: 1px solid #06A8F4; }
-.btn-editar:hover { background-color: #06A8F4; color: #01182d; }
-.btn-excluir { background: transparent; color: #E53935; border: 1px solid #E53935; }
-.btn-excluir:hover { background-color: #E53935; color: white; }
+.btn-excluir { 
+  background: transparent; 
+  color: #E53935; 
+  border: 1px solid #E53935; 
+}
+.btn-excluir:hover { 
+  background-color: #E53935; 
+  color: white; 
+}
+
+.btn-cancelar { 
+  background: transparent; 
+  color: #FF9800; 
+  border: 1px solid #FF9800; 
+}
+.btn-cancelar:hover { 
+  background-color: #FF9800; 
+  color: #01182d; 
+}
+
+.btn-reativar { 
+  background: transparent; 
+  color: #4caf50; 
+  border: 1px solid #4caf50; 
+}
+.btn-reativar:hover { 
+  background-color: #4caf50; 
+  color: white; 
+}
 
 /* ================== NOVO: LINK EXPANDIR DETALHES ================== */
 .linha-expandir-detalhes {
@@ -400,6 +434,41 @@
 .btn-aplicar-filtros { background-color: #06A8F4; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: background-color 0.2s; }
 .btn-aplicar-filtros:hover { background-color: #0584C2; }
 
+/* ================== DATAS PERSONALIZADAS ================== */
+.datas-personalizadas {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.campo-data {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo-data label {
+  font-size: 12px;
+  color: #A0AEC0;
+  font-weight: 500;
+}
+
+.campo-data input[type="date"] {
+  background-color: #2D3748;
+  border: 1px solid #4A5568;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: white;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+.campo-data input[type="date"]:focus {
+  border-color: #06A8F4;
+}
+
 /* ================== DETALHES EXPANDIDOS (MODAL INLINE) ================== */
 .detalhes-expandidos-container {
   border-top: 1px dashed #3a5f8f;
@@ -446,6 +515,31 @@
   font-weight: 500; 
   color: rgba(255, 255, 255, 0.8); 
   text-align: right; 
+}
+
+.striked {
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: #aaa;
+}
+
+/* Seção de motivo de cancelamento */
+.cancelamento-info {
+  background-color: #e5383543;
+  margin: 0;
+  padding: 10px 22px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cancelamento-info strong {
+  color: #E53935;
+  font-weight: 600;
+  font-size: 16px;
+  margin-right: 4px;
 }
 
 /* ================== RESPONSIVO ================== */

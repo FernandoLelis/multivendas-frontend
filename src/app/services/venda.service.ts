@@ -19,14 +19,12 @@ export class VendaService {
       tap(vendas => {
         console.log('🔍 [DEBUG GET VENDAS] Vendas recebidas:', vendas.length);
         
-        // ✅ CORREÇÃO: Analisar lotes PEPS em vez de verificar duplicados
         vendas.forEach((venda, index) => {
           console.log(`🔍 [DEBUG GET VENDAS] Venda ${index} - ID: ${venda.id}, Pedido: ${venda.idPedido}`);
           
           if (venda.itens && venda.itens.length > 0) {
             console.log(`🔍 [DEBUG GET VENDAS] Total de itens (lotes): ${venda.itens.length}`);
             
-            // Agrupar itens por produto para entender o PEPS
             const itensPorProduto = new Map<number, any[]>();
             
             venda.itens.forEach((item: any) => {
@@ -36,7 +34,6 @@ export class VendaService {
               itensPorProduto.get(item.produtoId)!.push(item);
             });
             
-            // Mostrar análise por produto
             itensPorProduto.forEach((itens, produtoId) => {
               if (itens.length > 1) {
                 console.log(`📦 [DEBUG GET VENDAS] Produto ${produtoId}: ${itens.length} lotes PEPS`);
@@ -63,7 +60,6 @@ export class VendaService {
         console.log('🔍 [DEBUG GET VENDA INDIVIDUAL] Itens totais (lotes):', venda.itens?.length || 0);
         
         if (venda.itens && venda.itens.length > 0) {
-          // ✅ CORREÇÃO: Agrupar por produto para mostrar análise PEPS
           const itensPorProduto = new Map<number, any[]>();
           
           venda.itens.forEach((item: any) => {
@@ -112,7 +108,6 @@ export class VendaService {
     if (venda.itens) {
       console.log('📤 [DEBUG] Itens recebidos no frontend:', venda.itens.length);
       
-      // ✅ CORREÇÃO: Mostrar análise dos itens recebidos
       const itensPorProduto = new Map<number, any[]>();
       
       venda.itens.forEach(item => {
@@ -129,13 +124,11 @@ export class VendaService {
       });
     }
     
-    // ✅ 1. Calcular precoVenda automaticamente
     if (!venda.precoVenda || venda.precoVenda === 0) {
       venda.precoVenda = calcularPrecoTotalVenda(venda.itens);
       console.log('📤 [DEBUG] precoVenda calculado:', venda.precoVenda);
     }
     
-    // ✅ 2. Preparar dados para o backend
     const vendaParaBackend = this.prepararVendaParaBackend(venda);
     
     console.log('📤 [DEBUG] Dados preparados para backend:', {
@@ -151,7 +144,6 @@ export class VendaService {
         console.log('✅ [DEBUG] Total de itens (lotes) retornados:', response.itens?.length || 0);
         
         if (response.itens && response.itens.length > 0) {
-          // ✅✅✅ CORREÇÃO CRÍTICA: Análise correta do PEPS
           console.log('📊 [DEBUG] 🎯 ANÁLISE DO PEPS APLICADO:');
           
           const itensPorProduto = new Map<number, any[]>();
@@ -163,7 +155,6 @@ export class VendaService {
             itensPorProduto.get(item.produtoId)!.push(item);
           });
           
-          // Análise detalhada por produto
           itensPorProduto.forEach((itens, produtoId) => {
             const produtoNome = itens[0].produtoNome || `Produto ${produtoId}`;
             const quantidadeTotal = itens.reduce((sum, item) => sum + item.quantidade, 0);
@@ -187,7 +178,6 @@ export class VendaService {
           console.log('✅ [DEBUG] O sistema consumiu múltiplos lotes conforme necessário.');
         }
         
-        // Campos calculados
         console.log('💰 [DEBUG] Campos calculados:', {
           custoProdutoVendido: response.custoProdutoVendido,
           faturamento: response.faturamento,
@@ -204,7 +194,6 @@ export class VendaService {
         if (error.error) {
           console.error('❌ [ERRO] Detalhes do erro:', error.error);
           
-          // Tratamento específico para erro de ID duplicado
           if (error.error.includes && error.error.includes('Já existe uma venda com este ID do pedido')) {
             console.error('❌ [ERRO] ID do pedido já existe no sistema!');
           }
@@ -218,7 +207,6 @@ export class VendaService {
   atualizarVenda(id: number, venda: Venda): Observable<Venda> {
     console.log('📤 [DEBUG] Atualizando venda:', id);
     
-    // Calcular precoVenda automaticamente
     if (!venda.precoVenda || venda.precoVenda === 0) {
       venda.precoVenda = calcularPrecoTotalVenda(venda.itens);
       console.log('📤 [DEBUG] precoVenda calculado para atualização:', venda.precoVenda);
@@ -276,6 +264,31 @@ export class VendaService {
     );
   }
 
+  cancelarVenda(id: number, dadosCancelamento: { motivo: string, custoRetorno: number, retornouEstoque: boolean }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/cancelar`, dadosCancelamento).pipe(
+      tap(response => {
+        console.log('✅ Venda cancelada com sucesso:', response);
+      }),
+      catchError(error => {
+        console.error('❌ Erro ao cancelar venda:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ========== NOVO MÉTODO REATIVAR ==========
+  reativarVenda(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/reativar`, {}).pipe(
+      tap(response => {
+        console.log('✅ Venda reativada com sucesso:', response);
+      }),
+      catchError(error => {
+        console.error('❌ Erro ao reativar venda:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   getDashboard(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/dashboard`).pipe(
       catchError(error => {
@@ -310,7 +323,6 @@ export class VendaService {
     
     console.log('📤 [DEBUG] Itens preparados para backend:', vendaParaBackend.itens.length);
     
-    // ✅ CORREÇÃO: Mostrar análise dos itens preparados
     const itensPorProduto = new Map<number, any[]>();
     vendaParaBackend.itens.forEach(item => {
       if (!itensPorProduto.has(item.produtoId)) {
