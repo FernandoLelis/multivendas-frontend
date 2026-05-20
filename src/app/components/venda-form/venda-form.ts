@@ -27,7 +27,6 @@ import { ModalService } from '../../services/modal.service';
 export class VendaFormComponent implements OnInit {
   @Input() venda: Venda | null = null;
   
-  // ✅ CORREÇÃO: Usando Alias para que o venda-list.html consiga escutar corretamente os eventos
   @Output('fechar') fecharEvent = new EventEmitter<void>();
   @Output('salvou') salvouEvent = new EventEmitter<void>();
   @Output() abrirCompraParaProduto = new EventEmitter<Produto>();
@@ -59,7 +58,7 @@ export class VendaFormComponent implements OnInit {
   vendaOriginal: Venda | null = null;
   itensOriginais: ItemVenda[] = [];
   quantidadesEditadas: Map<number, number> = new Map();
-mostrarModalCompra: any;
+  mostrarModalCompra: any;
 
   constructor(
     private vendaService: VendaService,
@@ -105,9 +104,30 @@ mostrarModalCompra: any;
     return Object.keys(this.erroEstoque).length > 0;
   }
 
+  // ✅ NOVO MÉTODO: Verifica se a lista de produtos mudou (adição ou remoção)
+  produtosModificados(): boolean {
+    if (!this.modoEdicao || !this.vendaOriginal) return false;
+    
+    const idsAtuais = this.vendaEdit.itens.map(i => i.produtoId).sort();
+    const idsOriginais = this.vendaOriginal.itens.map(i => i.produtoId).sort();
+    
+    if (idsAtuais.length !== idsOriginais.length) return true;
+    
+    for (let i = 0; i < idsAtuais.length; i++) {
+      if (idsAtuais[i] !== idsOriginais[i]) return true;
+    }
+    return false;
+  }
+
+  // ✅ MÉTODO ATUALIZADO: Inclui verificação de produtos modificados
   quantidadesModificadas(): boolean {
     if (!this.modoEdicao || !this.vendaOriginal || !this.vendaOriginal.itens) {
       return true; 
+    }
+    
+    // Se a lista de produtos mudou (adição/remoção), considera como modificado
+    if (this.produtosModificados()) {
+      return true;
     }
     
     if (this.quantidadesEditadas.size > 0) {
@@ -146,23 +166,13 @@ mostrarModalCompra: any;
       return false;
     }
     
-    const camposParaIgnorar = ['data', 'plataforma', 'fretePagoPeloCliente', 'custoEnvio', 'tarifaPlataforma'];
+    const camposParaVerificar = ['idPedido', 'plataforma', 'data', 'precoVenda'];
     
-    for (const campo of camposParaIgnorar) {
+    for (const campo of camposParaVerificar) {
       if (JSON.stringify(this.vendaEdit[campo as keyof Venda]) !== 
           JSON.stringify(this.vendaOriginal[campo as keyof Venda])) {
         return false;
       }
-    }
-    
-    if (this.vendaEdit.idPedido !== this.vendaOriginal.idPedido) {
-      return false;
-    }
-    
-    const precoEdit = Math.round(this.vendaEdit.precoVenda * 100) / 100;
-    const precoOriginal = Math.round(this.vendaOriginal.precoVenda * 100) / 100;
-    if (precoEdit !== precoOriginal) {
-      return false;
     }
     
     return true && !this.quantidadesModificadas();
@@ -484,7 +494,7 @@ mostrarModalCompra: any;
   }
 
   fechar(): void {
-    this.fecharEvent.emit(); // ✅ Usando o novo EventEmitter!
+    this.fecharEvent.emit();
   }
 
   prepararDadosParaEnvio(): any {
@@ -501,7 +511,22 @@ mostrarModalCompra: any;
       tarifaPlataforma: this.vendaEdit.tarifaPlataforma || 0
     };
     
-    if (this.modoEdicao && quantidadesModificadas && this.quantidadesEditadas.size > 0) {
+    // Log para depuração
+    console.log('📤 [DEBUG] Preparando dados para envio:', {
+      modoEdicao: this.modoEdicao,
+      apenasCamposBasicos,
+      quantidadesModificadas,
+      produtosModificados: this.produtosModificados(),
+      camposFinanceiros: {
+        frete: dadosVenda.fretePagoPeloCliente,
+        custoEnvio: dadosVenda.custoEnvio,
+        tarifa: dadosVenda.tarifaPlataforma
+      }
+    });
+    
+    // Decisão sobre envio de itens
+    if (this.modoEdicao && (quantidadesModificadas || this.produtosModificados())) {
+      // Quantidades modificadas OU lista de produtos alterada (adição/remoção): enviar itens
       dadosVenda.itens = [];
       this.quantidadesEditadas.forEach((novaQuantidade, produtoId) => {
         const produto = this.produtos.find(p => p.id === produtoId);
@@ -515,9 +540,21 @@ mostrarModalCompra: any;
           });
         }
       });
+      
+      // Se não houver itens em quantidadesEditadas, enviar toda a lista atualizada
+      if (dadosVenda.itens.length === 0) {
+        dadosVenda.itens = this.vendaEdit.itens.map(item => ({
+          produtoId: item.produtoId,
+          quantidade: item.quantidade,
+          precoUnitarioVenda: item.precoUnitarioVenda || 0
+        }));
+      }
     } else if (this.modoEdicao && apenasCamposBasicos) {
-      // Apenas campos básicos mudaram - Backend manterá os itens originais
+      // Apenas campos básicos (idPedido, plataforma, data, precoVenda) foram alterados
+      // NÃO enviar itens para evitar reprocessamento desnecessário
+      console.log('ℹ️ [DEBUG] Apenas campos básicos alterados - itens não serão enviados');
     } else {
+      // Nova venda OU edição com alterações nos itens (sem quantidades modificadas)
       dadosVenda.itens = this.vendaEdit.itens.map(item => ({
         produtoId: item.produtoId,
         quantidade: item.quantidade,
@@ -571,7 +608,7 @@ mostrarModalCompra: any;
     if (this.modoEdicao && this.vendaEdit.id) {
       this.vendaService.atualizarVenda(this.vendaEdit.id, dadosParaEnviar).subscribe({
         next: (vendaAtualizada) => {
-          this.salvouEvent.emit(); // ✅ Emitindo o evento correto!
+          this.salvouEvent.emit();
           this.fechar();
           this.modalService.mostrarSucesso('Venda atualizada com sucesso!');
         },
@@ -588,7 +625,7 @@ mostrarModalCompra: any;
     } else {
       this.vendaService.criarVenda(dadosParaEnviar).subscribe({
         next: (vendaSalva) => {
-          this.salvouEvent.emit(); // ✅ Emitindo o evento correto!
+          this.salvouEvent.emit();
           this.fechar();
           this.modalService.mostrarSucesso('Venda criada com sucesso!');
         },
