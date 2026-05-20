@@ -171,7 +171,7 @@ canvas {
 .loading, .empty-state {
   color: #b0bec5;
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
   width: 100%;
   padding: 20px 0;
 }
