@@ -122,7 +122,6 @@ export class DashboardService {
     );
   }
 
-  // 🆕 NOVO MÉTODO: Buscar despesas do mês anterior
   getTotalDespesasMesAnterior(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/api/despesas/total-mes-anterior`).pipe(
       map((total: any) => typeof total === 'object' ? total : Number(total)),
@@ -136,11 +135,21 @@ export class DashboardService {
     );
   }
 
-  // --- MÉTODOS SIMPLES DE DADOS ---
-  getFaturamentoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/faturamento-mes-atual`).pipe(catchError(() => of(0))); }
-  getCustoEfetivoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/custo-efetivo-mes-atual`).pipe(catchError(() => of(0))); }
-  getLucroBrutoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-bruto-mes-atual`).pipe(catchError(() => of(0))); }
-  getLucroLiquidoMesAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-liquido-mes-atual`).pipe(catchError(() => of(0))); }  
+  getFaturamentoMesAtual(): Observable<number> { 
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/faturamento-mes-atual`).pipe(catchError(() => of(0))); 
+  }
+  
+  getCustoEfetivoMesAtual(): Observable<number> { 
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/custo-efetivo-mes-atual`).pipe(catchError(() => of(0))); 
+  }
+  
+  getLucroBrutoMesAtual(): Observable<number> { 
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-bruto-mes-atual`).pipe(catchError(() => of(0))); 
+  }
+  
+  getLucroLiquidoMesAtual(): Observable<number> { 
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-liquido-mes-atual`).pipe(catchError(() => of(0))); 
+  }  
 
   getQuantidadeVendas(): Observable<QuantidadeVendas> {
     return this.http.get<QuantidadeVendas>(`${this.apiUrl}/api/vendas/quantidade-vendas`).pipe(
@@ -148,11 +157,38 @@ export class DashboardService {
     );
   }
 
-  getFaturamentoAnoAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/faturamento-ano-atual`).pipe(catchError(() => of(0))); }
-  getCustoEfetivoAnoAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/custo-efetivo-ano-atual`).pipe(catchError(() => of(0))); }
-  getLucroBrutoAnoAtual(): Observable<number> { return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-bruto-ano-atual`).pipe(catchError(() => of(0))); }
+  getFaturamentoAnoAtual(): Observable<number> { 
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/faturamento-ano-atual`).pipe(catchError(() => of(0))); 
+  }
+  
+  getCustoEfetivoAnoAtual(): Observable<number> { 
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/custo-efetivo-ano-atual`).pipe(catchError(() => of(0))); 
+  }
+  
+  getLucroBrutoAnoAtual(): Observable<number> { 
+    return this.http.get<number>(`${this.apiUrl}/api/vendas/lucro-bruto-ano-atual`).pipe(catchError(() => of(0))); 
+  }
 
-  // --- CARDS METRICS (AGREGADO) ---
+  // ✅ CORREÇÃO: Unificar lógica de crescimento com tratamento para valores negativos
+  // Regras:
+  // - Se anterior > 0: ((atual - anterior) / anterior) * 100
+  // - Se anterior === 0 e atual > 0: 100 (crescimento de 100%)
+  // - Se anterior === 0 e atual < 0: -100 (decrescimento de 100%)
+  // - Se ambos === 0: 0
+  private calculateGrowth(current: number, previous: number): number {
+    // Ambos zero
+    if (previous === 0 && current === 0) return 0;
+    
+    // Anterior zero e atual positivo
+    if (previous === 0 && current > 0) return 100;
+    
+    // Anterior zero e atual negativo
+    if (previous === 0 && current < 0) return -100;
+    
+    // Anterior diferente de zero: cálculo normal
+    return Number((((current - previous) / previous) * 100).toFixed(1));
+  }
+
   getCardsMetrics(): Observable<CardMetrics> {
     return forkJoin({
       faturamentoAno: this.getFaturamentoAnoAtual(),
@@ -160,13 +196,18 @@ export class DashboardService {
       lucroBrutoAno: this.getLucroBrutoAnoAtual(),
       despesasMes: this.getTotalDespesasMesAtual(),
       despesasAno: this.getTotalDespesas(),
-      despesasMesAnterior: this.getTotalDespesasMesAnterior(), // ✅ Injetando a chamada do mês anterior
+      despesasMesAnterior: this.getTotalDespesasMesAnterior(),
       faturamentoMes: this.getFaturamentoMesAtual(),
       custoEfetivoMes: this.getCustoEfetivoMesAtual(),
       quantidadeVendas: this.getQuantidadeVendas(),
       metricasAnteriores: this.getMetricasMesAnterior()
     }).pipe(
-      map(({ faturamentoAno, custoEfetivoAno, lucroBrutoAno, despesasMes, despesasAno, despesasMesAnterior, faturamentoMes, custoEfetivoMes, quantidadeVendas, metricasAnteriores }) => {    
+      map(({ 
+        faturamentoAno, custoEfetivoAno, lucroBrutoAno, 
+        despesasMes, despesasAno, despesasMesAnterior, 
+        faturamentoMes, custoEfetivoMes, 
+        quantidadeVendas, metricasAnteriores 
+      }) => {    
         const lucroBrutoMes = faturamentoMes - custoEfetivoMes;
         const lucroLiquidoMes = lucroBrutoMes - despesasMes;
         const roiMes = custoEfetivoMes > 0 ? (lucroLiquidoMes / custoEfetivoMes) * 100 : 0;     
@@ -180,27 +221,33 @@ export class DashboardService {
             growth: quantidadeVendas.variacao || 0 
           },
           faturamento: { 
-            atual: faturamentoMes, total: faturamentoAno,
+            atual: faturamentoMes, 
+            total: faturamentoAno,
             growth: this.calculateGrowth(faturamentoMes, metricasAnteriores.faturamento) 
           },
           custoEfetivo: { 
-            atual: custoEfetivoMes, total: custoEfetivoAno, 
+            atual: custoEfetivoMes, 
+            total: custoEfetivoAno, 
             growth: this.calculateGrowth(custoEfetivoMes, metricasAnteriores.custoEfetivo) 
           },
           lucroBruto: {
-            atual: lucroBrutoMes, total: lucroBrutoAno,
+            atual: lucroBrutoMes, 
+            total: lucroBrutoAno,
             growth: this.calculateGrowth(lucroBrutoMes, metricasAnteriores.lucroBruto) 
           },
           lucroLiquido: { 
-            atual: lucroLiquidoMes, total: lucroLiquidoAno,
+            atual: lucroLiquidoMes, 
+            total: lucroLiquidoAno,
             growth: this.calculateGrowth(lucroLiquidoMes, metricasAnteriores.lucroLiquido) 
           },
           despesasOperacionais: {
-            atual: despesasMes, total: despesasAno,
-            growth: this.calculateGrowth(despesasMes, despesasMesAnterior) // ✅ Cálculo corrigido
+            atual: despesasMes, 
+            total: despesasAno,
+            growth: this.calculateGrowth(despesasMes, despesasMesAnterior)
           },
           roi: { 
-            atual: roiMes, total: roiAno,
+            atual: roiMes, 
+            total: roiAno,
             growth: this.calculateGrowth(roiMes, metricasAnteriores.roi) 
           }
         };
@@ -279,12 +326,6 @@ export class DashboardService {
     );
   }
 
-  // --- UTILITÁRIOS E MOCKS ---
-  private calculateGrowth(current: number, previous: number): number {
-    if (previous === 0) return 0;
-    return Number((((current - previous) / previous) * 100).toFixed(1));
-  }
-
   private gerarCorAleatoria(str: string): string {
     let hash = 0;
     for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -325,6 +366,8 @@ export class DashboardService {
       roi: { atual: 42, total: 25, growth: 5.0 }
     };
   }
+  
   private getMockVendasPorDia(): VendasPorDia { return {}; }
+  
   private getMockProdutosMaisVendidos(limite: number): ProdutoMaisVendido[] { return []; }
 }
